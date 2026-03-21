@@ -13,14 +13,13 @@
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit"
   },
+  "peerDependencies": {
+    "@aromix/core": "workspace:*"
+  },
   "devDependencies": {
+    "@aromix/core": "workspace:*",
     "tsup": "catalog:",
     "typescript": "catalog:",
     "@types/node": "catalog:"
-  },
-  "dependencies": {
-    "@aromix/core": "workspace:*",
-    "ws": "catalog:",
-    "@types/ws": "catalog:"
   }
 }

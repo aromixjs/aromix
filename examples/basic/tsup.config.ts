@@ -1,5 +1,9 @@
-import { definePackageConfig } from "../../tsup.config";
+import { defineConfig } from "tsup";
 
-export default definePackageConfig({
-  dts: false,
+export default defineConfig({
+  entry: ["src/index.ts"],
+  format: ["esm"],
+  dts: true,
+  clean: true,
+  minify: false,
 });
