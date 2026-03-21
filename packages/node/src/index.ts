@@ -1,5 +1,5 @@
 import { createServer } from "node:http";
-import { AromixDescriptor } from "../core/make";
+import { AromixDescriptor } from "@aromix/core";
 import { AsyncLocalStorage } from "node:async_hooks";
 
 export interface RawRequest {
