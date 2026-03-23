@@ -2,8 +2,16 @@ import { make } from "@aromix/core";
 import { serve } from "@aromix/node";
 import { UserGroup } from "./user/user.group";
 
+export const router = [
+  {
+    path: "/",
+    call: "user:get",
+  },
+];
+
 const app = make({
   groups: [UserGroup],
+  plugins: [],
 });
 
 serve(app).listen(3000, () => {

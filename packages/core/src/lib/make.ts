@@ -3,6 +3,7 @@ import { group } from "./group";
 
 export interface MakeOptions {
   groups: Array<new () => any>;
+  plugins?: Array<any>;
 }
 
 export interface AromixDescriptor {

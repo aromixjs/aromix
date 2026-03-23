@@ -1,13 +1,32 @@
 import { StandardSchemaV1 } from "@standard-schema/spec";
+import { AsyncLocalStorage } from "async_hooks";
 
 export interface InputSchema {
   body?: StandardSchemaV1<Record<string, unknown>>;
   headers?: StandardSchemaV1<Record<string, unknown>>;
-  cookies?: StandardSchemaV1<Record<string, unknown>>;
 }
 
-export function input(schema?: InputSchema) {
-  const body = schema?.body?.["~standard"].validate({
-    damo: "string",
-  });
+export interface ResponsePayload {
+  status: number;
+  data: unknown;
+}
+
+export type RequestContext = {
+  body: unknown;
+  headers: Record<string, string | string[] | undefined>;
+  send<T>(payload: { status: number; data: T }): ResponsePayload;
+};
+
+export const contextStorage = new AsyncLocalStorage<RequestContext>();
+
+export function input<T extends InputSchema>(schema?: T) {
+  const ctx = contextStorage.getStore();
+
+  if (!ctx) {
+    throw new Error("[aromix] input() called outside of a request context.");
+  }
+
+  if (!schema) return ctx;
+
+  console.log(schema);
 }

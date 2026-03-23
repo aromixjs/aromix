@@ -1,83 +1,63 @@
-import { createServer, IncomingMessage } from "node:http";
-import { AromixDescriptor } from "@aromix/core";
+import { createServer, IncomingMessage, ServerResponse } from "node:http";
+import {
+  AromixDescriptor,
+  contextStorage,
+  RequestContext,
+  ResponsePayload,
+} from "@aromix/core";
 import { AsyncLocalStorage } from "node:async_hooks";
-import { RequestContext, ResponseMethods, ResponsePayload } from "./types";
 
-export const requestStorage = new AsyncLocalStorage<RequestContext>();
-
-function buildResponseMethods(): ResponseMethods {
-  return {
-    send: ({ status, data }) => ({ status, data }),
-    end: (status = 204) => ({ status }),
-    redirect: (url, status = 302) => ({ status, redirect: url }),
-  };
-}
-
-function readBody(req: IncomingMessage): Promise<unknown> {
-  return new Promise((resolve) => {
-    let raw = "";
-    req.on("data", (chunk) => (raw += chunk));
-    req.on("end", () => {
-      try {
-        resolve(JSON.parse(raw));
-      } catch {
-        resolve({});
-      }
-    });
+async function toWebRequest(req: IncomingMessage): Promise<Request> {
+  const chunks: Buffer[] = [];
+  for await (const chunk of req) chunks.push(chunk);
+  return new Request(`http://localhost${req.url}`, {
+    method: req.method,
+    headers: req.headers as Record<string, string>,
+    body: chunks.length ? Buffer.concat(chunks) : null,
   });
 }
 
-function writeResponse(
-  res: import("node:http").ServerResponse,
-  payload: ResponsePayload,
-) {
-  if (payload.redirect) {
-    res.writeHead(payload.status, { Location: payload.redirect });
-    res.end();
-    return;
-  }
-
+function toWebResponse(payload: ResponsePayload): Response {
   if (payload.data === undefined) {
-    res.writeHead(payload.status);
-    res.end();
-    return;
+    return new Response(null, { status: payload.status });
   }
-
   const isText = typeof payload.data === "string";
-  const contentType = isText ? "text/plain" : "application/json";
-  const body = isText ? payload.data : JSON.stringify(payload.data);
-
-  res.writeHead(payload.status, { "Content-Type": contentType });
-  res.end(body);
+  return new Response(
+    isText ? (payload.data as string) : JSON.stringify(payload.data),
+    {
+      status: payload.status,
+      headers: { "Content-Type": isText ? "text/plain" : "application/json" },
+    },
+  );
+}
+async function writeNodeResponse(res: ServerResponse, webRes: Response) {
+  webRes.headers.forEach((value, key) => res.setHeader(key, value));
+  res.writeHead(webRes.status);
+  res.end(webRes.body ? Buffer.from(await webRes.arrayBuffer()) : null);
 }
 
 export function serve(descriptor: AromixDescriptor) {
-  const server = createServer();
-
-  server.on("request", async (req, res) => {
-    const action = req.headers["x-action"] as string | undefined;
+  return createServer(async (req: IncomingMessage, res: ServerResponse) => {
+    const webReq = await toWebRequest(req);
+    const action = webReq.headers.get("x-action");
 
     if (!action || !descriptor.handlers.has(action)) {
-      res.writeHead(404, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "Action not found" }));
+      await writeNodeResponse(
+        res,
+        Response.json({ error: "Action not found" }, { status: 404 }),
+      );
       return;
     }
 
-    const body = await readBody(req);
-
     const context: RequestContext = {
-      body,
-      headers: req.headers,
-      ip: req.socket.remoteAddress ?? "",
-      action,
-      ...buildResponseMethods(),
+      body: await webReq.json().catch(() => ({})),
+      headers: Object.fromEntries(webReq.headers),
+      send: ({ status, data }) => ({ status, data }),
     };
 
     const handler = descriptor.handlers.get(action)!;
-    const payload = await requestStorage.run(context, () => handler());
+    const payload = await contextStorage.run(context, () => handler());
 
-    writeResponse(res, payload);
+    await writeNodeResponse(res, toWebResponse(payload));
   });
-
-  return server;
 }
