@@ -1,14 +1,20 @@
-// import { make } from "@aromix/core";
-// import { serve } from "@aromix/node";
-// import { UserGroup } from "./user/user.group";
+import { make } from "@aromix/core";
+import { serve } from "@aromix/node";
+import { UserGroup } from "./user/user.group";
 
 import { createServer } from "http";
 import { TLSSocket } from "tls";
 
-// const app = make({
-//   groups: [UserGroup],
-//   plugins: [],
-// });
+const app = make({
+  groups: [UserGroup],
+  plugins: [
+
+redis({
+  url:''
+})
+
+  ],
+});
 
 // serve(app).listen(3000, () => {
 //   console.log("App is running on port 3000");
