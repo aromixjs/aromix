@@ -1,6 +1,6 @@
 import type { Maybe, Union } from "./types";
 
-// module-level singleton registry — keyed by unique symbol token per class
+
 const ServiceRegistry = new Map<symbol, object>();
 const ServiceMetaKey = Symbol("aromix-service-meta");
 

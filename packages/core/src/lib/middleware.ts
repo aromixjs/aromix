@@ -1,4 +1,4 @@
-import { RawContext, ReplyValue } from "./context";
+import { contextStorage, RawContext, ReplyValue } from "./context";
 
 export type Next = () => Promise<ReplyValue>;
 
@@ -24,5 +24,5 @@ export async function runChain(
     return handler(ctx);
   };
 
-  return next();
+  return contextStorage.run(ctx, next);
 }

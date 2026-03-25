@@ -54,6 +54,9 @@ export function serve(descriptor: AromixDescriptor) {
     const entry = descriptor.handlers.get(action)!;
  const payload = await runChain(entry.chain, context, entry.handler);
 
+
+ 
+
     if (!payload || payload._type !== "reply") {
       await writeNodeResponse(res, {
         _type: "reply",
