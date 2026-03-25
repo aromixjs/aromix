@@ -3,6 +3,7 @@ import {
   AromixDescriptor,
   contextStorage,
   RawContext,
+  runChain,
 } from "@aromix/core";
 import { TLSSocket } from "node:tls";
 import { parseBody, toWebRequest, writeNodeResponse } from "./utils";
@@ -48,8 +49,8 @@ export function serve(descriptor: AromixDescriptor) {
         Object.freeze({ _type: "reply" as const, ...options }),
     };
 
-    const handler = descriptor.handlers.get(action)!;
-    const payload = await contextStorage.run(context, () => handler());
+    const entry = descriptor.handlers.get(action)!;
+    const payload = await runChain(entry.chain, context, entry.handler);
 
     if (!payload || payload._type !== "reply") {
       await writeNodeResponse(res, {

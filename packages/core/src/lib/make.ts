@@ -1,34 +1,54 @@
 import { action } from "./action";
+import { ReplyValue } from "./context";
 import { group } from "./group";
+import { Middleware } from "./middleware";
 
 export interface MakeOptions {
   groups: Array<new () => any>;
   plugins?: Array<any>;
+  middlewares?: Middleware[];
+}
+
+export interface DispatchEntry {
+  chain: readonly Middleware[];
+  handler: () => Promise<ReplyValue>;
 }
 
 export interface AromixDescriptor {
-  handlers: Map<string, Function>;
+  handlers: Map<string, DispatchEntry>;
 }
 
 export function make(options: MakeOptions) {
-  const AdapterDescriptor: AromixDescriptor = {
-    handlers: new Map<string, Function>(),
+  const descriptor: AromixDescriptor = {
+    handlers: new Map(),
   };
 
-  options.groups.forEach((ns) => {
-    const instance: Record<string, unknown> = new ns();
-    const nsMeta = group.getMeta(instance);
-    const actionMeta = action.getMeta(instance);
+  const globalMiddlewares = options.middlewares ?? [];
 
-    if (actionMeta && nsMeta) {
-      for (const [key, value] of Object.entries(actionMeta)) {
-        AdapterDescriptor.handlers.set(
-          nsMeta.prefix + ":" + value.prefix,
-          (instance[key] as Function).bind(instance),
-        );
-      }
+  for (const gp of options.groups) {
+    const instance = new gp();
+    const groupMeta = group.getMeta(instance);
+    const actionMap = action.getMeta(instance);
+
+    if (!groupMeta || !actionMap) {
+      continue;
     }
-  });
 
-  return AdapterDescriptor;
+    for (const [methodKey, actionMeta] of Object.entries(actionMap)) {
+      const fullKey = `${groupMeta.prefix}:${actionMeta.prefix}`;
+
+      const chain: Middleware[] = [
+        ...globalMiddlewares,
+        ...groupMeta.middlewares,
+        ...actionMeta.middlewares,
+      ];
+
+      descriptor.handlers.set(fullKey, {
+        chain,
+        handler: (instance[methodKey] as Function).bind(instance),
+      });
+    }
+  }
+
+  return descriptor;
 }

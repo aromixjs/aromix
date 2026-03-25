@@ -12,6 +12,7 @@ export class UserGroup {
     return ctx.reply({
       status: 200,
       data: {
+        cookies: ctx.headers['cookie'],
         username: "test",
       },
     });
