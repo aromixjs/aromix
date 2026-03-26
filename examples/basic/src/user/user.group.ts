@@ -1,15 +1,14 @@
-//@ts-nocheck
-import { action, Group } from "@aromix/core";
-import { test } from "./test.middlware";
-import { userGetInput } from "./user.schema";
+import { action, group, request, response } from "@aromix/core";
 
-
-@group('test')
+@group("user")
 export class UserGroup {
-  @action("test")
-  test() {
-    const req = request(userGetInput);
+  @action("get")
+  get() {
+    const raw = request();
 
-    res.reply({ status: 200 });
+    return response.setHeader("x-power-by", "aromix").ok({
+      data: "ok",
+      raw,
+    });
   }
 }

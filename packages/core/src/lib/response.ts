@@ -80,6 +80,4 @@ export class ResponseBuilder {
   }
 }
 
-export const res = new ResponseBuilder();
-
 export const response = new ResponseBuilder();

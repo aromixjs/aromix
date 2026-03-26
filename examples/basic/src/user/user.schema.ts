@@ -1,4 +1,4 @@
-import { ContextSchema } from "@aromix/core";
+import { RequestSchema } from "@aromix/core";
 import * as v from "valibot";
 
 export const userGetInput = {
@@ -9,4 +9,4 @@ export const userGetInput = {
   headers: v.object({
     "x-action": v.string(),
   }),
-} satisfies ContextSchema;
+} satisfies RequestSchema;
