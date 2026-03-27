@@ -69,7 +69,7 @@ They never overlap. `@action()` and `@page()` can coexist on the same class but 
 ### `@page()`
 
 ```ts
-function page(path: string): MethodDecorator
+function page(path: string): MethodDecorator;
 ```
 
 Registers a handler method as a shell endpoint. The path is a prefix — any path starting with it is served by this handler.
@@ -96,6 +96,7 @@ class AdminHandler {
 ```
 
 `@page()` path rules:
+
 - Always starts with `/`
 - Treated as a prefix — `/admin` matches `/admin`, `/admin/users`, `/admin/anything`
 - More specific paths take priority — `/admin/settings` beats `/admin`
@@ -139,18 +140,18 @@ function AdminShell({ user }) {
 ### View Plugin Registration
 
 ```ts
-import { make } from '@aromix/core'
-import { viewPlugin } from '@aromix/view'
+import { make } from "@aromix/core";
+import { viewPlugin } from "@aromix/view";
 
 const app = make({
   namespaces: [AdminHandler, HomeHandler],
   plugins: [
     viewPlugin({
-      assets: './src',          // root for asset resolution
-      cache: true,              // cache compiled modules (default: true)
-    })
-  ]
-})
+      assets: "./src", // root for asset resolution
+      cache: true, // cache compiled modules (default: true)
+    }),
+  ],
+});
 ```
 
 ---
@@ -161,22 +162,22 @@ Built by `make()` when the view plugin is active. Separate from the action dispa
 
 ```ts
 interface PageEntry {
-  path:       string           // '/admin'
-  handler:    Function         // bound method
-  namespace:  string           // 'admin'
-  methodKey:  string           // 'root'
+  path: string; // '/admin'
+  handler: Function; // bound method
+  namespace: string; // 'admin'
+  methodKey: string; // 'root'
 }
 
 // Stored as sorted array — more specific paths first
 // /admin/settings  checked before  /admin
-const pageMap: PageEntry[] = []
+const pageMap: PageEntry[] = [];
 ```
 
 Resolution at request time:
 
 ```ts
 function resolvePage(requestPath: string): PageEntry | null {
-  return pageMap.find(entry => requestPath.startsWith(entry.path)) ?? null
+  return pageMap.find((entry) => requestPath.startsWith(entry.path)) ?? null;
 }
 ```
 
@@ -402,18 +403,18 @@ Control flow uses `@` directives with `{ }` as block delimiters. The `{ }` here 
 
 Full directive reference:
 
-| Directive | Purpose |
-|-----------|---------|
-| `@if(cond){ }` | Conditional block |
-| `@else{ }` | Alternate branch |
-| `@for(item of items){ }` | Loop over iterable |
-| `@switch(expr){ }` | Multi-branch on value |
-| `@case("val"){ }` | Branch inside switch |
-| `@default{ }` | Fallback inside switch |
-| `@await(promise){ }` | Pending state |
-| `@then(val){ }` | Resolved state |
-| `@catch(err){ }` | Rejected state |
-| `@include("file")` | Compile-time file injection |
+| Directive                | Purpose                     |
+| ------------------------ | --------------------------- |
+| `@if(cond){ }`           | Conditional block           |
+| `@else{ }`               | Alternate branch            |
+| `@for(item of items){ }` | Loop over iterable          |
+| `@switch(expr){ }`       | Multi-branch on value       |
+| `@case("val"){ }`        | Branch inside switch        |
+| `@default{ }`            | Fallback inside switch      |
+| `@await(promise){ }`     | Pending state               |
+| `@then(val){ }`          | Resolved state              |
+| `@catch(err){ }`         | Rejected state              |
+| `@include("file")`       | Compile-time file injection |
 
 ### Directives — Custom
 
@@ -761,67 +762,67 @@ type NodeDescriptor =
   | ConditionalDescriptor
   | ListDescriptor
   | AwaitDescriptor
-  | SwitchDescriptor
+  | SwitchDescriptor;
 
 interface ElementDescriptor {
-  type:       'element'
-  tag:        string
-  props:      Record<string, PropValue>
-  directives: DirectiveBinding[]
-  children:   NodeDescriptor[]
+  type: "element";
+  tag: string;
+  props: Record<string, PropValue>;
+  directives: DirectiveBinding[];
+  children: NodeDescriptor[];
 }
 
 interface TextDescriptor {
-  type:  'text'
-  value: string
+  type: "text";
+  value: string;
 }
 
 interface ReactiveDescriptor {
-  type:   'reactive'
-  signal: ObsSignal
+  type: "reactive";
+  signal: ObsSignal;
 }
 
 interface ComponentDescriptor {
-  type:   'component'
-  name:   string
-  import: () => Promise<any>
-  props:  Record<string, any>
+  type: "component";
+  name: string;
+  import: () => Promise<any>;
+  props: Record<string, any>;
 }
 
 interface ConditionalDescriptor {
-  type:      'if'
-  condition: ObsSignal | (() => boolean)
-  children:  NodeDescriptor[]
-  else?:     NodeDescriptor[]
+  type: "if";
+  condition: ObsSignal | (() => boolean);
+  children: NodeDescriptor[];
+  else?: NodeDescriptor[];
 }
 
 interface ListDescriptor {
-  type:   'for'
-  source: ObsSignal
-  render: (item: any) => NodeDescriptor[]
+  type: "for";
+  source: ObsSignal;
+  render: (item: any) => NodeDescriptor[];
 }
 
 interface AwaitDescriptor {
-  type:     'await'
-  promise:  () => Promise<any>
-  pending:  NodeDescriptor[]
-  then:     (value: any) => NodeDescriptor[]
-  catch:    (err: any) => NodeDescriptor[]
+  type: "await";
+  promise: () => Promise<any>;
+  pending: NodeDescriptor[];
+  then: (value: any) => NodeDescriptor[];
+  catch: (err: any) => NodeDescriptor[];
 }
 
 interface SwitchDescriptor {
-  type:  'switch'
-  expr:  () => any
-  cases: { value: any; children: NodeDescriptor[] }[]
-  default?: NodeDescriptor[]
+  type: "switch";
+  expr: () => any;
+  cases: { value: any; children: NodeDescriptor[] }[];
+  default?: NodeDescriptor[];
 }
 
 interface DirectiveBinding {
-  name:  string
-  value: () => any
+  name: string;
+  value: () => any;
 }
 
-type PropValue = string | number | boolean | ObsSignal | (() => any)
+type PropValue = string | number | boolean | ObsSignal | (() => any);
 ```
 
 ### Compiled Output Example
@@ -869,89 +870,82 @@ Compiled output:
 
 ```ts
 export const ProductCard = {
-  type: 'comp',
-  name: 'ProductCard',
+  type: "comp",
+  name: "ProductCard",
 
   props: {
     product: Object,
-    featured: Boolean
+    featured: Boolean,
   },
 
   emits: {
-    addToCart: Object
+    addToCart: Object,
   },
 
   setup(props, emit, { obs, onMount, onDestroy, inject }) {
-    const wished = obs(false)
-    return { wished }
+    const wished = obs(false);
+    return { wished };
   },
 
   children: [
     {
-      type: 'element',
-      tag: 'div',
+      type: "element",
+      tag: "div",
       props: {
-        class: (props) =>
-          `product-card ${props.featured ? 'product-card--featured' : ''}`,
-        id: (props) => props.product.id
+        class: (props) => `product-card ${props.featured ? "product-card--featured" : ""}`,
+        id: (props) => props.product.id,
       },
       directives: [
         {
-          name: 'tooltip',
-          value: (props) => props.product.description
-        }
+          name: "tooltip",
+          value: (props) => props.product.description,
+        },
       ],
       children: [
         {
-          type: 'element',
-          tag: 'h3',
+          type: "element",
+          tag: "h3",
           props: {},
           directives: [],
-          children: [
-            { type: 'reactive', signal: (props) => props.product.name }
-          ]
+          children: [{ type: "reactive", signal: (props) => props.product.name }],
         },
         {
-          type: 'if',
+          type: "if",
           condition: (props) => props.featured,
           children: [
             {
-              type: 'component',
-              name: 'Badge',
-              import: () => import('./shop.web'),
+              type: "component",
+              name: "Badge",
+              import: () => import("./shop.web"),
               props: {
-                variant: 'gold',
-                label: 'Featured'
-              }
-            }
+                variant: "gold",
+                label: "Featured",
+              },
+            },
           ],
-          else: null
+          else: null,
         },
         {
-          type: 'element',
-          tag: 'span',
+          type: "element",
+          tag: "span",
           props: {},
           directives: [],
-          children: [
-            { type: 'reactive', signal: (props) => formatPrice(props.product.price) }
-          ]
+          children: [{ type: "reactive", signal: (props) => formatPrice(props.product.price) }],
         },
         {
-          type: 'element',
-          tag: 'button',
+          type: "element",
+          tag: "button",
           props: {
-            disabled: (props) => props.product.status === 'outofstock',
-            onclick: (props, emit) => () => emit('addToCart', props.product)
+            disabled: (props) => props.product.status === "outofstock",
+            onclick: (props, emit) => () => emit("addToCart", props.product),
           },
           directives: [],
-          children: [
-            { type: 'text', value: 'Add to Cart' }
-          ]
-        }
-      ]
-    }
-  ]
-}
+          children: [{ type: "text", value: "Add to Cart" }],
+        },
+      ],
+    },
+  ],
+};
 ```
 
 Key compilation rules:
@@ -975,32 +969,32 @@ Key compilation rules:
 The single reactive primitive. Works identically for primitives, objects, and arrays.
 
 ```ts
-const _obsMarker = Symbol('aromix.obs')  // internal, never exported
+const _obsMarker = Symbol("aromix.obs"); // internal, never exported
 
 function obs(initial) {
-  let _value = initial
-  const subscribers = new Set()
+  let _value = initial;
+  const subscribers = new Set();
 
-  const signal = function(next?) {
-    if (arguments.length === 0) return _value
-    _value = typeof next === 'function' ? next(_value) : next
-    subscribers.forEach(fn => fn(_value))
-  }
+  const signal = function (next?) {
+    if (arguments.length === 0) return _value;
+    _value = typeof next === "function" ? next(_value) : next;
+    subscribers.forEach((fn) => fn(_value));
+  };
 
-  signal[_obsMarker] = true
+  signal[_obsMarker] = true;
 
   signal.subscribe = (fn) => {
-    subscribers.add(fn)
-    return () => subscribers.delete(fn)
-  }
+    subscribers.add(fn);
+    return () => subscribers.delete(fn);
+  };
 
   signal.derived = (fn) => {
-    const result = obs(fn(_value))
-    signal.subscribe(v => result(fn(v)))
-    return result
-  }
+    const result = obs(fn(_value));
+    signal.subscribe((v) => result(fn(v)));
+    return result;
+  };
 
-  return signal
+  return signal;
 }
 ```
 
@@ -1008,29 +1002,29 @@ Usage:
 
 ```ts
 // Primitives
-const count = obs(0)
-count()           // read → 0
-count(5)          // write → 5
-count(v => v + 1) // update → 6
+const count = obs(0);
+count(); // read → 0
+count(5); // write → 5
+count((v) => v + 1); // update → 6
 
 // Objects
-const user = obs({ name: 'John', age: 25 })
-user()                          // read → { name: 'John', age: 25 }
-user({ name: 'Jane', age: 25 }) // write
-user(v => ({ ...v, age: 26 })) // update
+const user = obs({ name: "John", age: 25 });
+user(); // read → { name: 'John', age: 25 }
+user({ name: "Jane", age: 25 }); // write
+user((v) => ({ ...v, age: 26 })); // update
 
 // Arrays
-const list = obs([1, 2, 3])
-list()                    // read → [1, 2, 3]
-list(v => [...v, 4])      // update → [1, 2, 3, 4]
+const list = obs([1, 2, 3]);
+list(); // read → [1, 2, 3]
+list((v) => [...v, 4]); // update → [1, 2, 3, 4]
 
 // Derived
-const doubled = count.derived(v => v * 2)
-doubled()   // always count() * 2, updates automatically
+const doubled = count.derived((v) => v * 2);
+doubled(); // always count() * 2, updates automatically
 
 // Subscribe
-const unsub = count.subscribe(v => console.log(v))
-unsub()  // stop listening
+const unsub = count.subscribe((v) => console.log(v));
+unsub(); // stop listening
 ```
 
 ### `combine()`
@@ -1039,24 +1033,24 @@ Merges multiple signals into one derived signal.
 
 ```ts
 function combine(...signals: ObsSignal[]): ObsSignal {
-  const read = () => signals.map(s => s())
-  const result = obs(read())
-  signals.forEach(s => s.subscribe(() => result(read())))
-  return result
+  const read = () => signals.map((s) => s());
+  const result = obs(read());
+  signals.forEach((s) => s.subscribe(() => result(read())));
+  return result;
 }
 ```
 
 Usage:
 
 ```ts
-const a = obs(1)
-const b = obs(2)
+const a = obs(1);
+const b = obs(2);
 
-const sum = combine(a, b).derived(([a, b]) => a + b)
-sum()   // 3
+const sum = combine(a, b).derived(([a, b]) => a + b);
+sum(); // 3
 
-a(10)
-sum()   // 12 — updated automatically
+a(10);
+sum(); // 12 — updated automatically
 ```
 
 ### Template Reactivity Rule
@@ -1084,120 +1078,122 @@ The runtime is a small client-side module that takes a descriptor tree and creat
 ```ts
 function mount(descriptor: NodeDescriptor, parent: Element): BoundNode {
   switch (descriptor.type) {
-
-    case 'element': {
-      const el = document.createElement(descriptor.tag)
+    case "element": {
+      const el = document.createElement(descriptor.tag);
       for (const [key, value] of Object.entries(descriptor.props)) {
-        setProp(el, key, value)
+        setProp(el, key, value);
       }
       for (const directive of descriptor.directives) {
-        initDirective(directive, el)
+        initDirective(directive, el);
       }
       for (const child of descriptor.children) {
-        mount(child, el)
+        mount(child, el);
       }
-      parent.appendChild(el)
-      return { el, descriptor }
+      parent.appendChild(el);
+      return { el, descriptor };
     }
 
-    case 'text': {
-      const node = document.createTextNode(descriptor.value)
-      parent.appendChild(node)
-      return { node }
+    case "text": {
+      const node = document.createTextNode(descriptor.value);
+      parent.appendChild(node);
+      return { node };
     }
 
-    case 'reactive': {
-      const node = document.createTextNode(String(descriptor.signal()))
-      parent.appendChild(node)
-      descriptor.signal.subscribe(v => node.textContent = String(v))
-      return { node }
+    case "reactive": {
+      const node = document.createTextNode(String(descriptor.signal()));
+      parent.appendChild(node);
+      descriptor.signal.subscribe((v) => (node.textContent = String(v)));
+      return { node };
     }
 
-    case 'component': {
-      const placeholder = document.createComment(`component:${descriptor.name}`)
-      parent.appendChild(placeholder)
-      descriptor.import().then(mod => {
-        const comp = mod[descriptor.name]
-        const childDescriptor = resolveComp(comp, descriptor.props)
-        mount(childDescriptor, parent)
-        placeholder.remove()
-      })
-      return { placeholder }
+    case "component": {
+      const placeholder = document.createComment(`component:${descriptor.name}`);
+      parent.appendChild(placeholder);
+      descriptor.import().then((mod) => {
+        const comp = mod[descriptor.name];
+        const childDescriptor = resolveComp(comp, descriptor.props);
+        mount(childDescriptor, parent);
+        placeholder.remove();
+      });
+      return { placeholder };
     }
 
-    case 'if': {
-      const anchor = document.createComment('if')
-      parent.appendChild(anchor)
-      let mounted: BoundNode[] = []
+    case "if": {
+      const anchor = document.createComment("if");
+      parent.appendChild(anchor);
+      let mounted: BoundNode[] = [];
 
       const update = (value: any) => {
-        mounted.forEach(n => unmount(n))
-        mounted = []
-        const branch = value ? descriptor.children : descriptor.else
+        mounted.forEach((n) => unmount(n));
+        mounted = [];
+        const branch = value ? descriptor.children : descriptor.else;
         if (branch) {
-          branch.forEach(child => mounted.push(mount(child, parent)))
+          branch.forEach((child) => mounted.push(mount(child, parent)));
         }
-      }
+      };
 
-      update(descriptor.condition())
-      descriptor.condition.subscribe(update)
-      return { anchor, mounted }
+      update(descriptor.condition());
+      descriptor.condition.subscribe(update);
+      return { anchor, mounted };
     }
 
-    case 'for': {
-      const anchor = document.createComment('for')
-      parent.appendChild(anchor)
-      let mounted: BoundNode[][] = []
+    case "for": {
+      const anchor = document.createComment("for");
+      parent.appendChild(anchor);
+      let mounted: BoundNode[][] = [];
 
       const update = (list: any[]) => {
-        patchList(parent, anchor, mounted, list, descriptor.render)
-      }
+        patchList(parent, anchor, mounted, list, descriptor.render);
+      };
 
-      update(descriptor.source())
-      descriptor.source.subscribe(update)
-      return { anchor, mounted }
+      update(descriptor.source());
+      descriptor.source.subscribe(update);
+      return { anchor, mounted };
     }
 
-    case 'await': {
-      const anchor = document.createComment('await')
-      parent.appendChild(anchor)
-      let mounted: BoundNode[] = []
+    case "await": {
+      const anchor = document.createComment("await");
+      parent.appendChild(anchor);
+      let mounted: BoundNode[] = [];
 
-      descriptor.pending.forEach(child => mounted.push(mount(child, parent)))
+      descriptor.pending.forEach((child) => mounted.push(mount(child, parent)));
 
-      descriptor.promise().then(value => {
-        mounted.forEach(n => unmount(n))
-        mounted = []
-        descriptor.then(value).forEach(child => mounted.push(mount(child, parent)))
-      }).catch(err => {
-        mounted.forEach(n => unmount(n))
-        mounted = []
-        descriptor.catch(err).forEach(child => mounted.push(mount(child, parent)))
-      })
+      descriptor
+        .promise()
+        .then((value) => {
+          mounted.forEach((n) => unmount(n));
+          mounted = [];
+          descriptor.then(value).forEach((child) => mounted.push(mount(child, parent)));
+        })
+        .catch((err) => {
+          mounted.forEach((n) => unmount(n));
+          mounted = [];
+          descriptor.catch(err).forEach((child) => mounted.push(mount(child, parent)));
+        });
 
-      return { anchor, mounted }
+      return { anchor, mounted };
     }
 
-    case 'switch': {
-      const anchor = document.createComment('switch')
-      parent.appendChild(anchor)
-      let mounted: BoundNode[] = []
+    case "switch": {
+      const anchor = document.createComment("switch");
+      parent.appendChild(anchor);
+      let mounted: BoundNode[] = [];
 
       const update = (value: any) => {
-        mounted.forEach(n => unmount(n))
-        mounted = []
-        const match = descriptor.cases.find(c => c.value === value)
-        const branch = match ? match.children : descriptor.default
+        mounted.forEach((n) => unmount(n));
+        mounted = [];
+        const match = descriptor.cases.find((c) => c.value === value);
+        const branch = match ? match.children : descriptor.default;
         if (branch) {
-          branch.forEach(child => mounted.push(mount(child, parent)))
+          branch.forEach((child) => mounted.push(mount(child, parent)));
         }
-      }
+      };
 
-      update(descriptor.expr())
-      if (typeof descriptor.expr === 'function' && descriptor.expr[_obsMarker]) {
-        descriptor.expr.subscribe(update)
+      update(descriptor.expr());
+      if (typeof descriptor.expr === "function" && descriptor.expr[_obsMarker]) {
+        descriptor.expr.subscribe(update);
       }
-      return { anchor, mounted }
+      return { anchor, mounted };
     }
   }
 }
@@ -1209,17 +1205,17 @@ function mount(descriptor: NodeDescriptor, parent: Element): BoundNode {
 
 ```ts
 function patchList(parent, anchor, mounted, newList, renderFn) {
-  const oldLen = mounted.length
-  const newLen = newList.length
+  const oldLen = mounted.length;
+  const newLen = newList.length;
 
   for (let i = newLen; i < oldLen; i++) {
-    mounted[i].forEach(n => unmount(n))
+    mounted[i].forEach((n) => unmount(n));
   }
-  mounted.length = newLen
+  mounted.length = newLen;
 
   for (let i = oldLen; i < newLen; i++) {
-    const nodes = renderFn(newList[i]).map(d => mount(d, parent))
-    mounted[i] = nodes
+    const nodes = renderFn(newList[i]).map((d) => mount(d, parent));
+    mounted[i] = nodes;
   }
 }
 ```
@@ -1271,17 +1267,17 @@ Step 7 — Cache
 
 ```ts
 type TemplateToken =
-  | { type: 'TAG_OPEN';       tag: string; selfClose: boolean }
-  | { type: 'TAG_CLOSE';      tag: string }
-  | { type: 'ATTR';           name: string; value: string }
-  | { type: 'ATTR_BINDING';   name: string; expr: string }    // attr=[expr]
-  | { type: 'TEXT';           value: string }
-  | { type: 'BINDING';        expr: string }                  // [expr]
-  | { type: 'DIRECTIVE';      name: string; expr: string }    // @if, @for, @switch etc
-  | { type: 'BLOCK_OPEN' }
-  | { type: 'BLOCK_CLOSE' }
-  | { type: 'COMPONENT';      name: string }                  // PascalCase tag
-  | { type: 'INCLUDE';        path: string; data?: string }   // @include()
+  | { type: "TAG_OPEN"; tag: string; selfClose: boolean }
+  | { type: "TAG_CLOSE"; tag: string }
+  | { type: "ATTR"; name: string; value: string }
+  | { type: "ATTR_BINDING"; name: string; expr: string } // attr=[expr]
+  | { type: "TEXT"; value: string }
+  | { type: "BINDING"; expr: string } // [expr]
+  | { type: "DIRECTIVE"; name: string; expr: string } // @if, @for, @switch etc
+  | { type: "BLOCK_OPEN" }
+  | { type: "BLOCK_CLOSE" }
+  | { type: "COMPONENT"; name: string } // PascalCase tag
+  | { type: "INCLUDE"; path: string; data?: string }; // @include()
 ```
 
 ### Generator
@@ -1289,68 +1285,72 @@ type TemplateToken =
 ```ts
 function generate(node: TemplateAST): string {
   switch (node.type) {
-    case 'element':
+    case "element":
       return `{
         type: 'element',
         tag: '${node.tag}',
         props: { ${generateProps(node.props)} },
         directives: [ ${generateDirectives(node.directives)} ],
-        children: [${node.children.map(generate).join(',')}]
-      }`
+        children: [${node.children.map(generate).join(",")}]
+      }`;
 
-    case 'text':
-      return `{ type: 'text', value: ${JSON.stringify(node.value)} }`
+    case "text":
+      return `{ type: 'text', value: ${JSON.stringify(node.value)} }`;
 
-    case 'binding':
-      return `{ type: 'reactive', signal: (props, state) => ${node.expr} }`
+    case "binding":
+      return `{ type: 'reactive', signal: (props, state) => ${node.expr} }`;
 
-    case 'if':
+    case "if":
       return `{
         type: 'if',
         condition: (props, state) => ${node.condition},
-        children: [${node.children.map(generate).join(',')}],
-        else: ${node.else ? `[${node.else.map(generate).join(',')}]` : 'null'}
-      }`
+        children: [${node.children.map(generate).join(",")}],
+        else: ${node.else ? `[${node.else.map(generate).join(",")}]` : "null"}
+      }`;
 
-    case 'for':
+    case "for":
       return `{
         type: 'for',
         source: (props, state) => ${node.source},
-        render: (${node.item}) => [${node.children.map(generate).join(',')}]
-      }`
+        render: (${node.item}) => [${node.children.map(generate).join(",")}]
+      }`;
 
-    case 'await':
+    case "await":
       return `{
         type: 'await',
         promise: () => ${node.promise},
-        pending: [${node.pending.map(generate).join(',')}],
-        then: (${node.thenVal}) => [${node.then.map(generate).join(',')}],
-        catch: (${node.catchVal}) => [${node.catch.map(generate).join(',')}]
-      }`
+        pending: [${node.pending.map(generate).join(",")}],
+        then: (${node.thenVal}) => [${node.then.map(generate).join(",")}],
+        catch: (${node.catchVal}) => [${node.catch.map(generate).join(",")}]
+      }`;
 
-    case 'switch':
+    case "switch":
       return `{
         type: 'switch',
         expr: (props, state) => ${node.expr},
-        cases: [${node.cases.map(c => `{
+        cases: [${node.cases
+          .map(
+            (c) => `{
           value: ${JSON.stringify(c.value)},
-          children: [${c.children.map(generate).join(',')}]
-        }`).join(',')}],
-        default: ${node.default ? `[${node.default.map(generate).join(',')}]` : 'null'}
-      }`
+          children: [${c.children.map(generate).join(",")}]
+        }`
+          )
+          .join(",")}],
+        default: ${node.default ? `[${node.default.map(generate).join(",")}]` : "null"}
+      }`;
 
-    case 'component':
+    case "component":
       return `{
         type: 'component',
         name: '${node.name}',
         import: () => import('./${node.file}'),
         props: { ${generateProps(node.props)} }
-      }`
+      }`;
 
-    case 'include':
+    case "include":
       // resolved at compile time — inlined as static text
-      const content = readFileSync(node.path, 'utf8')
-      return `{ type: 'text', value: ${JSON.stringify(content)} }`
+      const content = readFileSync(node.path, "utf8");
+      return `{ type: 'text', value: ${JSON.stringify(content)} }`;
   }
 }
 ```
@@ -1359,29 +1359,29 @@ function generate(node: TemplateAST): string {
 
 ```ts
 interface CacheEntry {
-  mtime: number
-  js:    string
+  mtime: number;
+  js: string;
 }
 
-const cache = new Map<string, CacheEntry>()
+const cache = new Map<string, CacheEntry>();
 
 async function compileAndCache(filepath: string): Promise<string> {
-  const mtime = (await stat(filepath)).mtimeMs
-  const hit   = cache.get(filepath)
+  const mtime = (await stat(filepath)).mtimeMs;
+  const hit = cache.get(filepath);
 
-  if (hit && hit.mtime === mtime) return hit.js
+  if (hit && hit.mtime === mtime) return hit.js;
 
-  const source   = await readFile(filepath, 'utf8')
-  const compiled = compile(source)
+  const source = await readFile(filepath, "utf8");
+  const compiled = compile(source);
 
   const { code } = await esbuild.transform(compiled, {
-    loader: 'ts',
-    format: 'esm',
-    target: 'esnext',
-  })
+    loader: "ts",
+    format: "esm",
+    target: "esnext",
+  });
 
-  cache.set(filepath, { mtime, js: code })
-  return code
+  cache.set(filepath, { mtime, js: code });
+  return code;
 }
 ```
 
@@ -1415,22 +1415,23 @@ Declared in the shell's entry script. Each root has its own independent router i
 
 ```ts
 // admin.client.web
-import { createRouter } from '@aromix/client'
-import { AdminDashboard } from './pages/AdminDashboard.web'
-import { AdminUsers }     from './pages/AdminUsers.web'
-import { AdminSettings }  from './pages/AdminSettings.web'
+import { createRouter } from "@aromix/client";
+import { AdminDashboard } from "./pages/AdminDashboard.web";
+import { AdminUsers } from "./pages/AdminUsers.web";
+import { AdminSettings } from "./pages/AdminSettings.web";
 
 createRouter({
-  root: '#root',
+  root: "#root",
   routes: [
-    { path: '/admin',          component: AdminDashboard },
-    { path: '/admin/users',    component: AdminUsers },
-    { path: '/admin/settings', component: AdminSettings },
-  ]
-})
+    { path: "/admin", component: AdminDashboard },
+    { path: "/admin/users", component: AdminUsers },
+    { path: "/admin/settings", component: AdminSettings },
+  ],
+});
 ```
 
 On refresh (`/admin/users`):
+
 ```
 Browser requests GET /admin/users
   → page map matches /admin/*
@@ -1453,39 +1454,38 @@ formatDate.shared.ts    ← both
 ```
 
 When the runtime compiler processes a browser request:
+
 - If the import chain reaches a file containing `@provide()` — compile error, request rejected
 - If server-side `inject()` is called with a `@singleton()` class — throws at `make()` time
 
 ### Client Services (`@singleton()`)
 
 ```ts
-import { singleton, inject, obs, combine } from '@aromix/client'
+import { singleton, inject, obs, combine } from "@aromix/client";
 
 @singleton()
 class UserClient {
-  users    = obs([])
-  loading  = obs(false)
-  filter   = obs('')
+  users = obs([]);
+  loading = obs(false);
+  filter = obs("");
 
-  filtered = combine(this.users, this.filter).derived(
-    ([users, f]) => users.filter(u => u.name.includes(f))
-  )
+  filtered = combine(this.users, this.filter).derived(([users, f]) => users.filter((u) => u.name.includes(f)));
 
   async load() {
-    this.loading(true)
-    const data = await this.call('user:list', {})
-    this.users(data)
-    this.loading(false)
+    this.loading(true);
+    const data = await this.call("user:list", {});
+    this.users(data);
+    this.loading(false);
   }
 
   async create(input) {
-    const user = await this.call('user:create', input)
-    this.users(v => [...v, user])
-    return user
+    const user = await this.call("user:create", input);
+    this.users((v) => [...v, user]);
+    return user;
   }
 
   formatName(user) {
-    return `${user.first} ${user.last}`
+    return `${user.first} ${user.last}`;
   }
 }
 ```
@@ -1527,24 +1527,24 @@ The shell component is a plain JS function called server-side. It returns a desc
 ```ts
 function resolveToHTML(descriptor: NodeDescriptor): string {
   switch (descriptor.type) {
-    case 'element':
+    case "element":
       const props = Object.entries(descriptor.props)
         .map(([k, v]) => {
-          const val = typeof v === 'function' && (v as any)[_obsMarker] ? v() : v
-          return `${k}="${val}"`
+          const val = typeof v === "function" && (v as any)[_obsMarker] ? v() : v;
+          return `${k}="${val}"`;
         })
-        .join(' ')
-      const children = descriptor.children.map(resolveToHTML).join('')
-      return `<${descriptor.tag} ${props}>${children}</${descriptor.tag}>`
+        .join(" ");
+      const children = descriptor.children.map(resolveToHTML).join("");
+      return `<${descriptor.tag} ${props}>${children}</${descriptor.tag}>`;
 
-    case 'text':
-      return descriptor.value
+    case "text":
+      return descriptor.value;
 
-    case 'reactive':
-      return String(descriptor.signal())
+    case "reactive":
+      return String(descriptor.signal());
 
-    case 'component':
-      return `<!-- component:${descriptor.name} -->`
+    case "component":
+      return `<!-- component:${descriptor.name} -->`;
   }
 }
 ```
@@ -1553,25 +1553,25 @@ function resolveToHTML(descriptor: NodeDescriptor): string {
 
 ## Stability
 
-| Symbol | Tier |
-|--------|------|
-| `@page()` signature | LOCKED |
-| `ctx.render()` signature | LOCKED |
-| `obs()` API | LOCKED |
-| `combine()` API | LOCKED |
-| Descriptor object shape | LOCKED |
-| `comp` block syntax | LOCKED |
-| `[ ]` binding syntax | LOCKED |
-| `@` directive syntax | LOCKED |
-| `defineProps` / `defineEmits` | LOCKED |
-| `inject()` in `<script>` | LOCKED |
-| `@singleton()` + `inject()` | LOCKED |
-| `this.call()` | LOCKED |
-| `_obsMarker` symbol | INTERNAL |
-| Runtime compiler pipeline | INTERNAL |
-| Script block merger | INTERNAL |
-| Cache implementation | INTERNAL |
-| Page map resolution order | LOCKED |
+| Symbol                        | Tier     |
+| ----------------------------- | -------- |
+| `@page()` signature           | LOCKED   |
+| `ctx.render()` signature      | LOCKED   |
+| `obs()` API                   | LOCKED   |
+| `combine()` API               | LOCKED   |
+| Descriptor object shape       | LOCKED   |
+| `comp` block syntax           | LOCKED   |
+| `[ ]` binding syntax          | LOCKED   |
+| `@` directive syntax          | LOCKED   |
+| `defineProps` / `defineEmits` | LOCKED   |
+| `inject()` in `<script>`      | LOCKED   |
+| `@singleton()` + `inject()`   | LOCKED   |
+| `this.call()`                 | LOCKED   |
+| `_obsMarker` symbol           | INTERNAL |
+| Runtime compiler pipeline     | INTERNAL |
+| Script block merger           | INTERNAL |
+| Cache implementation          | INTERNAL |
+| Page map resolution order     | LOCKED   |
 
 ---
 
@@ -1609,17 +1609,17 @@ packages/
 
 ## Error Reference
 
-| Scenario | Error |
-|----------|-------|
-| `@page()` path does not start with `/` | `@page(): path must start with /` |
-| Duplicate `@page()` path | `make(): duplicate page path '/admin'` |
-| `ctx.render()` called without view plugin | `ctx.render is not a function — is viewPlugin() registered?` |
-| Server service imported in client file | `[aromix] compiler: cannot import server service 'UserService' in client context` |
-| `@singleton()` passed to server `inject()` | `inject(): UserClient is a @singleton() — use inject() in client context` |
-| Template syntax error | `[aromix] compiler: unexpected token at line N in shop.web` |
-| `@include` file not found | `[aromix] compiler: @include file not found: partials/footer.html` |
-| Directive not imported or defined | `[aromix] compiler: unknown directive 'tooltip' in shop.web — import it or define it in this file` |
-| Component import fails at runtime | Component placeholder stays, error logged to console |
+| Scenario                                   | Error                                                                                              |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `@page()` path does not start with `/`     | `@page(): path must start with /`                                                                  |
+| Duplicate `@page()` path                   | `make(): duplicate page path '/admin'`                                                             |
+| `ctx.render()` called without view plugin  | `ctx.render is not a function — is viewPlugin() registered?`                                       |
+| Server service imported in client file     | `[aromix] compiler: cannot import server service 'UserService' in client context`                  |
+| `@singleton()` passed to server `inject()` | `inject(): UserClient is a @singleton() — use inject() in client context`                          |
+| Template syntax error                      | `[aromix] compiler: unexpected token at line N in shop.web`                                        |
+| `@include` file not found                  | `[aromix] compiler: @include file not found: partials/footer.html`                                 |
+| Directive not imported or defined          | `[aromix] compiler: unknown directive 'tooltip' in shop.web — import it or define it in this file` |
+| Component import fails at runtime          | Component placeholder stays, error logged to console                                               |
 
 ---
 

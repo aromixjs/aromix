@@ -59,35 +59,35 @@ ctx.reply(options: ReplyOptions): ReplyValue
 ```ts
 export interface ReplyOptions {
   /** HTTP status code. Must be 100–599. Required. */
-  status: number
+  status: number;
 
   /** Response body. Serialized as JSON by the adapter. Optional. */
-  data?: unknown
+  data?: unknown;
 
   /** Custom response headers. Optional. */
-  headers?: Record<string, string>
+  headers?: Record<string, string>;
 }
 ```
 
 ```ts
 // 200 with body
-return ctx.reply({ status: 200, data: users })
+return ctx.reply({ status: 200, data: users });
 
 // 201 with body
-return ctx.reply({ status: 201, data: newUser })
+return ctx.reply({ status: 201, data: newUser });
 
 // 204 no body
-return ctx.reply({ status: 204 })
+return ctx.reply({ status: 204 });
 
 // 404 with error body
-return ctx.reply({ status: 404, data: { error: 'Not found' } })
+return ctx.reply({ status: 404, data: { error: "Not found" } });
 
 // With custom headers
 return ctx.reply({
-  status:  201,
-  data:    newUser,
-  headers: { 'Location': `/users/${newUser.id}` }
-})
+  status: 201,
+  data: newUser,
+  headers: { Location: `/users/${newUser.id}` },
+});
 ```
 
 ### `ctx.stream(fn, options?)`
@@ -99,24 +99,27 @@ ctx.stream(fn: StreamFn, options?: StreamOptions): StreamValue
 ```
 
 ```ts
-export type StreamFn  = (emit: EmitFn) => CleanupFn | void
-export type EmitFn    = (data: unknown) => void
-export type CleanupFn = () => void
+export type StreamFn = (emit: EmitFn) => CleanupFn | void;
+export type EmitFn = (data: unknown) => void;
+export type CleanupFn = () => void;
 
 export interface StreamOptions {
   /** Response Content-Type. Default: 'text/event-stream' */
-  contentType?: string
+  contentType?: string;
 
   /** Milliseconds between keep-alive ping frames. Optional. */
-  heartbeat?: number
+  heartbeat?: number;
 }
 ```
 
 ```ts
-return ctx.stream((emit) => {
-  const unsub = eventBus.on('update', (data) => emit(data))
-  return () => unsub()   // cleanup on client disconnect
-}, { heartbeat: 15_000 })
+return ctx.stream(
+  (emit) => {
+    const unsub = eventBus.on("update", (data) => emit(data));
+    return () => unsub(); // cleanup on client disconnect
+  },
+  { heartbeat: 15_000 }
+);
 ```
 
 ---
@@ -127,19 +130,19 @@ LOCKED
 
 ```ts
 export interface ReplyValue {
-  readonly _type:   'reply'
-  readonly status:  number
-  readonly data:    unknown | undefined
-  readonly headers: Record<string, string>
+  readonly _type: "reply";
+  readonly status: number;
+  readonly data: unknown | undefined;
+  readonly headers: Record<string, string>;
 }
 
 export interface StreamValue {
-  readonly _type:    'stream'
-  readonly fn:       StreamFn
-  readonly options?: StreamOptions
+  readonly _type: "stream";
+  readonly fn: StreamFn;
+  readonly options?: StreamOptions;
 }
 
-export type HandlerReturn = ReplyValue | StreamValue
+export type HandlerReturn = ReplyValue | StreamValue;
 ```
 
 The `_type` discriminant is used internally by `serve()` to determine how to write the response. Never construct these objects manually — always use `ctx.reply()` or `ctx.stream()`.
@@ -148,14 +151,14 @@ The `_type` discriminant is used internally by `serve()` to determine how to wri
 
 ## Stability
 
-| Symbol | Tier |
-|--------|------|
-| `ctx.reply()` signature | LOCKED |
-| `ReplyOptions` shape | EXTENSIBLE |
-| `ctx.stream()` signature | LOCKED |
-| `StreamOptions` shape | EXTENSIBLE |
-| `ReplyValue` shape | LOCKED |
-| `StreamValue` shape | LOCKED |
+| Symbol                   | Tier       |
+| ------------------------ | ---------- |
+| `ctx.reply()` signature  | LOCKED     |
+| `ReplyOptions` shape     | EXTENSIBLE |
+| `ctx.stream()` signature | LOCKED     |
+| `StreamOptions` shape    | EXTENSIBLE |
+| `ReplyValue` shape       | LOCKED     |
+| `StreamValue` shape      | LOCKED     |
 
 ---
 
@@ -165,16 +168,16 @@ Both methods are attached to `RawContext` — the context object that exists bef
 
 ```ts
 export interface RawContext {
-  readonly body:    unknown
-  readonly headers: Record<string, string | string[] | undefined>
-  readonly cookies: Record<string, string>
-  readonly ip:      string
-  readonly action:  string
-  user?:            JwtPayload
+  readonly body: unknown;
+  readonly headers: Record<string, string | string[] | undefined>;
+  readonly cookies: Record<string, string>;
+  readonly ip: string;
+  readonly action: string;
+  user?: JwtPayload;
 
   // Response methods — available everywhere
-  reply:  (options: ReplyOptions)                        => ReplyValue
-  stream: (fn: StreamFn, options?: StreamOptions)        => StreamValue
+  reply: (options: ReplyOptions) => ReplyValue;
+  stream: (fn: StreamFn, options?: StreamOptions) => StreamValue;
 }
 ```
 
@@ -182,9 +185,9 @@ export interface RawContext {
 
 ```ts
 export interface Context<TBody, THeaders, TCookies> extends RawContext {
-  readonly body:    TBody
-  readonly headers: THeaders
-  readonly cookies: TCookies
+  readonly body: TBody;
+  readonly headers: THeaders;
+  readonly cookies: TCookies;
 }
 ```
 
@@ -199,34 +202,34 @@ export interface Context<TBody, THeaders, TCookies> extends RawContext {
 
 function buildRawContext(req: NormalizedRequest): RawContext {
   const ctx: RawContext = {
-    body:    req.body,
+    body: req.body,
     headers: req.headers,
     cookies: req.cookies,
-    ip:      req.ip,
-    action:  req.action,
+    ip: req.ip,
+    action: req.action,
 
     reply(options: ReplyOptions): ReplyValue {
       if (!Number.isInteger(options.status) || options.status < 100 || options.status > 599) {
-        throw new Error(`[aromix] ctx.reply(): ${options.status} is not a valid HTTP status code.`)
+        throw new Error(`[aromix] ctx.reply(): ${options.status} is not a valid HTTP status code.`);
       }
       return Object.freeze({
-        _type:   'reply'  as const,
-        status:  options.status,
-        data:    options.data,
+        _type: "reply" as const,
+        status: options.status,
+        data: options.data,
         headers: Object.freeze(options.headers ?? {}),
-      })
+      });
     },
 
     stream(fn: StreamFn, options?: StreamOptions): StreamValue {
       return Object.freeze({
-        _type:   'stream' as const,
+        _type: "stream" as const,
         fn,
         options: options ? Object.freeze({ ...options }) : undefined,
-      })
+      });
     },
-  }
+  };
 
-  return ctx
+  return ctx;
 }
 ```
 
@@ -237,12 +240,12 @@ Both `reply()` and `stream()` return frozen plain objects. They do not send the 
 ## How serve() Uses the Return Value
 
 ```ts
-const result = await runMiddlewareChain(entry.middleware, rawCtx, entry.handler)
+const result = await runMiddlewareChain(entry.middleware, rawCtx, entry.handler);
 
-if (result._type === 'reply') {
-  writeReplyResponse(res, result)
-} else if (result._type === 'stream') {
-  writeStreamResponse(res, result)
+if (result._type === "reply") {
+  writeReplyResponse(res, result);
+} else if (result._type === "stream") {
+  writeStreamResponse(res, result);
 }
 ```
 
@@ -251,20 +254,20 @@ if (result._type === 'reply') {
 ```ts
 function writeReplyResponse(res, value: ReplyValue) {
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...value.headers,   // user-provided headers override defaults
-  }
+    "Content-Type": "application/json",
+    ...value.headers, // user-provided headers override defaults
+  };
 
   if (value.data === undefined) {
-    headers['Content-Length'] = '0'
-    res.writeHead(value.status, headers)
-    res.end()
-    return
+    headers["Content-Length"] = "0";
+    res.writeHead(value.status, headers);
+    res.end();
+    return;
   }
 
-  const body = JSON.stringify(value.data)
-  res.writeHead(value.status, headers)
-  res.end(body)
+  const body = JSON.stringify(value.data);
+  res.writeHead(value.status, headers);
+  res.end(body);
 }
 ```
 
@@ -273,26 +276,26 @@ function writeReplyResponse(res, value: ReplyValue) {
 ```ts
 function writeStreamResponse(res, value: StreamValue) {
   res.writeHead(200, {
-    'Content-Type':  value.options?.contentType ?? 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    'Connection':    'keep-alive',
-  })
+    "Content-Type": value.options?.contentType ?? "text/event-stream",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive",
+  });
 
   const emit: EmitFn = (data) => {
-    res.write(`data: ${JSON.stringify(data)}\n\n`)
-  }
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  };
 
-  const cleanup = value.fn(emit)
+  const cleanup = value.fn(emit);
 
-  let heartbeat: ReturnType<typeof setInterval> | undefined
+  let heartbeat: ReturnType<typeof setInterval> | undefined;
   if (value.options?.heartbeat) {
-    heartbeat = setInterval(() => res.write(': ping\n\n'), value.options.heartbeat)
+    heartbeat = setInterval(() => res.write(": ping\n\n"), value.options.heartbeat);
   }
 
-  res.on('close', () => {
-    clearInterval(heartbeat)
-    cleanup?.()
-  })
+  res.on("close", () => {
+    clearInterval(heartbeat);
+    cleanup?.();
+  });
 }
 ```
 
@@ -305,27 +308,27 @@ Since `reply` and `stream` are on `RawContext`, middleware can short-circuit and
 ```ts
 function maintenanceMode(): Middleware {
   return {
-    name: 'maintenanceMode',
+    name: "maintenanceMode",
     run: async (ctx, next) => {
-      if (process.env.MAINTENANCE === 'true') {
-        return ctx.reply({ status: 503, data: { error: 'Service unavailable' } })
+      if (process.env.MAINTENANCE === "true") {
+        return ctx.reply({ status: 503, data: { error: "Service unavailable" } });
       }
-      return next()
-    }
-  }
+      return next();
+    },
+  };
 }
 
 function requireHttps(): Middleware {
   return {
-    name: 'requireHttps',
+    name: "requireHttps",
     run: async (ctx, next) => {
-      const proto = ctx.headers['x-forwarded-proto']
-      if (proto && proto !== 'https') {
-        return ctx.reply({ status: 400, data: { error: 'HTTPS required' } })
+      const proto = ctx.headers["x-forwarded-proto"];
+      if (proto && proto !== "https") {
+        return ctx.reply({ status: 400, data: { error: "HTTPS required" } });
       }
-      return next()
-    }
-  }
+      return next();
+    },
+  };
 }
 ```
 
@@ -336,82 +339,85 @@ function requireHttps(): Middleware {
 ### Success responses
 
 ```ts
-return ctx.reply({ status: 200, data: users })
-return ctx.reply({ status: 201, data: newUser })
-return ctx.reply({ status: 204 })
+return ctx.reply({ status: 200, data: users });
+return ctx.reply({ status: 201, data: newUser });
+return ctx.reply({ status: 204 });
 ```
 
 ### Error responses
 
 ```ts
-return ctx.reply({ status: 404, data: { error: 'Not found' } })
-return ctx.reply({ status: 409, data: { error: 'Email already taken' } })
-return ctx.reply({ status: 422, data: { error: 'Invalid input', fields: errors } })
+return ctx.reply({ status: 404, data: { error: "Not found" } });
+return ctx.reply({ status: 409, data: { error: "Email already taken" } });
+return ctx.reply({ status: 422, data: { error: "Invalid input", fields: errors } });
 ```
 
 ### Custom headers
 
 ```ts
 return ctx.reply({
-  status:  201,
-  data:    newUser,
-  headers: { 'Location': `/users/${newUser.id}` },
-})
+  status: 201,
+  data: newUser,
+  headers: { Location: `/users/${newUser.id}` },
+});
 
 return ctx.reply({
-  status:  200,
-  data:    token,
+  status: 200,
+  data: token,
   headers: {
-    'Set-Cookie':  `session=${token}; HttpOnly; Secure`,
-    'Cache-Control': 'no-store',
+    "Set-Cookie": `session=${token}; HttpOnly; Secure`,
+    "Cache-Control": "no-store",
   },
-})
+});
 ```
 
 ### Full handler example
 
 ```ts
 @provide()
-@namespace('user', [guard()])
+@namespace("user", [guard()])
 class UserHandler {
-  private users = inject(UserService)
+  private users = inject(UserService);
 
-  @action('create')
+  @action("create")
   async create(ctx = input(CreateUserSchema)) {
-    const r = await this.users.create(ctx.body)
+    const r = await this.users.create(ctx.body);
 
-    if (!r.ok && r.err === 'email_taken') {
-      return ctx.reply({ status: 409, data: { error: 'Email already taken' } })
+    if (!r.ok && r.err === "email_taken") {
+      return ctx.reply({ status: 409, data: { error: "Email already taken" } });
     }
     if (!r.ok) {
-      return ctx.reply({ status: 500, data: { error: 'Something went wrong' } })
+      return ctx.reply({ status: 500, data: { error: "Something went wrong" } });
     }
 
     return ctx.reply({
-      status:  201,
-      data:    r.data,
-      headers: { 'Location': `/users/${r.data.id}` },
-    })
+      status: 201,
+      data: r.data,
+      headers: { Location: `/users/${r.data.id}` },
+    });
   }
 
-  @action('remove')
+  @action("remove")
   async remove(ctx = input(RemoveUserSchema)) {
-    const r = await this.users.remove(ctx.body.id)
-    if (!r.ok) return ctx.reply({ status: 404, data: { error: 'Not found' } })
-    return ctx.reply({ status: 204 })
+    const r = await this.users.remove(ctx.body.id);
+    if (!r.ok) return ctx.reply({ status: 404, data: { error: "Not found" } });
+    return ctx.reply({ status: 204 });
   }
 
-  @action('live')
+  @action("live")
   async live(ctx = input()) {
-    const userId = ctx.user!.sub
+    const userId = ctx.user!.sub;
 
-    return ctx.stream((emit) => {
-      const handler = (event: UserEvent) => {
-        if (event.userId === userId) emit(event)
-      }
-      eventBus.on('user', handler)
-      return () => eventBus.off('user', handler)
-    }, { heartbeat: 20_000 })
+    return ctx.stream(
+      (emit) => {
+        const handler = (event: UserEvent) => {
+          if (event.userId === userId) emit(event);
+        };
+        eventBus.on("user", handler);
+        return () => eventBus.off("user", handler);
+      },
+      { heartbeat: 20_000 }
+    );
   }
 }
 ```
@@ -423,11 +429,13 @@ class UserHandler {
 This design change affects two previous blueprints. Both need to be updated after this is confirmed.
 
 **Blueprint 05 — input():**
+
 - `Context<T>` now extends `RawContext` instead of being a separate interface
 - `RawContext` now has `reply` and `stream` as methods
 - The `input()` return type carries these methods through automatically
 
 **Blueprint 03 — Middleware:**
+
 - The `MiddlewareFn` signature is unchanged — middleware still receives `RawContext` and `next`
 - Middleware can now return `ctx.reply(...)` instead of the removed standalone `reply()`
 - The short-circuit pattern changes from `throw reply(...)` to `return ctx.reply(...)`
@@ -436,11 +444,11 @@ This design change affects two previous blueprints. Both need to be updated afte
 
 ## Error Reference
 
-| Scenario | Error |
-|----------|-------|
-| Invalid status code | `ctx.reply(): 999 is not a valid HTTP status code` |
-| Handler returns `undefined` | 500 — logged server-side, never exposed to client |
-| `ctx.stream()` fn throws synchronously | 500 — logged server-side |
+| Scenario                               | Error                                              |
+| -------------------------------------- | -------------------------------------------------- |
+| Invalid status code                    | `ctx.reply(): 999 is not a valid HTTP status code` |
+| Handler returns `undefined`            | 500 — logged server-side, never exposed to client  |
+| `ctx.stream()` fn throws synchronously | 500 — logged server-side                           |
 
 ---
 

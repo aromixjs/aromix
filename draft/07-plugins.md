@@ -36,14 +36,14 @@ LOCKED
 ```ts
 export interface AromixPlugin {
   /** Unique name. Used by the dev panel, compiler, and duplicate detection. */
-  readonly name: string
+  readonly name: string;
 
   /**
    * Called by make() before the dispatch map is assembled.
    * The plugin receives the full PluginApp builder and registers
    * whatever it needs into it.
    */
-  install(app: PluginApp): void
+  install(app: PluginApp): void;
 }
 ```
 
@@ -52,12 +52,12 @@ A plugin is always created by a factory function that returns this object. The f
 ```ts
 function authPlugin(options: { secret: string }): AromixPlugin {
   return {
-    name: 'auth',
+    name: "auth",
     install(app) {
-      app.addMiddleware(bearerGuard(options.secret))
-      app.extendCtx('auth', (rawCtx) => createAuthContext(rawCtx, options.secret))
-    }
-  }
+      app.addMiddleware(bearerGuard(options.secret));
+      app.extendCtx("auth", (rawCtx) => createAuthContext(rawCtx, options.secret));
+    },
+  };
 }
 ```
 
@@ -66,11 +66,11 @@ For plugins with no options the factory still returns the same shape — it just
 ```ts
 function loggingPlugin(): AromixPlugin {
   return {
-    name: 'logging',
+    name: "logging",
     install(app) {
-      app.addMiddleware(requestLogger())
-    }
-  }
+      app.addMiddleware(requestLogger());
+    },
+  };
 }
 ```
 
@@ -84,12 +84,8 @@ Plugins are declared in `make({ plugins: [] })`. They run in order before the di
 const app = make({
   middleware: [requireHttps()],
   namespaces: [AuthHandler, UserHandler],
-  plugins: [
-    authPlugin({ secret: process.env.JWT_SECRET! }),
-    loggingPlugin(),
-    panelPlugin({ path: '/__panel' }),
-  ],
-})
+  plugins: [authPlugin({ secret: process.env.JWT_SECRET! }), loggingPlugin(), panelPlugin({ path: "/__panel" })],
+});
 ```
 
 Plugin order matters for middleware — plugins registered earlier have their middleware run first, before plugins registered later. Global middleware declared directly on `make()` runs before all plugin middleware.
@@ -112,19 +108,19 @@ export interface PluginApp {
    * Add middleware that runs globally for every action.
    * Runs after make() global middleware, in plugin registration order.
    */
-  addMiddleware(...middleware: Middleware[]): void
+  addMiddleware(...middleware: Middleware[]): void;
 
   /**
    * Register @namespace classes into the application.
    * Same as passing them in make({ namespaces: [] }).
    */
-  addNamespace(...ctors: Function[]): void
+  addNamespace(...ctors: Function[]): void;
 
   /**
    * Merge a fully assembled sub-app into the dispatch map.
    * All action keys from the sub-app are prefixed with actionPrefix.
    */
-  addSubApp(subApp: AromixApp, actionPrefix: string): void
+  addSubApp(subApp: AromixApp, actionPrefix: string): void;
 
   /**
    * Attach a typed property to ctx for every request.
@@ -135,17 +131,14 @@ export interface PluginApp {
    * The factory runs when RawContext is built, before the middleware chain
    * starts. The property is available in middleware and handlers.
    */
-  extendCtx<TKey extends string, TValue>(
-    key:     TKey,
-    factory: (ctx: RawContext) => TValue
-  ): void
+  extendCtx<TKey extends string, TValue>(key: TKey, factory: (ctx: RawContext) => TValue): void;
 
   /**
    * Register a @provide() class as a well-known service.
    * Equivalent to calling inject() on it at startup to ensure
    * it is instantiated and ready before requests arrive.
    */
-  addService(ctor: Function): void
+  addService(ctor: Function): void;
 }
 ```
 
@@ -159,23 +152,23 @@ The most powerful plugin capability. `app.extendCtx()` allows a plugin to attach
 // Plugin definition
 function authPlugin(options: { secret: string }): AromixPlugin {
   return {
-    name: 'auth',
+    name: "auth",
     install(app) {
-      app.extendCtx('auth', (rawCtx) => ({
-        getUser: () => verifyToken(rawCtx.headers['authorization'], options.secret),
-      }))
-    }
-  }
+      app.extendCtx("auth", (rawCtx) => ({
+        getUser: () => verifyToken(rawCtx.headers["authorization"], options.secret),
+      }));
+    },
+  };
 }
 
 // In a handler — ctx.auth is fully typed
-@namespace('user')
+@namespace("user")
 class UserHandler {
-  @action('me')
+  @action("me")
   async me(ctx = input()) {
-    const user = await ctx.auth.getUser()
-    if (!user) return ctx.reply({ status: 401, data: { error: 'Unauthorized' } })
-    return ctx.reply({ status: 200, data: user })
+    const user = await ctx.auth.getUser();
+    if (!user) return ctx.reply({ status: 401, data: { error: "Unauthorized" } });
+    return ctx.reply({ status: 200, data: user });
   }
 }
 ```
@@ -186,13 +179,13 @@ class UserHandler {
 
 ```ts
 // @aromix/auth — types/index.d.ts
-import '@aromix/core'
+import "@aromix/core";
 
-declare module '@aromix/core' {
+declare module "@aromix/core" {
   interface RawContext {
     auth: {
-      getUser: () => Promise<JwtPayload | null>
-    }
+      getUser: () => Promise<JwtPayload | null>;
+    };
   }
 }
 ```
@@ -206,57 +199,60 @@ When the user installs `@aromix/auth`, this augmentation is picked up automatica
 ### Auth Plugin (`@aromix/auth`)
 
 ```ts
-import { AromixPlugin, PluginApp } from '@aromix/core'
+import { AromixPlugin, PluginApp } from "@aromix/core";
 
 interface AuthOptions {
-  secret:      string
-  cookieName?: string
+  secret: string;
+  cookieName?: string;
 }
 
 function authPlugin(options: AuthOptions): AromixPlugin {
   return {
-    name: 'auth',
+    name: "auth",
     install(app: PluginApp) {
       // Add bearer token verification to ctx
-      app.extendCtx('auth', (rawCtx) => {
-        const header = rawCtx.headers['authorization'] as string | undefined
-        const cookie = rawCtx.cookies[options.cookieName ?? 'session']
-        const token  = header?.startsWith('Bearer ') ? header.slice(7) : cookie
+      app.extendCtx("auth", (rawCtx) => {
+        const header = rawCtx.headers["authorization"] as string | undefined;
+        const cookie = rawCtx.cookies[options.cookieName ?? "session"];
+        const token = header?.startsWith("Bearer ") ? header.slice(7) : cookie;
 
         return {
           async getUser(): Promise<JwtPayload | null> {
-            if (!token) return null
-            try { return await verifyJwt(token, options.secret) }
-            catch { return null }
-          }
-        }
-      })
+            if (!token) return null;
+            try {
+              return await verifyJwt(token, options.secret);
+            } catch {
+              return null;
+            }
+          },
+        };
+      });
 
       // Add guard() middleware factory
-      app.addMiddleware(/* guard is used per-namespace, not global */)
-    }
-  }
+      app.addMiddleware(/* guard is used per-namespace, not global */);
+    },
+  };
 }
 ```
 
 ### Dev Panel Plugin (`@aromix/panel`)
 
 ```ts
-import { AromixPlugin, PluginApp, make } from '@aromix/core'
+import { AromixPlugin, PluginApp, make } from "@aromix/core";
 
 interface PanelOptions {
-  path?: string   // default: '/__panel'
+  path?: string; // default: '/__panel'
 }
 
 function panelPlugin(options: PanelOptions = {}): AromixPlugin {
   return {
-    name: 'panel',
+    name: "panel",
     install(app: PluginApp) {
       // Register panel's own namespace as a sub-app
-      const panelApp = make({ namespaces: [PanelHandler] })
-      app.addSubApp(panelApp, options.path ?? '__panel')
-    }
-  }
+      const panelApp = make({ namespaces: [PanelHandler] });
+      app.addSubApp(panelApp, options.path ?? "__panel");
+    },
+  };
 }
 ```
 
@@ -265,29 +261,29 @@ function panelPlugin(options: PanelOptions = {}): AromixPlugin {
 ```ts
 function mvcPlugin(): AromixPlugin {
   return {
-    name: 'mvc',
+    name: "mvc",
     install(app: PluginApp) {
       // Attach render helper to ctx
-      app.extendCtx('mvc', (rawCtx) => ({
+      app.extendCtx("mvc", (rawCtx) => ({
         render(view: string, data?: object): ReplyValue {
-          const html = renderTemplate(view, data)
+          const html = renderTemplate(view, data);
           return rawCtx.reply({
-            status:  200,
-            data:    html,
-            headers: { 'Content-Type': 'text/html' },
-          })
-        }
-      }))
-    }
-  }
+            status: 200,
+            data: html,
+            headers: { "Content-Type": "text/html" },
+          });
+        },
+      }));
+    },
+  };
 }
 
 // In a handler
-@namespace('page')
+@namespace("page")
 class PageHandler {
-  @action('home')
+  @action("home")
   async home(ctx = input()) {
-    return ctx.mvc.render('home', { title: 'Welcome' })
+    return ctx.mvc.render("home", { title: "Welcome" });
   }
 }
 ```
@@ -296,13 +292,13 @@ class PageHandler {
 
 ## Stability
 
-| Symbol | Tier |
-|--------|------|
-| `AromixPlugin` interface | LOCKED |
-| `PluginApp` methods | LOCKED |
-| `PluginApp` interface itself | EXTENSIBLE |
-| Plugin registration order behavior | LOCKED |
-| Global middleware execution order | LOCKED |
+| Symbol                             | Tier       |
+| ---------------------------------- | ---------- |
+| `AromixPlugin` interface           | LOCKED     |
+| `PluginApp` methods                | LOCKED     |
+| `PluginApp` interface itself       | EXTENSIBLE |
+| Plugin registration order behavior | LOCKED     |
+| Global middleware execution order  | LOCKED     |
 
 ---
 
@@ -316,25 +312,35 @@ class PageHandler {
 // Inside make()
 
 function buildPluginApp(): PluginApp & {
-  _middleware:  Middleware[]
-  _namespaces:  Function[]
-  _subApps:     SubAppEntry[]
-  _ctxExtensions: CtxExtension[]
-  _services:    Function[]
+  _middleware: Middleware[];
+  _namespaces: Function[];
+  _subApps: SubAppEntry[];
+  _ctxExtensions: CtxExtension[];
+  _services: Function[];
 } {
   return {
-    _middleware:    [],
-    _namespaces:    [],
-    _subApps:       [],
+    _middleware: [],
+    _namespaces: [],
+    _subApps: [],
     _ctxExtensions: [],
-    _services:      [],
+    _services: [],
 
-    addMiddleware(...mw) { this._middleware.push(...mw) },
-    addNamespace(...ctors) { this._namespaces.push(...ctors) },
-    addSubApp(app, prefix) { this._subApps.push({ app, actionPrefix: prefix }) },
-    extendCtx(key, factory) { this._ctxExtensions.push({ key, factory }) },
-    addService(ctor) { this._services.push(ctor) },
-  }
+    addMiddleware(...mw) {
+      this._middleware.push(...mw);
+    },
+    addNamespace(...ctors) {
+      this._namespaces.push(...ctors);
+    },
+    addSubApp(app, prefix) {
+      this._subApps.push({ app, actionPrefix: prefix });
+    },
+    extendCtx(key, factory) {
+      this._ctxExtensions.push({ key, factory });
+    },
+    addService(ctor) {
+      this._services.push(ctor);
+    },
+  };
 }
 ```
 
@@ -344,36 +350,35 @@ function buildPluginApp(): PluginApp & {
 function make(options: MakeOptions = {}): AromixApp {
   const {
     middleware: globalMiddleware = [],
-    namespaces:  userNamespaces  = [],
-    subApps:     userSubApps     = [],
-    plugins:     userPlugins     = [],
-    endpoint = '/api',
-  } = options
+    namespaces: userNamespaces = [],
+    subApps: userSubApps = [],
+    plugins: userPlugins = [],
+    endpoint = "/api",
+  } = options;
 
   // 1. Run all plugins — collect their contributions
-  const pluginApp = buildPluginApp()
-  const seenPluginNames = new Set<string>()
+  const pluginApp = buildPluginApp();
+  const seenPluginNames = new Set<string>();
 
   for (const plugin of userPlugins) {
     if (seenPluginNames.has(plugin.name)) {
       throw new Error(
-        `[aromix] make(): duplicate plugin name '${plugin.name}'. ` +
-        `Each plugin must have a unique name.`
-      )
+        `[aromix] make(): duplicate plugin name '${plugin.name}'. ` + `Each plugin must have a unique name.`
+      );
     }
-    seenPluginNames.add(plugin.name)
-    plugin.install(pluginApp)
+    seenPluginNames.add(plugin.name);
+    plugin.install(pluginApp);
   }
 
   // 2. Merge plugin contributions with user declarations
   // Global make() middleware always runs first
-  const allMiddleware = [...globalMiddleware, ...pluginApp._middleware]
-  const allNamespaces = [...userNamespaces,   ...pluginApp._namespaces]
-  const allSubApps    = [...userSubApps,      ...pluginApp._subApps]
+  const allMiddleware = [...globalMiddleware, ...pluginApp._middleware];
+  const allNamespaces = [...userNamespaces, ...pluginApp._namespaces];
+  const allSubApps = [...userSubApps, ...pluginApp._subApps];
 
   // Warm up any services the plugins registered
   for (const ctor of pluginApp._services) {
-    inject(ctor)   // ensures singleton is instantiated before requests arrive
+    inject(ctor); // ensures singleton is instantiated before requests arrive
   }
 
   // 3. Continue with normal make() assembly using merged contributions
@@ -382,8 +387,8 @@ function make(options: MakeOptions = {}): AromixApp {
   return Object.freeze({
     endpoint,
     dispatch,
-    ctxExtensions: Object.freeze(pluginApp._ctxExtensions),  // passed to serve()
-  })
+    ctxExtensions: Object.freeze(pluginApp._ctxExtensions), // passed to serve()
+  });
 }
 ```
 
@@ -435,13 +440,13 @@ make() global middleware
 
 ## Validation make() Performs on Plugins
 
-| Check | Behavior |
-|-------|----------|
-| Duplicate plugin name | Throws |
-| Plugin `name` is empty string | Throws |
-| `addSubApp` actionPrefix fails pattern check | Throws (same rules as SubAppEntry) |
-| `addNamespace` with class not decorated `@namespace()` | Throws during assembly |
-| `extendCtx` key conflicts with a core ctx property | Throws |
+| Check                                                  | Behavior                           |
+| ------------------------------------------------------ | ---------------------------------- |
+| Duplicate plugin name                                  | Throws                             |
+| Plugin `name` is empty string                          | Throws                             |
+| `addSubApp` actionPrefix fails pattern check           | Throws (same rules as SubAppEntry) |
+| `addNamespace` with class not decorated `@namespace()` | Throws during assembly             |
+| `extendCtx` key conflicts with a core ctx property     | Throws                             |
 
 Reserved ctx keys that plugins cannot use: `body`, `headers`, `cookies`, `ip`, `action`, `user`, `reply`, `stream`.
 
@@ -449,12 +454,12 @@ Reserved ctx keys that plugins cannot use: `body`, `headers`, `cookies`, `ip`, `
 
 ## Error Reference
 
-| Scenario | Error |
-|----------|-------|
-| Duplicate plugin name | `make(): duplicate plugin name 'auth'` |
-| Empty plugin name | `make(): plugin name must be a non-empty string` |
+| Scenario                      | Error                                                                 |
+| ----------------------------- | --------------------------------------------------------------------- |
+| Duplicate plugin name         | `make(): duplicate plugin name 'auth'`                                |
+| Empty plugin name             | `make(): plugin name must be a non-empty string`                      |
 | `extendCtx` with reserved key | `make(): 'reply' is a reserved ctx key and cannot be used by plugins` |
-| Plugin `install` throws | Original error propagates — not wrapped |
+| Plugin `install` throws       | Original error propagates — not wrapped                               |
 
 ---
 

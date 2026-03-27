@@ -25,14 +25,11 @@ LOCKED — This interface is final.
 
 ```ts
 export interface Middleware {
-  readonly name: string
-  readonly run:  MiddlewareFn
+  readonly name: string;
+  readonly run: MiddlewareFn;
 }
 
-export type MiddlewareFn = (
-  ctx:  RawContext,
-  next: () => Promise<HandlerReturn>
-) => Promise<HandlerReturn>
+export type MiddlewareFn = (ctx: RawContext, next: () => Promise<HandlerReturn>) => Promise<HandlerReturn>;
 ```
 
 **Why an object and not a plain function:**
@@ -55,47 +52,47 @@ A `run` function that does neither violates the contract. The framework detects 
 Middleware is always created via a factory function that returns a `Middleware` object. State lives in the factory closure, not on the object itself.
 
 ```ts
-import { Middleware, RawContext } from '@aromix/core'
+import { Middleware, RawContext } from "@aromix/core";
 
 // Stateless middleware — factory returns the same shape every time
 function requireHttps(): Middleware {
   return {
-    name: 'requireHttps',
+    name: "requireHttps",
     run: async (ctx, next) => {
-      const proto = ctx.headers['x-forwarded-proto']
-      if (proto && proto !== 'https') {
-        return ctx.reply({ status: 400, data: { error: 'HTTPS required' } })
+      const proto = ctx.headers["x-forwarded-proto"];
+      if (proto && proto !== "https") {
+        return ctx.reply({ status: 400, data: { error: "HTTPS required" } });
       }
-      return next()
-    }
-  }
+      return next();
+    },
+  };
 }
 
 // Stateful middleware — state lives in the closure, not on the object
 function rateLimit(max: number, windowMs: number): Middleware {
-  const counters = new Map<string, { count: number; reset: number }>()
+  const counters = new Map<string, { count: number; reset: number }>();
 
   return {
-    name: 'rateLimit',
+    name: "rateLimit",
     run: async (ctx, next) => {
-      const now   = Date.now()
-      const entry = counters.get(ctx.ip) ?? { count: 0, reset: now + windowMs }
+      const now = Date.now();
+      const entry = counters.get(ctx.ip) ?? { count: 0, reset: now + windowMs };
 
       if (now > entry.reset) {
-        entry.count = 0
-        entry.reset = now + windowMs
+        entry.count = 0;
+        entry.reset = now + windowMs;
       }
 
-      entry.count++
-      counters.set(ctx.ip, entry)
+      entry.count++;
+      counters.set(ctx.ip, entry);
 
       if (entry.count > max) {
-        return ctx.reply({ status: 429, data: { error: 'Too many requests' } })
+        return ctx.reply({ status: 429, data: { error: "Too many requests" } });
       }
 
-      return next()
-    }
-  }
+      return next();
+    },
+  };
 }
 ```
 
@@ -111,7 +108,7 @@ Global middleware runs for every action in the entire application, regardless of
 const app = make({
   middleware: [requireHttps(), rateLimit(100, 60_000)],
   namespaces: [AuthHandler, UserHandler, PostHandler],
-})
+});
 ```
 
 Use global middleware for concerns that genuinely apply to every single action — HTTPS enforcement, global rate limiting, request ID attachment, universal logging.
@@ -181,26 +178,26 @@ Any middleware can stop the chain by returning `ctx.reply()` instead of calling 
 ```ts
 function guard(): Middleware {
   return {
-    name: 'guard',
+    name: "guard",
     run: async (ctx, next) => {
-      if (!ctx.headers['authorization']) {
-        return ctx.reply({ status: 401, data: { error: 'Unauthorized' } })
+      if (!ctx.headers["authorization"]) {
+        return ctx.reply({ status: 401, data: { error: "Unauthorized" } });
       }
-      return next()
-    }
-  }
+      return next();
+    },
+  };
 }
 
 function maintenanceMode(): Middleware {
   return {
-    name: 'maintenanceMode',
+    name: "maintenanceMode",
     run: async (ctx, next) => {
-      if (process.env.MAINTENANCE === 'true') {
-        return ctx.reply({ status: 503, data: { error: 'Service unavailable' } })
+      if (process.env.MAINTENANCE === "true") {
+        return ctx.reply({ status: 503, data: { error: "Service unavailable" } });
       }
-      return next()
-    }
-  }
+      return next();
+    },
+  };
 }
 ```
 
@@ -214,16 +211,16 @@ Middleware receives `RawContext` — the unvalidated request context. Middleware
 
 ```ts
 export interface RawContext {
-  readonly body:    unknown
-  readonly headers: Record<string, string | string[] | undefined>
-  readonly cookies: Record<string, string>
-  readonly ip:      string
-  readonly action:  string   // fully-prefixed e.g. 'user:create'
-  user?:            JwtPayload  // attached by authentication middleware
+  readonly body: unknown;
+  readonly headers: Record<string, string | string[] | undefined>;
+  readonly cookies: Record<string, string>;
+  readonly ip: string;
+  readonly action: string; // fully-prefixed e.g. 'user:create'
+  user?: JwtPayload; // attached by authentication middleware
 
   // Response methods
-  reply:  (options: ReplyOptions)                 => ReplyValue
-  stream: (fn: StreamFn, options?: StreamOptions) => StreamValue
+  reply: (options: ReplyOptions) => ReplyValue;
+  stream: (fn: StreamFn, options?: StreamOptions) => StreamValue;
 }
 ```
 
@@ -238,17 +235,17 @@ The only permitted mutation on `RawContext` is attaching `ctx.user` inside authe
 LOCKED — `guard()` returns a `Middleware` with `name: 'guard'`. The name `'guard'` is reserved and must not be used by custom middleware.
 
 ```ts
-function guard(): Middleware
+function guard(): Middleware;
 ```
 
 ```ts
-import { guard } from '@aromix/core'
+import { guard } from "@aromix/core";
 
-@namespace('user', [guard()])
+@namespace("user", [guard()])
 class UserHandler {
-  @action('list')
+  @action("list")
   async list(ctx = input(ListUsersSchema)) {
-    return ctx.reply({ status: 200, data: { user: ctx.user } })
+    return ctx.reply({ status: 200, data: { user: ctx.user } });
   }
 }
 ```
@@ -258,26 +255,26 @@ class UserHandler {
 ```ts
 function guard(): Middleware {
   return {
-    name: 'guard',
+    name: "guard",
     run: async (ctx, next) => {
-      const authHeader = ctx.headers['authorization'] as string | undefined
+      const authHeader = ctx.headers["authorization"] as string | undefined;
 
-      if (!authHeader?.startsWith('Bearer ')) {
-        return ctx.reply({ status: 401, data: { error: 'Unauthorized' } })
+      if (!authHeader?.startsWith("Bearer ")) {
+        return ctx.reply({ status: 401, data: { error: "Unauthorized" } });
       }
 
-      const token = authHeader.slice(7)
+      const token = authHeader.slice(7);
 
       try {
-        const payload = await verifyJwt(token)   // uses jose internally
-        ctx.user = payload as JwtPayload          // the single blessed ctx mutation
+        const payload = await verifyJwt(token); // uses jose internally
+        ctx.user = payload as JwtPayload; // the single blessed ctx mutation
       } catch {
-        return ctx.reply({ status: 401, data: { error: 'Unauthorized' } })
+        return ctx.reply({ status: 401, data: { error: "Unauthorized" } });
       }
 
-      return next()
-    }
-  }
+      return next();
+    },
+  };
 }
 ```
 
@@ -285,9 +282,9 @@ JWT secret handling: `guard()` reads `process.env.JWT_SECRET` at call time. Vali
 
 ```ts
 serve(app).listen(3000, async () => {
-  if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET is required.')
-  await inject(Database).client.$connect()
-})
+  if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is required.");
+  await inject(Database).client.$connect();
+});
 ```
 
 ---
@@ -298,34 +295,34 @@ serve(app).listen(3000, async () => {
 // packages/core/src/middleware.ts
 
 async function runMiddlewareChain(
-  chain:   ReadonlyArray<Middleware>,
-  ctx:     RawContext,
+  chain: ReadonlyArray<Middleware>,
+  ctx: RawContext,
   handler: () => Promise<HandlerReturn>
 ): Promise<HandlerReturn> {
-  let index = 0
+  let index = 0;
 
   const next = async (): Promise<HandlerReturn> => {
     if (index < chain.length) {
-      const mw = chain[index++]
+      const mw = chain[index++];
 
-      const result = await mw.run(ctx, next)
+      const result = await mw.run(ctx, next);
 
       // Contract enforcement — middleware must return a HandlerReturn
       if (result === undefined || result === null) {
         throw new Error(
           `[aromix] Middleware '${mw.name}' did not return a value. ` +
-          `The run function must either return next() or return reply().`
-        )
+            `The run function must either return next() or return reply().`
+        );
       }
 
-      return result
+      return result;
     }
 
     // All middleware passed — run the handler
-    return ctxStorage.run(ctx, handler)
-  }
+    return ctxStorage.run(ctx, handler);
+  };
 
-  return next()
+  return next();
 }
 ```
 
@@ -335,17 +332,17 @@ async function runMiddlewareChain(
 // Inside make() — for each action
 
 const mergedChain: Middleware[] = [
-  ...globalMiddleware,        // from make() options
-  ...nsEntry.middleware,      // from @namespace()
-  ...actionEntry.middleware,  // from @action()
-]
+  ...globalMiddleware, // from make() options
+  ...nsEntry.middleware, // from @namespace()
+  ...actionEntry.middleware, // from @action()
+];
 
 dispatchMap.set(fullKey, {
-  action:     fullKey,
+  action: fullKey,
   middleware: Object.freeze(mergedChain),
-  handler:    (instance as any)[actionEntry.methodKey].bind(instance),
-  streaming:  false,
-})
+  handler: (instance as any)[actionEntry.methodKey].bind(instance),
+  streaming: false,
+});
 ```
 
 The merged chain is frozen. It cannot be mutated after `make()` returns.
@@ -363,28 +360,28 @@ The merged chain is frozen. It cannot be mutated after `make()` returns.
 
 ## Stability
 
-| Symbol | Tier |
-|--------|------|
-| `Middleware` interface | LOCKED |
-| `MiddlewareFn` type | LOCKED |
-| `guard()` | LOCKED |
-| Global middleware on `make()` | LOCKED |
-| Execution order `global → namespace → action → handler` | LOCKED |
-| Chain execution internals | INTERNAL |
+| Symbol                                                  | Tier     |
+| ------------------------------------------------------- | -------- |
+| `Middleware` interface                                  | LOCKED   |
+| `MiddlewareFn` type                                     | LOCKED   |
+| `guard()`                                               | LOCKED   |
+| Global middleware on `make()`                           | LOCKED   |
+| Execution order `global → namespace → action → handler` | LOCKED   |
+| Chain execution internals                               | INTERNAL |
 
 ---
 
 ## Complete Example
 
 ```ts
-import { make }  from '@aromix/core'
-import { serve } from 'aromix/node'
+import { make } from "@aromix/core";
+import { serve } from "aromix/node";
 
 // Global — runs for every action
 const app = make({
   middleware: [requireHttps(), requestLogger()],
   namespaces: [AuthHandler, UserHandler, AdminHandler],
-})
+});
 
 // 'auth:login'    chain: requireHttps → requestLogger → handler
 // 'auth:logout'   chain: requireHttps → requestLogger → handler
@@ -393,21 +390,21 @@ const app = make({
 // 'user:remove'   chain: requireHttps → requestLogger → guard → adminOnly → auditLog → handler
 
 serve(app).listen(3000, async () => {
-  if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET is required.')
-  await inject(Database).client.$connect()
-  console.log('Server ready on port 3000')
-})
+  if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is required.");
+  await inject(Database).client.$connect();
+  console.log("Server ready on port 3000");
+});
 ```
 
 ---
 
 ## Error Reference
 
-| Scenario | Error |
-|----------|-------|
-| Middleware `run` returns `undefined` or `null` | `Middleware 'name' did not return a value` |
-| Duplicate middleware name in the same chain | `make(): duplicate middleware name 'name' in chain for 'user:list'` |
-| Reserved name `'guard'` used by custom middleware | `make(): 'guard' is a reserved middleware name` |
+| Scenario                                          | Error                                                               |
+| ------------------------------------------------- | ------------------------------------------------------------------- |
+| Middleware `run` returns `undefined` or `null`    | `Middleware 'name' did not return a value`                          |
+| Duplicate middleware name in the same chain       | `make(): duplicate middleware name 'name' in chain for 'user:list'` |
+| Reserved name `'guard'` used by custom middleware | `make(): 'guard' is a reserved middleware name`                     |
 
 ---
 

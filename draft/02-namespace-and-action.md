@@ -24,13 +24,13 @@ Neither decorator starts anything, binds any ports, or executes any logic. They 
 ### `@namespace()`
 
 ```ts
-function namespace(prefix: string, middleware?: Middleware[]): ClassDecorator
+function namespace(prefix: string, middleware?: Middleware[]): ClassDecorator;
 ```
 
-| Parameter | Type | Required | Constraints |
-|-----------|------|----------|-------------|
-| `prefix` | `string` | Yes | Lowercase alphanumeric, hyphens and underscores allowed. No colons. Max 64 characters. Pattern: `/^[a-z][a-z0-9_-]*$/` |
-| `middleware` | `Middleware[]` | No | Applies to every action in the class. Runs before action-level middleware. |
+| Parameter    | Type           | Required | Constraints                                                                                                            |
+| ------------ | -------------- | -------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `prefix`     | `string`       | Yes      | Lowercase alphanumeric, hyphens and underscores allowed. No colons. Max 64 characters. Pattern: `/^[a-z][a-z0-9_-]*$/` |
+| `middleware` | `Middleware[]` | No       | Applies to every action in the class. Runs before action-level middleware.                                             |
 
 ```ts
 import { namespace, guard } from '@aromix/core'
@@ -47,50 +47,50 @@ class UserHandler { ... }
 `@namespace()` classes are instantiated directly by `make()` — they do not need `@provide()` and are not part of the DI registry. `inject()` is a plain function that can be called anywhere, including inside a handler class to resolve services.
 
 ```ts
-@namespace('user', [guard()])
+@namespace("user", [guard()])
 class UserHandler {
-  private users = inject(UserService)   // inject() works here — no @provide() needed on UserHandler
+  private users = inject(UserService); // inject() works here — no @provide() needed on UserHandler
 }
 ```
 
 ### `@action()`
 
 ```ts
-function action(name: string, middleware?: Middleware[]): MethodDecorator
+function action(name: string, middleware?: Middleware[]): MethodDecorator;
 ```
 
-| Parameter | Type | Required | Constraints |
-|-----------|------|----------|-------------|
-| `name` | `string` | Yes | Lowercase alphanumeric, hyphens and underscores allowed. No colons — colon is the namespace separator and is reserved. Pattern: `/^[a-z][a-z0-9_-]*$/` |
-| `middleware` | `Middleware[]` | No | Applies to this action only. Runs after namespace-level middleware. |
+| Parameter    | Type           | Required | Constraints                                                                                                                                            |
+| ------------ | -------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `name`       | `string`       | Yes      | Lowercase alphanumeric, hyphens and underscores allowed. No colons — colon is the namespace separator and is reserved. Pattern: `/^[a-z][a-z0-9_-]*$/` |
+| `middleware` | `Middleware[]` | No       | Applies to this action only. Runs after namespace-level middleware.                                                                                    |
 
 ```ts
-import { action, guard, inject, namespace, input, reply } from '@aromix/core'
+import { action, guard, inject, namespace, input, reply } from "@aromix/core";
 
-@namespace('user', [guard()])
+@namespace("user", [guard()])
 class UserHandler {
-  private users = inject(UserService)
+  private users = inject(UserService);
 
-  @action('list')
+  @action("list")
   async list(ctx = input(ListUsersSchema)) {
-    const r = await this.users.findAll(ctx.body)
-    return reply(200, r.data)
+    const r = await this.users.findAll(ctx.body);
+    return reply(200, r.data);
   }
 
-  @action('create')
+  @action("create")
   async create(ctx = input(CreateUserSchema)) {
-    const r = await this.users.create(ctx.body)
-    if (!r.ok) return reply(409, { error: 'Email already taken' })
-    return reply(201, r.data)
+    const r = await this.users.create(ctx.body);
+    if (!r.ok) return reply(409, { error: "Email already taken" });
+    return reply(201, r.data);
   }
 
   // Action-level middleware stacks on top of namespace middleware
   // Execution order: guard() -> adminOnly() -> handler
-  @action('remove', [adminOnly()])
+  @action("remove", [adminOnly()])
   async remove(ctx = input(RemoveUserSchema)) {
-    const r = await this.users.remove(ctx.body.id)
-    if (!r.ok) return reply(404, { error: 'User not found' })
-    return reply(204)
+    const r = await this.users.remove(ctx.body.id);
+    if (!r.ok) return reply(404, { error: "User not found" });
+    return reply(204);
   }
 }
 ```
@@ -147,13 +147,13 @@ class UserHandler {
 
 ## Stability
 
-| Symbol | Tier |
-|--------|------|
-| `@namespace()` signature | LOCKED |
-| `@action()` signature | LOCKED |
-| Full action key format `prefix:name` | LOCKED |
-| Execution order `global → namespace → action → handler` | LOCKED |
-| Registry internals | INTERNAL |
+| Symbol                                                  | Tier     |
+| ------------------------------------------------------- | -------- |
+| `@namespace()` signature                                | LOCKED   |
+| `@action()` signature                                   | LOCKED   |
+| Full action key format `prefix:name`                    | LOCKED   |
+| Execution order `global → namespace → action → handler` | LOCKED   |
+| Registry internals                                      | INTERNAL |
 
 ---
 
@@ -167,20 +167,20 @@ Written by decorators. Read exclusively by `make()`. Never exported.
 // packages/core/src/registry.ts
 
 interface NamespaceEntry {
-  prefix:     string
-  middleware: ReadonlyArray<Middleware>
-  ctor:       Function
+  prefix: string;
+  middleware: ReadonlyArray<Middleware>;
+  ctor: Function;
 }
 
 interface ActionEntry {
-  methodKey:  string                    // method name on the prototype e.g. 'list'
-  name:       string                    // action name e.g. 'list'
-  middleware: ReadonlyArray<Middleware>
-  ctor:       Function                  // links back to the namespace class
+  methodKey: string; // method name on the prototype e.g. 'list'
+  name: string; // action name e.g. 'list'
+  middleware: ReadonlyArray<Middleware>;
+  ctor: Function; // links back to the namespace class
 }
 
-const namespaceRegistry = new Map<Function, NamespaceEntry>()
-const actionRegistry    = new Map<Function, ActionEntry[]>()
+const namespaceRegistry = new Map<Function, NamespaceEntry>();
+const actionRegistry = new Map<Function, ActionEntry[]>();
 ```
 
 ### `@namespace()` — Full Implementation
@@ -190,22 +190,19 @@ function namespace(prefix: string, middleware: Middleware[] = []): ClassDecorato
   // Validate at decoration time — fail before make() is ever called
   if (!/^[a-z][a-z0-9_-]*$/.test(prefix)) {
     throw new Error(
-      `[aromix] @namespace('${prefix}'): invalid prefix. ` +
-      `Must be lowercase and match /^[a-z][a-z0-9_-]*$/.`
-    )
+      `[aromix] @namespace('${prefix}'): invalid prefix. ` + `Must be lowercase and match /^[a-z][a-z0-9_-]*$/.`
+    );
   }
 
   if (prefix.length > 64) {
-    throw new Error(
-      `[aromix] @namespace('${prefix}'): prefix exceeds the 64 character limit.`
-    )
+    throw new Error(`[aromix] @namespace('${prefix}'): prefix exceeds the 64 character limit.`);
   }
 
   return (ctor: Function) => {
     // Duplicate detection is deferred to make() — decorators run in unpredictable
     // module evaluation order so the full picture is only available at make() time
-    namespaceRegistry.set(ctor, { prefix, middleware, ctor })
-  }
+    namespaceRegistry.set(ctor, { prefix, middleware, ctor });
+  };
 }
 ```
 
@@ -215,24 +212,23 @@ function namespace(prefix: string, middleware: Middleware[] = []): ClassDecorato
 function action(name: string, middleware: Middleware[] = []): MethodDecorator {
   if (!/^[a-z][a-z0-9_-]*$/.test(name)) {
     throw new Error(
-      `[aromix] @action('${name}'): invalid name. ` +
-      `Must be lowercase and match /^[a-z][a-z0-9_-]*$/.`
-    )
+      `[aromix] @action('${name}'): invalid name. ` + `Must be lowercase and match /^[a-z][a-z0-9_-]*$/.`
+    );
   }
 
   return (target: object, methodKey: string | symbol) => {
-    const ctor     = target.constructor
-    const existing = actionRegistry.get(ctor) ?? []
+    const ctor = target.constructor;
+    const existing = actionRegistry.get(ctor) ?? [];
 
     existing.push({
       methodKey: String(methodKey),
       name,
       middleware,
       ctor,
-    })
+    });
 
-    actionRegistry.set(ctor, existing)
-  }
+    actionRegistry.set(ctor, existing);
+  };
 }
 ```
 
@@ -245,25 +241,24 @@ function action(name: string, middleware: Middleware[] = []): MethodDecorator {
 ```ts
 // Inside make() — for each namespace class passed in namespaces[]
 
-const nsEntry = namespaceRegistry.get(ctor)       // get namespace metadata
-const actions = actionRegistry.get(ctor) ?? []    // get all @action methods
-const instance = inject(ctor)                     // resolve singleton
+const nsEntry = namespaceRegistry.get(ctor); // get namespace metadata
+const actions = actionRegistry.get(ctor) ?? []; // get all @action methods
+const instance = inject(ctor); // resolve singleton
 
 for (const actionEntry of actions) {
-  const fullKey     = `${nsEntry.prefix}:${actionEntry.name}`
-  const mergedChain = [...globalMiddleware, ...nsEntry.middleware, ...actionEntry.middleware]
+  const fullKey = `${nsEntry.prefix}:${actionEntry.name}`;
+  const mergedChain = [...globalMiddleware, ...nsEntry.middleware, ...actionEntry.middleware];
 
   // Handler is pre-bound to the instance here
   // serve() calls entry.handler(ctx) — no further binding needed
-  const handler = (_ctx: RawContext): Promise<HandlerReturn> =>
-    (instance as any)[actionEntry.methodKey]()
+  const handler = (_ctx: RawContext): Promise<HandlerReturn> => (instance as any)[actionEntry.methodKey]();
 
   dispatchMap.set(fullKey, {
-    action:     fullKey,
+    action: fullKey,
     middleware: mergedChain,
     handler,
-    streaming:  false,
-  })
+    streaming: false,
+  });
 }
 ```
 
@@ -278,24 +273,24 @@ All of the following throw at `make()` time, before the server ever starts. None
 ```ts
 // 1. Class passed to namespaces[] must be decorated with @namespace()
 if (!namespaceRegistry.has(ctor)) {
-  throw new Error(`[aromix] make(): ${ctor.name} is not decorated with @namespace().`)
+  throw new Error(`[aromix] make(): ${ctor.name} is not decorated with @namespace().`);
 }
 
 // 2. No two classes in the same make() call may share a prefix
 if (seenPrefixes.has(entry.prefix)) {
   throw new Error(
     `[aromix] make(): duplicate prefix '${entry.prefix}' on ${seenPrefixes.get(entry.prefix)} and ${ctor.name}.`
-  )
+  );
 }
 
 // 4. Warn if a namespace has no @action methods
 if (actions.length === 0) {
-  console.warn(`[aromix] make(): @namespace('${nsEntry.prefix}') has no @action methods.`)
+  console.warn(`[aromix] make(): @namespace('${nsEntry.prefix}') has no @action methods.`);
 }
 
 // 5. No two actions in the full dispatch map may produce the same full key
 if (dispatchMap.has(fullKey)) {
-  throw new Error(`[aromix] make(): duplicate action key '${fullKey}'.`)
+  throw new Error(`[aromix] make(): duplicate action key '${fullKey}'.`);
 }
 ```
 
@@ -316,55 +311,55 @@ Sub-app actionPrefix  +  ':'  +  namespace prefix  +  ':'  +  action name
 ## Complete Example
 
 ```ts
-import { inject, namespace, action, guard, input, reply } from '@aromix/core'
+import { inject, namespace, action, guard, input, reply } from "@aromix/core";
 
-@namespace('auth')
+@namespace("auth")
 class AuthHandler {
-  private auth = inject(AuthService)
+  private auth = inject(AuthService);
 
-  @action('login')
+  @action("login")
   async login(ctx = input(LoginSchema)) {
-    const r = await this.auth.login(ctx.body.email, ctx.body.password)
-    if (!r.ok) return reply(401, { error: 'Invalid credentials' })
-    return reply(200, r.data)
+    const r = await this.auth.login(ctx.body.email, ctx.body.password);
+    if (!r.ok) return reply(401, { error: "Invalid credentials" });
+    return reply(200, r.data);
   }
 
-  @action('logout')
+  @action("logout")
   async logout(ctx = input(LogoutSchema)) {
-    await this.auth.logout(ctx.body.refreshToken)
-    return reply(204)
+    await this.auth.logout(ctx.body.refreshToken);
+    return reply(204);
   }
 }
 
-@namespace('user', [guard()])
+@namespace("user", [guard()])
 class UserHandler {
-  private users = inject(UserService)
+  private users = inject(UserService);
 
-  @action('list')
+  @action("list")
   async list(ctx = input(ListUsersSchema)) {
-    const r = await this.users.findAll(ctx.body)
-    return reply(200, r.data)
+    const r = await this.users.findAll(ctx.body);
+    return reply(200, r.data);
   }
 
-  @action('create')
+  @action("create")
   async create(ctx = input(CreateUserSchema)) {
-    const r = await this.users.create(ctx.body)
-    if (!r.ok) return reply(409, { error: 'Email already taken' })
-    return reply(201, r.data)
+    const r = await this.users.create(ctx.body);
+    if (!r.ok) return reply(409, { error: "Email already taken" });
+    return reply(201, r.data);
   }
 
-  @action('remove', [adminOnly()])
+  @action("remove", [adminOnly()])
   async remove(ctx = input(RemoveUserSchema)) {
-    const r = await this.users.remove(ctx.body.id)
-    if (!r.ok) return reply(404, { error: 'User not found' })
-    return reply(204)
+    const r = await this.users.remove(ctx.body.id);
+    if (!r.ok) return reply(404, { error: "User not found" });
+    return reply(204);
   }
 }
 
 // Registered with make()
 const app = make({
-  namespaces: [AuthHandler, UserHandler]
-})
+  namespaces: [AuthHandler, UserHandler],
+});
 
 // Resulting dispatch map keys:
 // 'auth:login'
@@ -378,14 +373,14 @@ const app = make({
 
 ## Error Reference
 
-| Scenario | Error |
-|----------|-------|
-| Invalid namespace prefix pattern | `@namespace('Bad'): invalid prefix` |
-| Namespace prefix exceeds 64 chars | `@namespace('...'): prefix exceeds the 64 character limit` |
-| Invalid action name pattern | `@action('Bad'): invalid name` |
-| Class passed to `make()` without `@namespace()` | `make(): Foo is not decorated with @namespace()` |
+| Scenario                                         | Error                                                              |
+| ------------------------------------------------ | ------------------------------------------------------------------ |
+| Invalid namespace prefix pattern                 | `@namespace('Bad'): invalid prefix`                                |
+| Namespace prefix exceeds 64 chars                | `@namespace('...'): prefix exceeds the 64 character limit`         |
+| Invalid action name pattern                      | `@action('Bad'): invalid name`                                     |
+| Class passed to `make()` without `@namespace()`  | `make(): Foo is not decorated with @namespace()`                   |
 | Duplicate namespace prefix in same `make()` call | `make(): duplicate prefix 'user' on UserHandler and UserHandlerV2` |
-| Duplicate full action key | `make(): duplicate action key 'user:list'` |
+| Duplicate full action key                        | `make(): duplicate action key 'user:list'`                         |
 
 ---
 

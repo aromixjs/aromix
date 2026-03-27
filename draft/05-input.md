@@ -24,7 +24,7 @@ Both roles work from a single expression: `ctx = input(Schema)` as the default p
 ### `input()`
 
 ```ts
-function input<TSchema extends AromixInputSchema>(schema?: TSchema): InferContext<TSchema>
+function input<TSchema extends AromixInputSchema>(schema?: TSchema): InferContext<TSchema>;
 ```
 
 Used exclusively as the default value of the first parameter of an `@action` method.
@@ -47,9 +47,9 @@ LOCKED — The three-section structure is final. New sections cannot be added wi
 
 ```ts
 export interface AromixInputSchema {
-  body?:    AnyValidatorSchema
-  headers?: AnyValidatorSchema
-  cookies?: AnyValidatorSchema
+  body?: AnyValidatorSchema;
+  headers?: AnyValidatorSchema;
+  cookies?: AnyValidatorSchema;
 }
 ```
 
@@ -89,13 +89,13 @@ LOCKED — All field names are final.
 
 ```ts
 export interface Context<
-  TBody    = unknown,
+  TBody = unknown,
   THeaders = Record<string, string | string[] | undefined>,
-  TCookies = Record<string, string>
+  TCookies = Record<string, string>,
 > extends RawContext {
-  readonly body:    TBody
-  readonly headers: THeaders
-  readonly cookies: TCookies
+  readonly body: TBody;
+  readonly headers: THeaders;
+  readonly cookies: TCookies;
 }
 ```
 
@@ -107,16 +107,16 @@ LOCKED — The base context available everywhere including middleware.
 
 ```ts
 export interface RawContext {
-  readonly body:    unknown
-  readonly headers: Record<string, string | string[] | undefined>
-  readonly cookies: Record<string, string>
-  readonly ip:      string
-  readonly action:  string
-  user?:            JwtPayload   // mutable — attached by guard()
+  readonly body: unknown;
+  readonly headers: Record<string, string | string[] | undefined>;
+  readonly cookies: Record<string, string>;
+  readonly ip: string;
+  readonly action: string;
+  user?: JwtPayload; // mutable — attached by guard()
 
   // Response methods — available in middleware and handlers
-  reply:  (options: ReplyOptions)                  => ReplyValue
-  stream: (fn: StreamFn, options?: StreamOptions)  => StreamValue
+  reply: (options: ReplyOptions) => ReplyValue;
+  stream: (fn: StreamFn, options?: StreamOptions) => StreamValue;
 }
 ```
 
@@ -124,13 +124,13 @@ export interface RawContext {
 
 ## Stability
 
-| Symbol | Tier |
-|--------|------|
-| `input()` signature | LOCKED |
-| `AromixInputSchema` shape | LOCKED |
-| `Context<T>` field names | LOCKED |
-| `RawContext` field names | LOCKED |
-| `InferContext<T>` utility type | LOCKED |
+| Symbol                           | Tier     |
+| -------------------------------- | -------- |
+| `input()` signature              | LOCKED   |
+| `AromixInputSchema` shape        | LOCKED   |
+| `Context<T>` field names         | LOCKED   |
+| `RawContext` field names         | LOCKED   |
+| `InferContext<T>` utility type   | LOCKED   |
 | `ctxStorage` (AsyncLocalStorage) | INTERNAL |
 
 ---
@@ -151,7 +151,7 @@ async create(ctx = undefined) {
 `make()` binds the handler to the class instance and stores it as:
 
 ```ts
-handler: () => instance.create()   // no argument passed
+handler: () => instance.create(); // no argument passed
 ```
 
 When `serve()` calls `entry.handler()`, no argument is passed. `ctx` is `undefined`, the default triggers, and `input(Schema)` runs. Inside `input()`, the current `RawContext` is read from `AsyncLocalStorage` — it was placed there by `serve()` before the middleware chain started.
@@ -178,10 +178,10 @@ serve() receives request
 
 ```ts
 // packages/core/src/context-storage.ts
-import { AsyncLocalStorage } from 'node:async_hooks'
+import { AsyncLocalStorage } from "node:async_hooks";
 // node:async_hooks is supported natively by Bun and Deno — no polyfill needed
 
-export const ctxStorage = new AsyncLocalStorage<RawContext>()
+export const ctxStorage = new AsyncLocalStorage<RawContext>();
 ```
 
 `ctxStorage` is a module-level singleton. It is never exported from the package — it is only used internally by `input()` and the request pipeline in `serve()`.
@@ -194,44 +194,38 @@ export const ctxStorage = new AsyncLocalStorage<RawContext>()
 // packages/core/src/input.ts
 
 function input<TSchema extends AromixInputSchema>(schema?: TSchema): InferContext<TSchema> {
-  const ctx = ctxStorage.getStore()
+  const ctx = ctxStorage.getStore();
 
   // Should never happen in correct usage — only if input() is called outside a handler
   if (!ctx) {
     throw new Error(
-      '[aromix] input() was called outside of a request context. ' +
-      'input() must only be used as the default value of the first parameter of an @action method.'
-    )
+      "[aromix] input() was called outside of a request context. " +
+        "input() must only be used as the default value of the first parameter of an @action method."
+    );
   }
 
   // No schema — return raw context as typed Context with no validation
-  if (!schema) return ctx as any
+  if (!schema) return ctx as any;
 
-  const issues: ValidationIssue[] = []
+  const issues: ValidationIssue[] = [];
   const validated: Partial<Context> = {
-    ip:     ctx.ip,
+    ip: ctx.ip,
     action: ctx.action,
-    user:   ctx.user,
-  }
+    user: ctx.user,
+  };
 
   // Validate each section that has a schema — fall back to raw if no schema
-  validated.body    = schema.body
-    ? validateSection('body',    schema.body,    ctx.body,    issues)
-    : ctx.body
+  validated.body = schema.body ? validateSection("body", schema.body, ctx.body, issues) : ctx.body;
 
-  validated.headers = schema.headers
-    ? validateSection('headers', schema.headers, ctx.headers, issues)
-    : ctx.headers
+  validated.headers = schema.headers ? validateSection("headers", schema.headers, ctx.headers, issues) : ctx.headers;
 
-  validated.cookies = schema.cookies
-    ? validateSection('cookies', schema.cookies, ctx.cookies, issues)
-    : ctx.cookies
+  validated.cookies = schema.cookies ? validateSection("cookies", schema.cookies, ctx.cookies, issues) : ctx.cookies;
 
   if (issues.length > 0) {
-    throw reply(400, { error: 'Validation failed', issues })
+    throw reply(400, { error: "Validation failed", issues });
   }
 
-  return validated as InferContext<TSchema>
+  return validated as InferContext<TSchema>;
 }
 ```
 
@@ -239,26 +233,26 @@ function input<TSchema extends AromixInputSchema>(schema?: TSchema): InferContex
 
 ```ts
 function validateSection(
-  section: 'body' | 'headers' | 'cookies',
-  schema:  AnyValidatorSchema,
-  data:    unknown,
-  issues:  ValidationIssue[]
+  section: "body" | "headers" | "cookies",
+  schema: AnyValidatorSchema,
+  data: unknown,
+  issues: ValidationIssue[]
 ): unknown {
-  const adapter = resolveValidationAdapter(schema)
-  const result  = adapter.parse(schema, data)
+  const adapter = resolveValidationAdapter(schema);
+  const result = adapter.parse(schema, data);
 
   if (!result.ok) {
     // Prefix each issue path with the section name for clear error messages
     for (const issue of result.issues) {
       issues.push({
-        path:    [section, ...issue.path],
+        path: [section, ...issue.path],
         message: issue.message,
-      })
+      });
     }
-    return data   // return raw data — caller checks issues array before using it
+    return data; // return raw data — caller checks issues array before using it
   }
 
-  return result.data
+  return result.data;
 }
 ```
 
@@ -268,12 +262,12 @@ When validation fails, `input()` throws:
 
 ```ts
 reply(400, {
-  error:  'Validation failed',
+  error: "Validation failed",
   issues: [
-    { path: ['body', 'email'], message: 'Invalid email address' },
-    { path: ['body', 'age'],   message: 'Expected number, received string' },
-  ]
-})
+    { path: ["body", "email"], message: "Invalid email address" },
+    { path: ["body", "age"], message: "Expected number, received string" },
+  ],
+});
 ```
 
 The `path` array always starts with the section name (`body`, `headers`, or `cookies`) so the client knows exactly where the issue is.
@@ -286,10 +280,10 @@ The return type of `input(schema)` is inferred from the schema sections declared
 
 ```ts
 type InferContext<T extends AromixInputSchema> = Context<
-  T extends { body:    AnyValidatorSchema } ? InferOutput<T['body']>    : unknown,
-  T extends { headers: AnyValidatorSchema } ? InferOutput<T['headers']> : Record<string, string | string[] | undefined>,
-  T extends { cookies: AnyValidatorSchema } ? InferOutput<T['cookies']> : Record<string, string>
->
+  T extends { body: AnyValidatorSchema } ? InferOutput<T["body"]> : unknown,
+  T extends { headers: AnyValidatorSchema } ? InferOutput<T["headers"]> : Record<string, string | string[] | undefined>,
+  T extends { cookies: AnyValidatorSchema } ? InferOutput<T["cookies"]> : Record<string, string>
+>;
 ```
 
 In practice:
@@ -418,13 +412,13 @@ class PostHandler {
 
 ## Error Reference
 
-| Scenario | Error |
-|----------|-------|
-| `input()` called outside a handler | `input() was called outside of a request context` |
-| Body validation fails | `reply(400, { error: 'Validation failed', issues: [...] })` thrown |
-| Header validation fails | `reply(400, { error: 'Validation failed', issues: [...] })` thrown |
-| Cookie validation fails | `reply(400, { error: 'Validation failed', issues: [...] })` thrown |
-| Unrecognized schema type | `input(): unrecognized schema type. Supported: Valibot, Zod` |
+| Scenario                           | Error                                                              |
+| ---------------------------------- | ------------------------------------------------------------------ |
+| `input()` called outside a handler | `input() was called outside of a request context`                  |
+| Body validation fails              | `reply(400, { error: 'Validation failed', issues: [...] })` thrown |
+| Header validation fails            | `reply(400, { error: 'Validation failed', issues: [...] })` thrown |
+| Cookie validation fails            | `reply(400, { error: 'Validation failed', issues: [...] })` thrown |
+| Unrecognized schema type           | `input(): unrecognized schema type. Supported: Valibot, Zod`       |
 
 ---
 

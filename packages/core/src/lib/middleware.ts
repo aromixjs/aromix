@@ -13,7 +13,7 @@ export interface Middleware {
 export async function runChain(
   chain: readonly Middleware[],
   raw: RawRequest,
-  handler: () => Promise<ResponseBuilder>,
+  handler: () => Promise<ResponseBuilder>
 ): Promise<ResponseBuilder> {
   let index = 0;
 

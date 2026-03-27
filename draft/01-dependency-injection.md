@@ -22,32 +22,36 @@ The second is error contract enforcement. Services managed by `@provide()` must 
 ### `@provide()`
 
 ```ts
-function provide(): ClassDecorator
+function provide(): ClassDecorator;
 ```
 
 Marks a class as injectable. This is required before the class can be used with either `inject()` or `injectNew()`. The decorator itself does not determine the lifecycle — that is decided by which injector the caller uses.
 
 ```ts
-import { provide } from '@aromix/core'
+import { provide } from "@aromix/core";
 
 @provide()
 export class Database {
-  client = new PrismaClient()
+  client = new PrismaClient();
 }
 
 @provide()
 export class Logger {
-  info(msg: string, meta?: object)  { console.log('[info]',  msg, meta ?? '') }
-  error(msg: string, meta?: object) { console.error('[error]', msg, meta ?? '') }
+  info(msg: string, meta?: object) {
+    console.log("[info]", msg, meta ?? "");
+  }
+  error(msg: string, meta?: object) {
+    console.error("[error]", msg, meta ?? "");
+  }
 }
 
 @provide()
 export class TokenService {
   sign(payload: object, options?: SignOptions): string {
-    return jwt.sign(payload, process.env.JWT_SECRET!)
+    return jwt.sign(payload, process.env.JWT_SECRET!);
   }
   verify(token: string): JwtPayload {
-    return jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload
+    return jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
   }
 }
 ```
@@ -57,7 +61,7 @@ export class TokenService {
 ### `inject(Class)` — Singleton
 
 ```ts
-function inject<T>(ctor: new (...args: any[]) => T): T
+function inject<T>(ctor: new (...args: any[]) => T): T;
 ```
 
 Returns the singleton instance for the given class. The instance is created on the first call and cached permanently. Every subsequent call to `inject()` for the same class returns the exact same object.
@@ -67,17 +71,17 @@ Use this for stateful shared resources — database connections, token services,
 ```ts
 @provide()
 export class UserService {
-  private db     = inject(Database)      // same Database instance always
-  private logger = inject(Logger)        // same Logger instance always
+  private db = inject(Database); // same Database instance always
+  private logger = inject(Logger); // same Logger instance always
 
-  async findById(id: string): Promise<Result<User, 'not_found'>> {
+  async findById(id: string): Promise<Result<User, "not_found">> {
     try {
-      const user = await this.db.client.user.findUnique({ where: { id } })
-      if (!user) return result.fail('not_found')
-      return result.ok(user)
+      const user = await this.db.client.user.findUnique({ where: { id } });
+      if (!user) return result.fail("not_found");
+      return result.ok(user);
     } catch (e) {
-      this.logger.error('UserService.findById failed', { id, error: e })
-      return result.fail('not_found')
+      this.logger.error("UserService.findById failed", { id, error: e });
+      return result.fail("not_found");
     }
   }
 }
@@ -88,9 +92,9 @@ export class UserService {
 ```ts
 serve(app, {
   onBeforeStart: async () => {
-    await inject(Database).client.$connect()
-  }
-})
+    await inject(Database).client.$connect();
+  },
+});
 ```
 
 ---
@@ -98,7 +102,7 @@ serve(app, {
 ### `injectNew(Class)` — Transient
 
 ```ts
-function injectNew<T>(ctor: new (...args: any[]) => T): T
+function injectNew<T>(ctor: new (...args: any[]) => T): T;
 ```
 
 Creates and returns a brand new instance of the given class on every call. No caching. Each call to `injectNew()` goes through the full constructor, including resolving any `inject()` or `injectNew()` calls inside it.
@@ -108,27 +112,27 @@ Use this for stateless workers, per-operation processors, or any class where sha
 ```ts
 @provide()
 export class CsvParser {
-  private rows: string[][] = []
+  private rows: string[][] = [];
 
   parse(input: string): string[][] {
     // stateful parsing logic — must not be shared between concurrent requests
-    this.rows = input.split('\n').map(line => line.split(','))
-    return this.rows
+    this.rows = input.split("\n").map((line) => line.split(","));
+    return this.rows;
   }
 }
 
 @provide()
 export class ReportService {
-  private logger = inject(Logger)   // singleton — shared
+  private logger = inject(Logger); // singleton — shared
 
-  async generate(data: string): Promise<Result<Report, 'parse_error'>> {
-    const parser = injectNew(CsvParser)   // fresh instance — not shared
+  async generate(data: string): Promise<Result<Report, "parse_error">> {
+    const parser = injectNew(CsvParser); // fresh instance — not shared
     try {
-      const rows = parser.parse(data)
-      return result.ok(buildReport(rows))
+      const rows = parser.parse(data);
+      return result.ok(buildReport(rows));
     } catch (e) {
-      this.logger.error('ReportService.generate failed', { error: e })
-      return result.fail('parse_error')
+      this.logger.error("ReportService.generate failed", { error: e });
+      return result.fail("parse_error");
     }
   }
 }
@@ -142,8 +146,8 @@ export class ReportService {
 
 ```ts
 type Result<T, E extends string = string> =
-  | { readonly ok: true;  readonly data: T }
-  | { readonly ok: false; readonly err:  E }
+  | { readonly ok: true; readonly data: T }
+  | { readonly ok: false; readonly err: E };
 ```
 
 The mandatory return type for every service method that can fail. It is a discriminated union — one branch for success carrying the data, one for failure carrying a typed error code.
@@ -165,30 +169,30 @@ return reply(200, r.data)   // r.data typed as User here
 
 ```ts
 const result: {
-  ok<T>(data: T): Result<T, never>
-  fail<E extends string>(err: E): Result<never, E>
-}
+  ok<T>(data: T): Result<T, never>;
+  fail<E extends string>(err: E): Result<never, E>;
+};
 ```
 
 Constructors for the two sides of `Result`. Both return frozen plain objects.
 
 ```ts
-result.ok(user)           // { ok: true,  data: User }
-result.fail('not_found')  // { ok: false, err: 'not_found' }
+result.ok(user); // { ok: true,  data: User }
+result.fail("not_found"); // { ok: false, err: 'not_found' }
 ```
 
 ---
 
 ## Stability
 
-| Symbol | Tier |
-|--------|------|
-| `@provide()` | LOCKED |
-| `inject()` | LOCKED |
-| `injectNew()` | LOCKED |
-| `Result<T, E>` | LOCKED |
-| `result.ok()` | LOCKED |
-| `result.fail()` | LOCKED |
+| Symbol             | Tier     |
+| ------------------ | -------- |
+| `@provide()`       | LOCKED   |
+| `inject()`         | LOCKED   |
+| `injectNew()`      | LOCKED   |
+| `Result<T, E>`     | LOCKED   |
+| `result.ok()`      | LOCKED   |
+| `result.fail()`    | LOCKED   |
 | Registry internals | INTERNAL |
 
 ---
@@ -198,6 +202,7 @@ result.fail('not_found')  // { ok: false, err: 'not_found' }
 This is a hard rule enforced by documentation now and by a compiler lint rule before v1.0.
 
 **Services (`@provide()` classes) must:**
+
 - Return `Result<T, E>` from every method that can fail.
 - Catch all exceptions internally. An exception must never escape a service method.
 - Log errors using an injected logger before returning a failure result.
@@ -205,6 +210,7 @@ This is a hard rule enforced by documentation now and by a compiler lint rule be
 - Never import anything HTTP-related from the framework.
 
 **Handlers (`@namespace` / `@action` classes) must:**
+
 - Be the only place that calls `reply()`.
 - Call services, inspect `result.ok`, and decide the HTTP response.
 - Be the only place where a failure result becomes an HTTP status code.
@@ -227,12 +233,12 @@ A module-level structure in `packages/core/src/registry.ts`. Never exported. Dec
 // packages/core/src/registry.ts — never exported
 
 interface ProviderEntry {
-  ctor:     Function
-  instance: unknown | null   // null = not yet instantiated
+  ctor: Function;
+  instance: unknown | null; // null = not yet instantiated
 }
 
-const providerRegistry = new Map<Function, ProviderEntry>()
-const resolving        = new Set<Function>()   // tracks active inject() chains for circular detection
+const providerRegistry = new Map<Function, ProviderEntry>();
+const resolving = new Set<Function>(); // tracks active inject() chains for circular detection
 ```
 
 `injectNew()` does not use the registry for caching. It only checks the registry to confirm the class is decorated with `@provide()` before constructing a new instance.
@@ -245,11 +251,11 @@ function provide(): ClassDecorator {
     if (providerRegistry.has(ctor)) {
       throw new Error(
         `[aromix] @provide(): ${ctor.name} is already registered. ` +
-        `Duplicate @provide() on the same class is not allowed.`
-      )
+          `Duplicate @provide() on the same class is not allowed.`
+      );
     }
-    providerRegistry.set(ctor, { ctor, instance: null })
-  }
+    providerRegistry.set(ctor, { ctor, instance: null });
+  };
 }
 ```
 
@@ -257,34 +263,33 @@ function provide(): ClassDecorator {
 
 ```ts
 function inject<T>(ctor: new (...args: any[]) => T): T {
-  const entry = providerRegistry.get(ctor)
+  const entry = providerRegistry.get(ctor);
 
   if (!entry) {
     throw new Error(
       `[aromix] inject(${ctor.name}): ${ctor.name} is not decorated with @provide(). ` +
-      `Add @provide() to ${ctor.name} before injecting it.`
-    )
+        `Add @provide() to ${ctor.name} before injecting it.`
+    );
   }
 
   if (resolving.has(ctor)) {
-    const chain = [...resolving].map(c => c.name).join(' -> ')
+    const chain = [...resolving].map((c) => c.name).join(" -> ");
     throw new Error(
-      `[aromix] inject(${ctor.name}): circular dependency detected.\n` +
-      `Resolution chain: ${chain} -> ${ctor.name}`
-    )
+      `[aromix] inject(${ctor.name}): circular dependency detected.\n` + `Resolution chain: ${chain} -> ${ctor.name}`
+    );
   }
 
   if (entry.instance !== null) {
-    return entry.instance as T
+    return entry.instance as T;
   }
 
-  resolving.add(ctor)
+  resolving.add(ctor);
   try {
-    const instance = new (ctor as any)()
-    entry.instance = instance
-    return instance
+    const instance = new (ctor as any)();
+    entry.instance = instance;
+    return instance;
   } finally {
-    resolving.delete(ctor)
+    resolving.delete(ctor);
   }
 }
 ```
@@ -293,31 +298,30 @@ function inject<T>(ctor: new (...args: any[]) => T): T {
 
 ```ts
 function injectNew<T>(ctor: new (...args: any[]) => T): T {
-  const entry = providerRegistry.get(ctor)
+  const entry = providerRegistry.get(ctor);
 
   if (!entry) {
     throw new Error(
       `[aromix] injectNew(${ctor.name}): ${ctor.name} is not decorated with @provide(). ` +
-      `Add @provide() to ${ctor.name} before using injectNew().`
-    )
+        `Add @provide() to ${ctor.name} before using injectNew().`
+    );
   }
 
   // No singleton cache check — always construct a new instance
   // Still participates in circular detection because the constructor
   // may call inject() or injectNew() internally
   if (resolving.has(ctor)) {
-    const chain = [...resolving].map(c => c.name).join(' -> ')
+    const chain = [...resolving].map((c) => c.name).join(" -> ");
     throw new Error(
-      `[aromix] injectNew(${ctor.name}): circular dependency detected.\n` +
-      `Resolution chain: ${chain} -> ${ctor.name}`
-    )
+      `[aromix] injectNew(${ctor.name}): circular dependency detected.\n` + `Resolution chain: ${chain} -> ${ctor.name}`
+    );
   }
 
-  resolving.add(ctor)
+  resolving.add(ctor);
   try {
-    return new (ctor as any)()
+    return new (ctor as any)();
   } finally {
-    resolving.delete(ctor)
+    resolving.delete(ctor);
   }
 }
 ```
@@ -327,12 +331,12 @@ function injectNew<T>(ctor: new (...args: any[]) => T): T {
 ```ts
 const result = {
   ok<T>(data: T): Result<T, never> {
-    return Object.freeze({ ok: true  as const, data })
+    return Object.freeze({ ok: true as const, data });
   },
   fail<E extends string>(err: E): Result<never, E> {
-    return Object.freeze({ ok: false as const, err  })
-  }
-}
+    return Object.freeze({ ok: false as const, err });
+  },
+};
 ```
 
 ---
@@ -382,20 +386,20 @@ A transient class can safely depend on singletons. A singleton must not depend o
 // Correct — transient depending on singleton
 @provide()
 class CsvParser {
-  private logger = inject(Logger)   // singleton — fine, logger is shared
+  private logger = inject(Logger); // singleton — fine, logger is shared
 }
 
 // Incorrect — singleton depending on transient via inject()
 @provide()
 class ReportService {
-  private parser = inject(CsvParser)   // wrong — caches the first CsvParser forever
+  private parser = inject(CsvParser); // wrong — caches the first CsvParser forever
 }
 
 // Correct — singleton creating transients per operation via injectNew()
 @provide()
 class ReportService {
   async generate(data: string) {
-    const parser = injectNew(CsvParser)   // fresh instance per call — correct
+    const parser = injectNew(CsvParser); // fresh instance per call — correct
   }
 }
 ```
@@ -408,12 +412,16 @@ The `resolving` set tracks which constructors are currently being instantiated. 
 
 ```ts
 @provide()
-class A { b = inject(B) }
+class A {
+  b = inject(B);
+}
 
 @provide()
-class B { a = inject(A) }
+class B {
+  a = inject(A);
+}
 
-inject(A)
+inject(A);
 // throws:
 // [aromix] inject(A): circular dependency detected.
 // Resolution chain: A -> B -> A
@@ -423,14 +431,14 @@ inject(A)
 
 ## Error Reference
 
-| Scenario | Error |
-|----------|-------|
-| `inject()` on class without `@provide()` | `inject(Foo): Foo is not decorated with @provide()` |
-| `injectNew()` on class without `@provide()` | `injectNew(Foo): Foo is not decorated with @provide()` |
-| `@provide()` applied twice to the same class | `@provide(): Foo is already registered` |
-| Circular dependency via `inject()` | `inject(Foo): circular dependency detected. Chain: A -> B -> Foo` |
-| Circular dependency via `injectNew()` | `injectNew(Foo): circular dependency detected. Chain: A -> B -> Foo` |
-| Constructor throws during instantiation | Original error propagates — not wrapped by the framework |
+| Scenario                                     | Error                                                                |
+| -------------------------------------------- | -------------------------------------------------------------------- |
+| `inject()` on class without `@provide()`     | `inject(Foo): Foo is not decorated with @provide()`                  |
+| `injectNew()` on class without `@provide()`  | `injectNew(Foo): Foo is not decorated with @provide()`               |
+| `@provide()` applied twice to the same class | `@provide(): Foo is already registered`                              |
+| Circular dependency via `inject()`           | `inject(Foo): circular dependency detected. Chain: A -> B -> Foo`    |
+| Circular dependency via `injectNew()`        | `injectNew(Foo): circular dependency detected. Chain: A -> B -> Foo` |
+| Constructor throws during instantiation      | Original error propagates — not wrapped by the framework             |
 
 ---
 
@@ -460,9 +468,9 @@ packages/core/src/
 
 ## Open Decisions
 
-| # | Question | Notes |
-|---|----------|-------|
-| 1 | Request-scoped instances | A third lifecycle where the same instance is shared within a single request but a new instance is created for each new request. Requires per-request container storage, likely via AsyncLocalStorage. Deferred — not all applications need this and the design needs more thought before committing to a public API. |
+| #   | Question                 | Notes                                                                                                                                                                                                                                                                                                                |
+| --- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Request-scoped instances | A third lifecycle where the same instance is shared within a single request but a new instance is created for each new request. Requires per-request container storage, likely via AsyncLocalStorage. Deferred — not all applications need this and the design needs more thought before committing to a public API. |
 
 ---
 

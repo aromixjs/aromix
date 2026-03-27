@@ -11,10 +11,7 @@ export type ActionMeta = {
 
 export type ActionMetaMap = Record<string, ActionMeta>;
 
-export function action(
-  prefix: string,
-  hooks: Hook[] = [],
-): MethodDecorator {
+export function action(prefix: string, hooks: Hook[] = []): MethodDecorator {
   return (target, key) => {
     const ctor: any = target.constructor;
     const existing: ActionMetaMap = ctor[ActionMetaKey] ?? {};
@@ -24,19 +21,10 @@ export function action(
 }
 
 export namespace action {
-  export function getMeta(
-    target: Union<[object, Function]>,
-  ): Maybe<ActionMetaMap>;
-  export function getMeta(
-    target: Union<[object, Function]>,
-    key: string,
-  ): Maybe<ActionMeta>;
-  export function getMeta(
-    target: Union<[object, Function]>,
-    key?: string,
-  ): Maybe<ActionMetaMap | ActionMeta> {
-    const ctor: any =
-      typeof target === "function" ? target : target.constructor;
+  export function getMeta(target: Union<[object, Function]>): Maybe<ActionMetaMap>;
+  export function getMeta(target: Union<[object, Function]>, key: string): Maybe<ActionMeta>;
+  export function getMeta(target: Union<[object, Function]>, key?: string): Maybe<ActionMetaMap | ActionMeta> {
+    const ctor: any = typeof target === "function" ? target : target.constructor;
     const map = ctor[ActionMetaKey];
     if (key) return map?.[key];
     return map;

@@ -1,17 +1,18 @@
 import { action } from "./action";
 import { group } from "./group";
 import { Hook } from "./hooks";
-import { Middleware } from "./middleware";
 import { ResponseBuilder } from "./response";
 
 export interface MakeOptions {
   groups: Array<new () => any>;
-  hooks: Hook[];
+  hooks?: Hook[];
 }
 
 export interface DispatchEntry {
-  chain: readonly Middleware[];
   handler: () => Promise<ResponseBuilder>;
+  requestHooks: Hook[];
+  responseHooks: Hook[];
+  errorHooks: Hook[];
 }
 
 export interface AromixDescriptor {
@@ -23,7 +24,11 @@ export function make(options: MakeOptions): AromixDescriptor {
     handlers: new Map(),
   };
 
-  const globalMiddlewares = options.middlewares ?? [];
+  // global hooks
+
+  const globalRequestHooks = options.hooks?.filter((h) => h.event === "request") ?? [];
+  const globalResponseHooks = options.hooks?.filter((h) => h.event === "response") ?? [];
+  const globalErrorHooks = options.hooks?.filter((h) => h.event === "error") ?? [];
 
   for (const gp of options.groups) {
     const instance = new gp();
@@ -32,18 +37,24 @@ export function make(options: MakeOptions): AromixDescriptor {
 
     if (!groupMeta || !actionMap) continue;
 
+    // group-level scoped hooks
+    const groupRequestHooks = groupMeta.hooks.filter((h) => h.event === "request");
+    const groupResponseHooks = groupMeta.hooks.filter((h) => h.event === "response");
+    const groupErrorHooks = groupMeta.hooks.filter((h) => h.event === "error");
+
     for (const [methodKey, actionMeta] of Object.entries(actionMap)) {
       const fullKey = `${groupMeta.prefix}:${actionMeta.prefix}`;
 
-      const chain: Middleware[] = [
-        ...globalMiddlewares,
-        ...groupMeta.middlewares,
-        ...actionMeta.hooks,
-      ];
+      // action-level scoped hooks
+      const actionRequestHooks = actionMeta.hooks.filter((h) => h.event === "request");
+      const actionResponseHooks = actionMeta.hooks.filter((h) => h.event === "response");
+      const actionErrorHooks = actionMeta.hooks.filter((h) => h.event === "error");
 
       descriptor.handlers.set(fullKey, {
-        chain,
         handler: () => (instance[methodKey] as Function).call(instance),
+        requestHooks: [...globalRequestHooks, ...groupRequestHooks, ...actionRequestHooks],
+        responseHooks: [...actionResponseHooks, ...groupResponseHooks, ...globalResponseHooks],
+        errorHooks: [...actionErrorHooks, ...groupErrorHooks, ...globalErrorHooks],
       });
     }
   }

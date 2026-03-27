@@ -14,6 +14,6 @@ const port = 4000; // Running on 4000 to avoid conflict with basic-api if user r
 const server = serve(app);
 
 server.listen(port, () => {
-    console.log(`🚀 Enterprise API (Complex) up on http://localhost:${port}`);
-    console.log(`💡 This example features nested services (Logger -> Database -> UserHandler)`);
+  console.log(`🚀 Enterprise API (Complex) up on http://localhost:${port}`);
+  console.log(`💡 This example features nested services (Logger -> Database -> UserHandler)`);
 });

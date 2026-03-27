@@ -14,12 +14,14 @@
     "enterprise:dev": "pnpm --filter @aromix/enterprise dev",
     "enterprise:build": "pnpm --filter @aromix/enterprise build",
     "typecheck": "pnpm -r typecheck",
-    "clean": "rimraf --glob **/node_modules **/dist"
+    "clean": "rimraf --glob **/node_modules **/dist",
+    "format": "prettier --write ."
   },
   "devDependencies": {
-    "typescript": "catalog:",
+    "prettier": "^3.8.1",
+    "rimraf": "catalog:",
     "tsup": "catalog:",
-    "rimraf": "catalog:"
+    "typescript": "catalog:"
   },
   "packageManager": "pnpm@10.18.0"
 }

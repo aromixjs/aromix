@@ -40,17 +40,12 @@ export function toWebRequest(url: string, req: IncomingMessage): Request {
   return new Request(url, {
     method: req.method,
     headers: req.headers as Record<string, string | string[]>,
-    body:
-      req.method !== "GET" && req.method !== "HEAD"
-        ? Readable.toWeb(req)
-        : undefined,
+    body: req.method !== "GET" && req.method !== "HEAD" ? Readable.toWeb(req) : undefined,
     duplex: "half",
   });
 }
 
-export function parseCookies(
-  cookieHeader: string | null,
-): Record<string, string> {
+export function parseCookies(cookieHeader: string | null): Record<string, string> {
   if (!cookieHeader) return {};
 
   return Object.fromEntries(
@@ -61,10 +56,9 @@ export function parseCookies(
       .map((pair) => {
         const eq = pair.indexOf("=");
         const key = eq === -1 ? pair : pair.slice(0, eq).trim();
-        const val =
-          eq === -1 ? "" : decodeURIComponent(pair.slice(eq + 1).trim());
+        const val = eq === -1 ? "" : decodeURIComponent(pair.slice(eq + 1).trim());
         return [key, val] as [string, string];
       })
-      .filter(([key]) => key.length > 0),
+      .filter(([key]) => key.length > 0)
   );
 }
