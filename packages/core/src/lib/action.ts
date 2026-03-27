@@ -5,13 +5,13 @@ const ActionMetaKey = Symbol("aromix-action-meta");
 
 export type ActionMeta = {
   prefix: string;
-  hooks: Hook[];
+  hooks?: Hook[];
   key: string;
 };
 
 export type ActionMetaMap = Record<string, ActionMeta>;
 
-export function action(prefix: string, hooks: Hook[] = []): MethodDecorator {
+export function action(prefix: string, hooks: Hook[]): MethodDecorator {
   return (target, key) => {
     const ctor: any = target.constructor;
     const existing: ActionMetaMap = ctor[ActionMetaKey] ?? {};

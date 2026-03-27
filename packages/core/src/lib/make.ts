@@ -8,52 +8,84 @@ export interface MakeOptions {
   hooks?: Hook[];
 }
 
-export interface DispatchEntry {
-  handler: () => Promise<ResponseBuilder>;
-  requestHooks: Hook[];
-  responseHooks: Hook[];
-  errorHooks: Hook[];
-}
-
 export interface AromixDescriptor {
-  handlers: Map<string, DispatchEntry>;
+  handlers: Map<
+    string,
+    {
+      handler: () => Promise<ResponseBuilder>;
+      beforeHandlerHooks: Extract<Hook, { event: "before:handler" }>[];
+      afterHandlerHooks: Extract<Hook, { event: "after:handler" }>[];
+      errorHooks: Extract<Hook, { event: "error" }>[];
+    }
+  >;
+  appStartHooks: Extract<Hook, { event: "app:start" }>[];
+  appStopHooks: Extract<Hook, { event: "app:stop" }>[];
 }
 
 export function make(options: MakeOptions): AromixDescriptor {
   const descriptor: AromixDescriptor = {
     handlers: new Map(),
+    appStartHooks: [],
+    appStopHooks: [],
   };
 
   // global hooks
-
-  const globalRequestHooks = options.hooks?.filter((h) => h.event === "request") ?? [];
-  const globalResponseHooks = options.hooks?.filter((h) => h.event === "response") ?? [];
+  const globalBeforeHandlerHooks = options.hooks?.filter((h) => h.event === "before:handler") ?? [];
+  const globalAfterHandlerHooks = options.hooks?.filter((h) => h.event === "after:handler") ?? [];
   const globalErrorHooks = options.hooks?.filter((h) => h.event === "error") ?? [];
+  const globalAppStartHooks = options.hooks?.filter((h) => h.event === "app:start") ?? [];
+  const globalAppStopHooks = options.hooks?.filter((h) => h.event === "app:stop") ?? [];
 
-  for (const gp of options.groups) {
-    const instance = new gp();
+  // collect app-level appStart/appStop hooks
+  descriptor.appStartHooks.push(...globalAppStartHooks);
+  descriptor.appStopHooks.push(...globalAppStopHooks);
+
+  for (const GroupClass of options.groups) {
+    const instance = new GroupClass();
+
     const groupMeta = group.getMeta(instance);
     const actionMap = action.getMeta(instance);
 
     if (!groupMeta || !actionMap) continue;
 
-    // group-level scoped hooks
-    const groupRequestHooks = groupMeta.hooks.filter((h) => h.event === "request");
-    const groupResponseHooks = groupMeta.hooks.filter((h) => h.event === "response");
-    const groupErrorHooks = groupMeta.hooks.filter((h) => h.event === "error");
+    // group-level hooks
+    const groupBeforeHandlerHooks = groupMeta.hooks?.filter((h) => h.event === "before:handler") ?? [];
+    const groupAfterHandlerHooks = groupMeta.hooks?.filter((h) => h.event === "after:handler") ?? [];
+    const groupErrorHooks = groupMeta.hooks?.filter((h) => h.event === "error") ?? [];
+    const groupAppStartHooks = groupMeta.hooks?.filter((h) => h.event === "app:start") ?? [];
+    const groupAppStopHooks = groupMeta.hooks?.filter((h) => h.event === "app:stop") ?? [];
+
+    // collect group-level appStart/appStop hooks
+    descriptor.appStartHooks.push(...groupAppStartHooks);
+    descriptor.appStopHooks.push(...groupAppStopHooks);
 
     for (const [methodKey, actionMeta] of Object.entries(actionMap)) {
       const fullKey = `${groupMeta.prefix}:${actionMeta.prefix}`;
 
-      // action-level scoped hooks
-      const actionRequestHooks = actionMeta.hooks.filter((h) => h.event === "request");
-      const actionResponseHooks = actionMeta.hooks.filter((h) => h.event === "response");
-      const actionErrorHooks = actionMeta.hooks.filter((h) => h.event === "error");
+      // action-level hooks
+      const actionBeforeHandlerHooks = actionMeta.hooks?.filter((h) => h.event === "before:handler") ?? [];
+      const actionAfterHandlerHooks = actionMeta.hooks?.filter((h) => h.event === "after:handler") ?? [];
+      const actionErrorHooks = actionMeta.hooks?.filter((h) => h.event === "error") ?? [];
+      const actionAppStartHooks = actionMeta.hooks?.filter((h) => h.event === "app:start") ?? [];
+      const actionAppStopHooks = actionMeta.hooks?.filter((h) => h.event === "app:stop") ?? [];
+      // collect action-level appStart/appStop hooks
+      descriptor.appStartHooks.push(...actionAppStartHooks);
+      descriptor.appStopHooks.push(...actionAppStopHooks);
 
+      /**
+       * Hook flow (onion pattern):
+       *
+       * before:handler  → make → group → action
+       * after:handler   → action → group → make
+       * error           → action → group → make (stop if handled)
+       *
+       * app:start/stop  → run all hooks (no scope)
+       * global errors   → only make-level hooks
+       */
       descriptor.handlers.set(fullKey, {
         handler: () => (instance[methodKey] as Function).call(instance),
-        requestHooks: [...globalRequestHooks, ...groupRequestHooks, ...actionRequestHooks],
-        responseHooks: [...actionResponseHooks, ...groupResponseHooks, ...globalResponseHooks],
+        beforeHandlerHooks: [...globalBeforeHandlerHooks, ...groupBeforeHandlerHooks, ...actionBeforeHandlerHooks],
+        afterHandlerHooks: [...actionAfterHandlerHooks, ...groupAfterHandlerHooks, ...globalAfterHandlerHooks],
         errorHooks: [...actionErrorHooks, ...groupErrorHooks, ...globalErrorHooks],
       });
     }

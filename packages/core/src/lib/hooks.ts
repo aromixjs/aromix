@@ -2,15 +2,19 @@ import { ResponseBuilder } from "./response";
 
 export type Hook =
   | {
-      event: "start" | "stop";
+      event: "app:start";
       run: () => Promise<void> | void;
     }
   | {
-      event: "request";
+      event: "app:stop";
+      run: () => Promise<void> | void;
+    }
+  | {
+      event: "before:handler";
       run: () => Promise<ResponseBuilder | void> | ResponseBuilder | void;
     }
   | {
-      event: "response";
+      event: "after:handler";
       run: (builder: ResponseBuilder) => Promise<void> | void;
     }
   | {
