@@ -15,7 +15,7 @@ export type Hook =
     }
   | {
       event: "after:handler";
-      run: (builder: ResponseBuilder) => Promise<void> | void;
+      run: (builder: ResponseBuilder) => Promise<ResponseBuilder | void> | ResponseBuilder | void;
     }
   | {
       event: "error";

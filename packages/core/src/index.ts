@@ -1,5 +1,6 @@
 export * from "./lib/action";
 export * from "./lib/di";
+export * from "./lib/errors";
 export * from "./lib/group";
 export * from "./lib/hooks";
 export * from "./lib/make";
