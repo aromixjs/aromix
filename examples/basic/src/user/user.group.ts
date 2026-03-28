@@ -9,7 +9,7 @@ export class UserGroup {
   get() {
     const raw = request();
 
-    const userResult = this.userService.findById(10);
+    const userResult = this.userService.findById('1');
 
     if (!userResult.ok && userResult.err === "not_found") {
       return response.notFound("user not found");

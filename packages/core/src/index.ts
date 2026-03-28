@@ -4,7 +4,6 @@ export * from "./lib/errors";
 export * from "./lib/group";
 export * from "./lib/hooks";
 export * from "./lib/make";
-export * from "./lib/middleware";
 export * from "./lib/request";
 export * from "./lib/response";
 export * from "./lib/result";
