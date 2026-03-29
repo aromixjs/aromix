@@ -33,13 +33,13 @@ async function runSchema<S extends StandardSchemaV1>(
   return result.value;
 }
 
-export function request(): RawRequest {
+export function input(): RawRequest {
   const raw = requestStorage.getStore();
   if (!raw) throw new Error("[aromix] No active request. Ensure the HTTP adapter is running.");
   return raw;
 }
 
-export namespace request {
+export namespace input {
   export async function validate<T extends RequestSchema>(schema: T): Promise<ValidatedRequest<T>> {
     const raw = requestStorage.getStore();
     if (!raw) throw new Error("[aromix] No active request. Ensure the HTTP adapter is running.");

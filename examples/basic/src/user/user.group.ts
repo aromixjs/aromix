@@ -1,4 +1,4 @@
-import { group, action, request, response, inject, match, matchErr } from "@aromix/core";
+import { group, action, inject, match, input, output } from "@aromix/core";
 import { UserService } from "./user.service";
 import { userGetInput } from "./user.schema";
 
@@ -8,19 +8,12 @@ export class UserGroup {
 
   @action("get")
   async get() {
-    const { body } = await request.validate(userGetInput);
+    const { body } = await input.validate(userGetInput);
     const user = this.userService.findById(body.id);
 
-    return match(user, {
-      not_found: () => {
-        return response.notFound('user Not Found');
-      },
-      suspended: () => {
-        return response.unauthorized("fail");
-      },
-      ok: (data) => {
-        return response.notFound("");
-      },
+    return output("OK", {
+      test: 200,
+      user,
     });
   }
 }

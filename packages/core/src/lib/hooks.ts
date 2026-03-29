@@ -1,4 +1,4 @@
-import { ResponseBuilder } from "./response";
+import { Output } from "./output";
 
 export type Hook =
   | {
@@ -11,13 +11,13 @@ export type Hook =
     }
   | {
       event: "before:handler";
-      run: () => Promise<ResponseBuilder | void> | ResponseBuilder | void;
+      run: () => Promise<Output | void> | Output | void;
     }
   | {
       event: "after:handler";
-      run: (builder: ResponseBuilder) => Promise<ResponseBuilder | void> | ResponseBuilder | void;
+      run: (result: Output) => Promise<Output> | Output;
     }
   | {
       event: "error";
-      run: (error: unknown) => Promise<ResponseBuilder> | ResponseBuilder;
+      run: (error: unknown) => Promise<Output> | Output;
     };
