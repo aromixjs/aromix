@@ -6,6 +6,10 @@ export function serve(descriptor: AromixDescriptor) {
   const server = createServer();
 
   server.on("request", async (req: IncomingMessage, serverRes: ServerResponse) => {
+    serverRes.setHeader("Access-Control-Allow-Origin", "*");
+    serverRes.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    serverRes.setHeader("Access-Control-Allow-Headers", "*");
+
     let entry: ReturnType<AromixDescriptor["handlers"]["get"]>;
 
     try {

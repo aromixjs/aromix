@@ -1,8 +1,8 @@
-import { RequestSchema } from "@aromix/core";
+import { PacketSchema } from "@aromix/core";
 import * as v from "valibot";
 
 export const userGetInput = {
-  body: v.object({
+  payload: v.object({
     id: v.string(),
   }),
-} satisfies RequestSchema;
+} satisfies PacketSchema;

@@ -1,6 +1,6 @@
-import { group, action, inject, match, input, output } from "@aromix/core";
-import { UserService } from "./user.service";
+import { action, group, inject, receive, send } from "@aromix/core";
 import { userGetInput } from "./user.schema";
+import { UserService } from "./user.service";
 
 @group("user")
 export class UserGroup {
@@ -8,12 +8,14 @@ export class UserGroup {
 
   @action("get")
   async get() {
-    const { body } = await input.validate(userGetInput);
-    const user = this.userService.findById(body.id);
+    const { payload } = await receive.validate(userGetInput);
+    const user = this.userService.findById(payload.id);
 
-    return output("OK", {
-      test: 200,
-      user,
+    return send({
+      data: {
+        test: 200,
+        user,
+      },
     });
   }
 }
