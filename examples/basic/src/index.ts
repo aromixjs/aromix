@@ -1,11 +1,11 @@
 import { make } from "@aromix/core";
 import { serve } from "@aromix/node";
 import { UserGroup } from "./user/user.group";
-import { authHook, loggerHook } from "./hooks";
+import { authHook, ErrorHook, loggerHook } from "./hooks";
 
 const app = make({
   groups: [UserGroup],
-  hooks: [loggerHook, authHook],
+  hooks: [loggerHook, authHook, ErrorHook],
 });
 
 serve(app).listen(3000, () => {

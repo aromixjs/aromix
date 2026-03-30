@@ -11,8 +11,6 @@ export class UserService {
   findById(id: string) {
     const user = this.users.find((u) => u.id === id);
 
-    if (!user) return fail("not_found");
-    if (user.suspended) return fail("suspended");
-    return pass(user);
+    return user;
   }
 }

@@ -1,4 +1,5 @@
 import { Hook, receive, send } from "@aromix/core";
+import { message } from "valibot";
 
 export const loggerHook: Hook = {
   event: "before:handler",
@@ -21,5 +22,28 @@ export const authHook: Hook = {
         ],
       });
     }
+  },
+};
+
+export const ErrorHook: Hook = {
+  event: "error",
+  run(error) {
+    if (error instanceof Error) {
+      return send({
+        errors: [
+          {
+            ...error,
+          },
+        ],
+      });
+    }
+
+    return send({
+      errors: [
+        {
+          message: "unknown Error",
+        },
+      ],
+    });
   },
 };

@@ -12,10 +12,7 @@ export class UserGroup {
     const user = this.userService.findById(payload.id);
 
     return send({
-      data: {
-        test: 200,
-        user,
-      },
+      data: user,
     });
   }
 }
