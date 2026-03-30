@@ -1,7 +1,7 @@
 import { action } from "./action";
 import { group } from "./group";
 import { Hook } from "./hooks";
-import { Output } from "./send";
+import { Send } from "./send";
 
 export interface MakeOptions {
   groups: Array<new () => any>;
@@ -12,7 +12,7 @@ export interface AromixDescriptor {
   handlers: Map<
     string,
     {
-      handler: () => Promise<Output>;
+      handler: () => Promise<Send>;
       beforeHandlerHooks: Extract<Hook, { event: "before:handler" }>[];
       afterHandlerHooks: Extract<Hook, { event: "after:handler" }>[];
       errorHooks: Extract<Hook, { event: "error" }>[];

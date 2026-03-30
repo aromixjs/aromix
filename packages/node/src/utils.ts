@@ -1,11 +1,10 @@
-import { Output } from "@aromix/core";
 import { decode, encode } from "@msgpack/msgpack";
 import { IncomingMessage, ServerResponse } from "http";
 import { Readable } from "stream";
 import { TLSSocket } from "tls";
 
 /// NOTE:: NO NEED  TO GIVE STRICT TYPES HERE THE VALIDATION SCHEMA DECIDES WHAT TYPE IT WILL BE
-export async function parseIncoming(req: IncomingMessage) {
+export async function parseIncoming(req: IncomingMessage):Promise<IncomingMessage> {
   const protocol = req.socket instanceof TLSSocket ? "https" : "http";
   const fullUrl = new URL(req.url!, `${protocol}://${req.headers.host}`);
 
@@ -35,7 +34,6 @@ export async function parseIncoming(req: IncomingMessage) {
     action,
     body,
     headers: Object.fromEntries(webReq.headers.entries()),
-    cookies: webReq.headers.get("cookie"),
     ip: req.socket.remoteAddress ?? "",
     url: fullUrl,
   };
