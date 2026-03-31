@@ -1,81 +1,47 @@
-import { decode, encode } from "@msgpack/msgpack";
+import { encode, decode } from "@msgpack/msgpack"
+
+// --- Types ---
 
 export interface ClientOptions {
-  baseURL: string;
-  headers?: Record<string, string>;
-  timeout?: number;
+  endpoint: string
+  headers?: Record<string, string>
 }
 
-export interface ClientResponse<T = any> {
-  data: T;
-  errors?: Array<{ message: string }>;
+export interface DispatchOptions {
+  payload?: unknown
+  headers?: Record<string, string>
 }
 
-export class AromixClient {
-  private baseURL: string;
-  private headers: Record<string, string>;
-  private timeout: number;
-
-  constructor(options: ClientOptions) {
-    this.baseURL = options.baseURL.replace(/\/$/, "");
-    this.headers = {
-      "Content-Type": "application/msgpack",
-      "X-Action": "default",
-      ...options.headers,
-    };
-    this.timeout = options.timeout ?? 30000;
-  }
-
-  async call<T = any>(action: string, payload?: any): Promise<ClientResponse<T>> {
-    const url = `${this.baseURL}`;
-    
-    const encoded = encode({
-      action,
-      payload,
-    });
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
-
-    try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          ...this.headers,
-          "X-Action": action,
-        },
-        body: encoded,
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`Request failed with status ${response.status}`);
-      }
-
-      const arrayBuffer = await response.arrayBuffer();
-      const decoded = decode<any>(new Uint8Array(arrayBuffer));
-
-      return decoded as ClientResponse<T>;
-    } catch (error) {
-      clearTimeout(timeoutId);
-      if (error instanceof Error && error.name === "AbortError") {
-        throw new Error(`Request timed out after ${this.timeout}ms`);
-      }
-      throw error;
-    }
-  }
-
-  async get<T = any>(action: string): Promise<ClientResponse<T>> {
-    return this.call<T>(action);
-  }
-
-  async post<T = any>(action: string, payload: any): Promise<ClientResponse<T>> {
-    return this.call<T>(action, payload);
-  }
+export interface Packet<TData = unknown, TError = unknown> {
+  data:   TData  | null
+  errors: TError | null
 }
 
-export function createClient(options: ClientOptions): AromixClient {
-  return new AromixClient(options);
+// --- Client ---
+
+export function createClient(options: ClientOptions) {
+  const { endpoint, headers: defaultHeaders = {} } = options
+
+  async function dispatch<TData = unknown, TError = unknown>(
+    action:  string,
+    options: DispatchOptions = {}
+  ): Promise<Packet<TData, TError>> {
+    const { payload = {}, headers: callHeaders = {} } = options
+
+    const res = await fetch(endpoint, {
+      method:  "POST",
+      headers: {
+        "Content-Type": "application/msgpack",
+        "X-Action":     action,
+        ...defaultHeaders,
+        ...callHeaders,    // per-call headers override defaults
+      },
+      body: encode(payload),
+    })
+
+    const buffer = await res.arrayBuffer()
+    return decode(new Uint8Array(buffer)) as Packet<TData, TError>
+  }
+
+  return { dispatch }
 }
