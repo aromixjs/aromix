@@ -1,5 +1,30 @@
-//@ts-nocheck
+import { createRouter } from "./plugins/router";
 
-const router = createRouter();
+export const router = createRouter();
 
-router.on("/").render(JYml);
+router.on(
+  "/",
+  () => `
+  <!DOCTYPE html>
+  <html>
+    <head><title>Home</title></head>
+    <body>
+      <h1>Welcome to Aromix!</h1>
+    </body>
+  </html>
+`
+);
+
+router.on(
+  "/about",
+  () => `
+  <!DOCTYPE html>
+  <html>
+    <head><title>About</title></head>
+    <body>
+      <h1>About Page</h1>
+      <p>This is a simple view plugin.</p>
+    </body>
+  </html>
+`
+);

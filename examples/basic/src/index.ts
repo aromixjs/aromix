@@ -1,9 +1,10 @@
 import { make } from "@aromix/core";
 import { serve } from "@aromix/node";
-import { view } from "./view";
+import { view } from "./plugins/view";
+import { router } from "./router";
 
 const app = make({
-  plugins: [view()],
+  plugins: [view({ router })],
 });
 
 serve(app).listen(3000, () => {
