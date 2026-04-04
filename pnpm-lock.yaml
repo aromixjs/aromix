@@ -44,6 +44,9 @@ importers:
       '@aromix/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@aromix/mongo':
+        specifier: workspace:*
+        version: link:../../packages/mongo
       '@aromix/node':
         specifier: workspace:*
         version: link:../../packages/node
@@ -98,6 +101,9 @@ importers:
         specifier: ^6.12.0
         version: 6.21.0
     devDependencies:
+      '@aromix/core':
+        specifier: workspace:*
+        version: link:../core
       '@types/node':
         specifier: 'catalog:'
         version: 22.19.15

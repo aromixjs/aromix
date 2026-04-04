@@ -16,9 +16,13 @@
   "dependencies": {
     "mongodb": "^6.12.0"
   },
+  "peerDependencies": {
+    "@aromix/core": "workspace:*"
+  },
   "devDependencies": {
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "@types/node": "catalog:"
+    "@types/node": "catalog:",
+    "@aromix/core": "workspace:*"
   }
 }
