@@ -12,5 +12,9 @@
     "build": "bun build src/index.ts --outdir dist --target bun --format esm --no-sourcemap && tsc --emitDeclarationOnly",
     "dev": "bun --watch src/index.ts",
     "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.1.13",
+    "typescript": "^5.7.2"
   }
 }

@@ -17,6 +17,10 @@
         "@aromix/node": "workspace:*",
         "valibot": "^1.3.1",
       },
+      "devDependencies": {
+        "@types/bun": "^1.1.13",
+        "typescript": "^5.7.2",
+      },
     },
     "examples/enterprise": {
       "name": "@aromix/enterprise",
@@ -24,16 +28,28 @@
         "@aromix/core": "workspace:*",
         "@aromix/node": "workspace:*",
       },
+      "devDependencies": {
+        "@types/bun": "^1.1.13",
+        "typescript": "^5.7.2",
+      },
     },
     "packages/core": {
       "name": "@aromix/core",
       "version": "0.0.1",
+      "devDependencies": {
+        "@types/bun": "^1.1.13",
+        "typescript": "^5.7.2",
+      },
     },
     "packages/mongo": {
       "name": "@aromix/mongo",
       "version": "0.0.1",
       "dependencies": {
         "mongodb": "^6.12.0",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.1.13",
+        "typescript": "^5.7.2",
       },
       "peerDependencies": {
         "@aromix/core": "workspace:*",
@@ -42,6 +58,10 @@
     "packages/node": {
       "name": "@aromix/node",
       "version": "0.0.1",
+      "devDependencies": {
+        "@types/bun": "^1.1.13",
+        "typescript": "^5.7.2",
+      },
       "peerDependencies": {
         "@aromix/core": "workspace:*",
       },
