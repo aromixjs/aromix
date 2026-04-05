@@ -11,7 +11,7 @@
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "experimentalDecorators": true,
-    "declarationMap": true,
+    "declarationMap": false,
     "emitDeclarationOnly": true,
     "composite": false,
     "rootDir": "src",

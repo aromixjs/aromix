@@ -9,7 +9,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "bun build src/index.ts --outdir dist --target bun --format esm && tsc --emitDeclarationOnly",
+    "build": "bun build src/index.ts --outdir dist --target bun --format esm --no-sourcemap && tsc --emitDeclarationOnly",
     "dev": "bun --watch src/index.ts",
     "typecheck": "tsc --noEmit"
   }
