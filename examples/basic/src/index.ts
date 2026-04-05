@@ -1,5 +1,4 @@
-import { make } from "@aromix/core";
-import { serve } from "@aromix/bun";
+import { make, serve } from "@aromix/core";
 import { view } from "./plugins/view";
 import { router } from "./router";
 

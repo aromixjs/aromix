@@ -1,4 +1,4 @@
-import type { AromixDescriptor } from "@aromix/core";
+import type { AromixDescriptor } from "./lib/types";
 
 export interface ServeOptions {
   port?: number;
@@ -33,9 +33,6 @@ export function serve(descriptor: AromixDescriptor, options?: ServeOptions) {
   });
 }
 
-// ─────────────────────────────────────────────────────────────
-// CORS headers helper
-// ─────────────────────────────────────────────────────────────
 function corsHeaders(): Record<string, string> {
   return {
     "Access-Control-Allow-Origin": "*",
@@ -44,9 +41,6 @@ function corsHeaders(): Record<string, string> {
   };
 }
 
-// ─────────────────────────────────────────────────────────────
-// Simple exact-path routing (no dynamic params)
-// ─────────────────────────────────────────────────────────────
 async function dispatch(req: Request, descriptor: AromixDescriptor): Promise<Response> {
   const url = new URL(req.url);
   const method = req.method.toUpperCase();

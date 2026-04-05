@@ -9,10 +9,19 @@
         "typescript": "^5.7.2",
       },
     },
+    "examples/advanced": {
+      "name": "@aromix/advanced",
+      "dependencies": {
+        "@aromix/core": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.1.13",
+        "typescript": "^5.7.2",
+      },
+    },
     "examples/basic": {
       "name": "@aromix/basic",
       "dependencies": {
-        "@aromix/bun": "workspace:*",
         "@aromix/core": "workspace:*",
         "@aromix/mongo": "workspace:*",
         "valibot": "^1.3.1",
@@ -20,28 +29,6 @@
       "devDependencies": {
         "@types/bun": "^1.1.13",
         "typescript": "^5.7.2",
-      },
-    },
-    "examples/enterprise": {
-      "name": "@aromix/enterprise",
-      "dependencies": {
-        "@aromix/bun": "workspace:*",
-        "@aromix/core": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "^1.1.13",
-        "typescript": "^5.7.2",
-      },
-    },
-    "packages/bun": {
-      "name": "@aromix/bun",
-      "version": "0.0.1",
-      "devDependencies": {
-        "@types/bun": "^1.1.13",
-        "typescript": "^5.7.2",
-      },
-      "peerDependencies": {
-        "@aromix/core": "workspace:*",
       },
     },
     "packages/core": {
@@ -68,13 +55,11 @@
     },
   },
   "packages": {
+    "@aromix/advanced": ["@aromix/advanced@workspace:examples/advanced"],
+
     "@aromix/basic": ["@aromix/basic@workspace:examples/basic"],
 
-    "@aromix/bun": ["@aromix/bun@workspace:packages/bun"],
-
     "@aromix/core": ["@aromix/core@workspace:packages/core"],
-
-    "@aromix/enterprise": ["@aromix/enterprise@workspace:examples/enterprise"],
 
     "@aromix/mongo": ["@aromix/mongo@workspace:packages/mongo"],
 
