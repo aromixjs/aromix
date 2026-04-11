@@ -15,6 +15,8 @@
     "emitDeclarationOnly": true,
     "composite": false,
     "rootDir": "src",
-    "outDir": "dist/types"
-  }
+    "outDir": "dist"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }

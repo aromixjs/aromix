@@ -1,24 +1,22 @@
 {
-  "name": "@aromix/root",
-  "private": true,
+  "name": "aromix",
+  "version": "0.0.1",
   "type": "module",
-  "workspaces": [
-    "packages/*",
-    "examples/*"
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
   ],
   "scripts": {
-    "build": "bun run --filter '*' build",
-    "core:build": "bun run --filter @aromix/core build",
-    "core:dev": "bun run --filter @aromix/core dev",
-    "mongo:build": "bun run --filter @aromix/mongo build",
-    "mongo:dev": "bun run --filter @aromix/mongo dev",
-    "basic:dev": "bun run --filter @aromix/basic dev",
-    "basic:build": "bun run --filter @aromix/basic build",
-    "advanced:dev": "bun run --filter @aromix/advanced dev",
-    "advanced:build": "bun run --filter @aromix/advanced build",
-    "typecheck": "bun run --filter '*' typecheck",
-    "clean": "rm -rf **/node_modules **/dist",
+    "build": "bun run build.ts && tsc --emitDeclarationOnly",
+    "dev": "bun --watch src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
     "format": "bun fmt"
+  },
+  "dependencies": {
+    "mongodb": "^6.12.0"
   },
   "devDependencies": {
     "@types/bun": "^1.1.13",
