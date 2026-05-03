@@ -6,17 +6,24 @@ import { inject, provide } from "./lib/service";
 class UserService {
 
 
-   doS(){}
- }
+   doS() { }
+}
+
+
+class EmailService { }
 
 
 
-
+class QueueService { }
 
 
 const user = program({
    name: 'user',
-   services: [UserService]
+   services: {
+      user: UserService,
+      emailService: EmailService,
+      QueueService
+   }
 })
 
 
@@ -35,6 +42,9 @@ user.stream('stream', () => {
 
 })
 
+
+
+console.log(user.meta);
 
 
 

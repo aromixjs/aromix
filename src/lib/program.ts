@@ -4,11 +4,25 @@ import { Service } from "./service";
 
 export interface ProgramConfig {
   name: string;
-  services?: Service[];
+  services?: Record<PropertyKey, Service>;
   hooks?: Hook[];
 }
 
-interface Program {
+interface RouteEntry {
+  name: string;
+  hooks: Hook[];
+  handler: (ctx: any) => unknown;
+}
+
+interface ProgramMeta {
+  config: ProgramConfig;
+  commands: RouteEntry[];
+  streams: RouteEntry[];
+  sockets: RouteEntry[];
+}
+
+
+export interface Program {
   command(name: string, handler: (ctx: CommandCtx) => unknown): void;
   command(
     name: string,
@@ -25,15 +39,49 @@ interface Program {
 
   socket(name: string, handler: (ctx: SocketCtx) => void): void;
   socket(name: string, hooks: Hook[], handler: (ctx: SocketCtx) => void): void;
+
+
+  /** @internal */
+  meta: ProgramMeta
 }
 
+export function program(config: ProgramConfig): Program {
+
+  const meta: ProgramMeta = {
+    config: {
+      name: config.name,
+      services: config.services ?? {},
+      hooks: config.hooks ?? [],
+    },
+    commands: [],
+    streams: [],
+    sockets: [],
+  };
+
+
+  const resolve = (hookOrHandler: Hook[] | RouteEntry['handler'], handler?: RouteEntry['handler']) => {
+    if (Array.isArray(hookOrHandler)) {
+      return { hooks: hookOrHandler, handler: handler! }
+    } else {
+      return { hooks: [], handler: hookOrHandler }
+    }
+  }
 
 
 
-export function program(config: string | ProgramConfig): Program {
   return {
-    command(name: string, hookOrHandler: any, handler?: any) { },
-    stream(name: string, hookOrHandler: any, handler?: any) { },
-    socket(name: string, hookOrHandler: any, handler?: any) { },
+    meta,
+    command(name: string, hookOrHandler: any, handler?: any) {
+      meta.commands.push({
+        name,
+        ...resolve(hookOrHandler, handler)
+      })
+    },
+    stream(name: string, hookOrHandler: any, handler?: any) {
+      meta.streams.push({ name, ...resolve(hookOrHandler, handler) })
+    },
+    socket(name: string, hookOrHandler: any, handler?: any) {
+      meta.sockets.push({ name, ...resolve(hookOrHandler, handler) });
+    },
   };
 }
