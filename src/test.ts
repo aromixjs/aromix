@@ -1,34 +1,13 @@
+import { make } from "./lib/make";
 import { program } from "./lib/program";
-import { inject, provide } from "./lib/service";
 
-
-@provide()
-class UserService {
-
-
-   doS() { }
-}
-
-
-class EmailService { }
-
-
-
-class QueueService { }
-
-
-const user = program({
-   name: 'user',
-   services: {
-      user: UserService,
-      emailService: EmailService,
-      QueueService
-   }
+const users = program({
+   name: 'users'
 })
 
 
 
-user.command('getAll', [], () => {
+users.command('getAll', (ctx) => {
 
 
 
@@ -36,15 +15,13 @@ user.command('getAll', [], () => {
 
 
 
-user.stream('stream', () => {
 
 
 
+const app = make({
+   programs: [users]
 })
 
-
-
-console.log(user.meta);
-
-
+console.log(app);
+console.log(app.meta);
 
