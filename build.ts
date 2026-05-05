@@ -1,5 +1,6 @@
 import { build } from "bun";
 import { join } from "node:path";
+import { $ } from "bun";
 
 const packages = ["core", "bun"];
 
@@ -12,6 +13,8 @@ for (const pkg of packages) {
     sourcemap: "none",
     external: ["@aromix/core"],
   });
+
+  await $`bun x tsc --project packages/${pkg}/tsconfig.json`;
 }
 
 console.log("Build complete.");

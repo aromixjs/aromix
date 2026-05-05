@@ -6,7 +6,7 @@
   ],
   "scripts": {
     "typecheck": "bun x tsc --build",
-    "build": "bun run build.ts && bun x tsc --build",
+    "build": "bun run build.ts",
     "dev": "bun --watch packages/playground/src/index.ts"
   },
   "devDependencies": {
