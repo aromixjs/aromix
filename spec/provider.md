@@ -1,127 +1,214 @@
-## Provider
+## Service
 
-A self-contained unit of logic with optional lifecycle, private internals, and a defined public surface. The definition has no opinion on how it gets instantiated — that is purely a caller concern.
+A way to group logic with optional lifecycle. No scoping, no registry,
+no injection. Cross-communication is direct imports.
+
+---
 
 ### Definition
 
 ```ts
-const MailProvider = provide((ctx) => {
-  let client: SMTPClient
+const MailService = service((ctx) => {
+  let client: SMTPClient;
 
-  ctx.onReady(async () => {
-    client = await SMTP.connect(ctx.config('mail'))
-  })
+  ctx.lifecycle({
+    async setup() {
+      client = await SMTP.connect(config("mail"));
+    },
+    async teardown() {
+      await client.disconnect();
+    },
+  });
 
-  ctx.onClose(async () => {
-    await client.disconnect()
-  })
-
-  async function send(to: string, subject: string, body: string) {
-    await client.send({ to, subject, body })
-  }
-
-  function history() {
-    return [...sent]
-  }
-
-  ctx.expose({ send, history })
-})
+  ctx.expose({
+    async send(to: string, subject: string) {
+      await client.send({ to, subject });
+    },
+  });
+});
 ```
 
-- everything defined inside is private by default
-- `ctx.expose()` is the only public surface — one call, explicit
-- `ctx.onReady()` — async init, runs before app accepts requests
-- `ctx.onClose()` — teardown, runs on app shutdown
-- no return, no self, no class
+- everything inside is private by default
+- `ctx.expose()` is the only public surface
+- `ctx.lifecycle()` is optional — only needed if async init or cleanup is required
+- no scoping, no registry, no injection
+- cross-communication is direct import and call
+
+---
+
+### ctx
+
+```ts
+interface ServiceCtx {
+  lifecycle(hooks: {
+    setup?(): Promise<void> | void;
+    teardown?(): Promise<void> | void;
+  }): void;
+
+  expose<T extends Record<string, unknown>>(api: T): void;
+}
+```
+
+That is the entire ctx surface. Nothing else.
+
+---
 
 ### Cross-communication
 
 ```ts
-const UserProvider = provide((ctx) => {
-  const mail = MailProvider        // singleton — just import and call
-  const db = ctx.use(DbProvider)   // when scope inheritance matters
-
+const UserService = service((ctx) => {
   async function create(data: CreateUserData) {
-    const user = await UserModel.insert(data)
-    await mail.send(user.email, 'Welcome', '...')
-    return user
+    const user = await UserModel.insert(data);
+    await MailService.send(user.email, "Welcome");
+    return user;
   }
 
-  ctx.expose({ create })
-})
+  ctx.expose({ create });
+});
 ```
 
-- singleton providers are just imported and called directly
-- `ctx.use()` only needed when the caller's scope must propagate down
+Direct import and call. No resolvers, no ctx.use, no injection.
 
-### Instantiation modes
+---
 
-Defined at call site, never at definition time.
+### Lifecycle
+
+```
+setup     — async init, runs before service is used
+teardown  — best effort cleanup
+
+daemon (Bun, Node, Deno)
+  setup    — runs once at app start if eagerLoaded
+             runs on first call if not eagerLoaded
+  teardown — runs on graceful shutdown via SIGTERM
+             not guaranteed on SIGKILL
+
+edge (Cloudflare Workers)
+  setup    — runs once per request before any handler or hook fires
+  teardown — no-op, edge isolate dies after response
+```
+
+---
+
+### Eager loading
+
+Services with `setup()` should be eager loaded — otherwise the first
+call blocks until init completes.
 
 ```ts
-// singleton — lazy by default, initialized on first call
-MailProvider.send(to, subject, body)
-
-// eager singleton — initialized at app start
-app.eagerLoad(MailProvider)
-
-// transient — fresh instance every call
-const builder = ctx.transient(ReportProvider)
-
-// scoped — one instance per key
-const tenant = ctx.scoped(TenantProvider, tenantId)
-const request = ctx.scoped(RequestProvider, ctx.requestId)
+app.eagerLoad(MailService);
 ```
 
-### Lifecycle rules
+Framework warns at startup if a service has `setup()` but is not eager loaded:
 
-| has `onReady`? | instantiation |
-|---|---|
-| yes | use `app.eagerLoad()` — otherwise first caller blocks on init |
-| no | lazy is free, no penalty |
+```
+⚠ MailService has setup() but is not eager loaded.
+  First call will block until initialization completes.
+  Consider: app.eagerLoad(MailService)
+```
 
-Framework warns at startup if a provider has `onReady` but is not eager loaded.
+---
 
 ### Usage in programs
 
-No registration in program config. Import and call directly.
+Direct call. No deps object, no resolvers.
 
 ```ts
-userProgram.command('Register', async (ctx) => {
-  const user = await UserProvider.create(ctx.args(CreateUserData))
-  return user
-})
+const userProgram = program();
 
-userProgram.command('TenantReport', async (ctx) => {
-  const report = ctx.scoped(ReportProvider, ctx.args(Args).tenantId)
-  return report.generate()
-})
+userProgram.command("Register", async (ctx) => {
+  return UserService.create(ctx.args(CreateUserData));
+});
+
+userProgram.command("Send", async (ctx) => {
+  await MailService.send(ctx.args(Args).to, ctx.args(Args).subject);
+});
 ```
 
-### Plugin ownership
+---
 
-Agents do not need to be registered in plugins. Plugin registration only needed for eager loading:
+### Plugin registration
+
+Only needed for eager loading. Services do not need to be registered
+otherwise — just import and call.
 
 ```ts
 export const mailPlugin = plugin((app) => {
-  app.eagerLoad(MailProvider)   // has onReady — must be eager
-  app.program(mailProgram)
-})
-
-export const userPlugin = plugin((app) => {
-  app.program(userProgram)
-  // UserProvider not mentioned — lazy, no init cost
-})
+  app.eagerLoad(MailService);
+  app.eagerLoad(DbService);
+  app.program(userProgram);
+});
 ```
 
-### Type safety
+---
 
-Return type of `ctx.expose()` becomes the public interface. Calling any non-exposed property or method is a type error.
+### Teardown reliability
+
+| runtime            | teardown reliable |
+| ------------------ | ----------------- |
+| Bun                | ✅ via SIGTERM    |
+| Node               | ✅ via SIGTERM    |
+| Deno               | ✅ via SIGTERM    |
+| Cloudflare Workers | ❌ no-op          |
+
+Do not put critical logic in teardown. Transactions, payments, and
+state writes belong in the command itself.
+
+---
+
+## Model
+
+Built on top of service. Same pattern — ctx gets base query methods
+added by the DB plugin in addition to lifecycle and expose.
 
 ```ts
-MailProvider.send(to, subject, body)   // ✅
-MailProvider.client                    // ❌ type error — not exposed
-MailProvider.history()                 // ✅
+const UserModel = model(userSchema, (ctx) => {
+  ctx.lifecycle({
+    async setup() {
+      // runs after adapter has bound ctx.find, ctx.insert etc
+    },
+  });
+
+  async function findActive() {
+    return ctx.find({ status: "active" });
+  }
+
+  async function deleteCascade(id: string) {
+    await PostModel.deleteMany({ userId: id });
+    await ctx.deleteById(id);
+  }
+
+  ctx.expose({ findActive, deleteCascade });
+});
 ```
 
-`ctx.transient()` and `ctx.scoped()` return the same type as the direct call — inferred from `ctx.expose()`.
+Base methods on ctx come from the DB adapter — typed from the schema.
+Custom methods follow the same pattern as service — private by default,
+exposed explicitly.
+
+### Model ctx
+
+```ts
+interface ModelCtx<TSchema> extends ServiceCtx {
+  // base query methods — bound by DB adapter
+  find(query?: Partial<TSchema>): Promise<TSchema[]>;
+  findById(id: string): Promise<TSchema | null>;
+  insert(data: Partial<TSchema>): Promise<TSchema>;
+  update(id: string, data: Partial<TSchema>): Promise<TSchema>;
+  deleteById(id: string): Promise<void>;
+  deleteMany(query: Partial<TSchema>): Promise<void>;
+}
+```
+
+### Built on top of service
+
+```
+service()     — base primitive, lifecycle + expose
+  model()     — service + ctx query methods  (from DB plugin)
+  cron()      — service + ctx.scheduler      (from CronPlugin)
+  workflow()  — service + ctx.step           (from WorkflowPlugin)
+  job()       — service + ctx.queue          (from QueuePlugin)
+```
+
+All follow the same pattern — `ctx.lifecycle()`, `ctx.expose()`,
+`app.eagerLoad()`. No new concepts at each level.

@@ -2,7 +2,7 @@ import { build } from "bun";
 import { join } from "node:path";
 import { $ } from "bun";
 
-const packages = ["core", "bun", "cloudflare"];
+const packages = ["core", "bun", "cloudflare", "ts-plugin"];
 
 for (const pkg of packages) {
   await build({

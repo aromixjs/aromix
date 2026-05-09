@@ -1,6 +1,6 @@
 import { CommandCtx } from "../context";
 import { Hook } from "../hook";
-import { Service } from "../service";
+
 
 
 
@@ -11,7 +11,6 @@ export interface Program {
    meta: {
       programConfig: {
          name: string;
-         services?: Record<PropertyKey, Service>;
          hooks?: Hook[];
       };
       commands: Array<{

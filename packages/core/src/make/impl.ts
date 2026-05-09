@@ -4,7 +4,7 @@ import { filter } from "./util";
 
 export function make(makeConfig: MakeConfig): ResolvedApp {
 
-   const { hooks: globalHooks = [], services: globalServices = [], programs = [] } = makeConfig;
+   const { hooks: globalHooks = [], programs = [] } = makeConfig;
 
    const routes: ResolvedApp['routes'] = new Map();
 
@@ -27,11 +27,6 @@ export function make(makeConfig: MakeConfig): ResolvedApp {
 
 
 
-      // make → program (program overrides make if same key)
-      const programServices = {
-         ...makeConfig.services,
-         ...programConfig.services,
-      };
 
 
       for (const command of commands) {
@@ -41,7 +36,6 @@ export function make(makeConfig: MakeConfig): ResolvedApp {
          routes.set(`${programConfig.name}:${command.name}`, {
             key: `${programConfig.name}:${command.name}`,
             handler: command.handler,
-            services: programServices,
             // make → program → command
             onRequest: [
                ...filter(globalHooks, "Request"),
