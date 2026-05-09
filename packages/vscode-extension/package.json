@@ -1,0 +1,25 @@
+{
+  "name": "aromix-vscode",
+  "displayName": "Aromix VS Code Extension",
+  "description": "Provides Aromix TypeScript Language Service support.",
+  "version": "0.0.1",
+  "publisher": "aromix",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "typescriptServerPlugins": [
+      {
+        "name": "@aromix/ts-plugin"
+      }
+    ]
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.118.0",
+    "typescript": "^5.7.2"
+  }
+}

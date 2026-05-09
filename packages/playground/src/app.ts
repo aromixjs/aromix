@@ -9,7 +9,6 @@ const readHook = hook('Ready', (config) => {
 })
 
 
-
 const app = make({
    hooks: [readHook]
 })

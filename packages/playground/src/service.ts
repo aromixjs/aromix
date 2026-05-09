@@ -1,18 +1,1 @@
-service('test',($)=>{
-
-
-
-$.lifecycle({
-
-
-})
-
-
-
-return {
-
-
-
-
-}
-})
+const data=10
