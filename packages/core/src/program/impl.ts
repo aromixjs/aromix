@@ -17,26 +17,23 @@ export function program<Deps>(config: ProgramConfig<Deps>): Program<Deps> {
     [programMeta]: meta,
 
     command(options) {
-      meta.routes.push({ 
-        type: 'command', 
-        name: options.name, 
-        options 
+      meta.routes.push({
+        type: 'command',
+        options
       });
     },
 
     stream(options) {
-      meta.routes.push({ 
-        type: 'stream', 
-        name: options.name, 
-        options 
+      meta.routes.push({
+        type: 'stream',
+        options
       });
     },
 
     socket(options) {
-      meta.routes.push({ 
-        type: 'socket', 
-        name: options.name, 
-        options 
+      meta.routes.push({
+        type: 'socket',
+        options
       });
     },
   };

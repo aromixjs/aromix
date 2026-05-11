@@ -54,9 +54,9 @@ export interface SocketOptions<Receive, Send, Deps> {
 // --- Program & Routes ---
 
 export type Route =
-  | { type: 'command'; name: string; options: CommandOptions<any, any, any> }
-  | { type: 'stream'; name: string; options: StreamOptions<any, any, any> }
-  | { type: 'socket'; name: string; options: SocketOptions<any, any, any> };
+  | { type: 'command'; options: CommandOptions<any, any, any> }
+  | { type: 'stream'; options: StreamOptions<any, any, any> }
+  | { type: 'socket'; options: SocketOptions<any, any, any> };
 
 export interface ProgramConfig<Deps> {
   name: string;
