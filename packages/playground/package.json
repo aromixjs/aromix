@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@aromix/bun": "workspace:*",
     "@aromix/core": "workspace:*",
-    "@aromix/bun": "workspace:*"
+    "valibot": "^1.4.0"
   }
 }

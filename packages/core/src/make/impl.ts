@@ -1,70 +1,70 @@
 import { programMeta } from "../program/types";
-import { MakeConfig, ResolvedApp } from "./types";
+
 import { filter } from "./util";
 
 
-export function make(makeConfig: MakeConfig): ResolvedApp {
+export function make() {
 
-   const { hooks: globalHooks = [], programs = [] } = makeConfig;
+   // const { hooks: globalHooks = [], programs = [] } = makeConfig;
 
-   const routes: ResolvedApp['routes'] = new Map();
-   const onReady: ResolvedApp['onReady'] = [];
-   const onClose: ResolvedApp['onClose'] = [];
-
-
-   onReady.push(...filter(globalHooks, "Ready"));
-   onClose.push(...filter(globalHooks, "Close"));
+   // const routes: ResolvedApp['routes'] = new Map();
+   // const onReady: ResolvedApp['onReady'] = [];
+   // const onClose: ResolvedApp['onClose'] = [];
 
 
-   for (const program of programs) {
-
-      const { programConfig, routes: programRoutes } = program[programMeta];
-      const programHooks = programConfig.hooks ?? [];
+   // onReady.push(...filter(globalHooks, "Ready"));
+   // onClose.push(...filter(globalHooks, "Close"));
 
 
-      onReady.push(...filter(programHooks, "Ready"));
-      onClose.push(...filter(programHooks, "Close"));
+   // for (const program of programs) {
+
+   //    // const { programConfig, routes: programRoutes } = program[programMeta];
+   //    // const programHooks = programConfig.hooks ?? [];
 
 
+   //    onReady.push(...filter(programHooks, "Ready"));
+   //    onClose.push(...filter(programHooks, "Close"));
 
 
 
-      for (const route of programRoutes) {
-         const key = `${programConfig.name}:${route.name}`;
-
-         onReady.push(...filter(route.hooks, "Ready"));
-         onClose.push(...filter(route.hooks, "Close"));
 
 
-         routes.set(key, {
-            key,
-            type: route.type,
-            handler: route.handler as any,
-            onRequest: [
-               ...filter(globalHooks, "Request"),
-               ...filter(programHooks, "Request"),
-               ...filter(route.hooks, "Request"),
-            ],
-            onResponse: [
-               ...filter(route.hooks, "Response"),
-               ...filter(programHooks, "Response"),
-               ...filter(globalHooks, "Response"),
-            ],
-            onError: [
-               ...filter(route.hooks, "Error"),
-               ...filter(programHooks, "Error"),
-               ...filter(globalHooks, "Error"),
-            ],
-         });
+   //    for (const route of programRoutes) {
+   //       const key = `${programConfig.name}:${route.name}`;
 
-      }
-   }
+   //       onReady.push(...filter(route.hooks, "Ready"));
+   //       onClose.push(...filter(route.hooks, "Close"));
 
-   return {
-      routes,
-      onReady,
-      onClose,
-   };
+
+   //       routes.set(key, {
+   //          key,
+   //          type: route.type,
+   //          handler: route.handler as any,
+   //          onRequest: [
+   //             ...filter(globalHooks, "Request"),
+   //             ...filter(programHooks, "Request"),
+   //             ...filter(route.hooks, "Request"),
+   //          ],
+   //          onResponse: [
+   //             ...filter(route.hooks, "Response"),
+   //             ...filter(programHooks, "Response"),
+   //             ...filter(globalHooks, "Response"),
+   //          ],
+   //          onError: [
+   //             ...filter(route.hooks, "Error"),
+   //             ...filter(programHooks, "Error"),
+   //             ...filter(globalHooks, "Error"),
+   //          ],
+   //       });
+
+   //    }
+   // }
+
+   // return {
+   //    routes,
+   //    onReady,
+   //    onClose,
+   // };
 
 
 }

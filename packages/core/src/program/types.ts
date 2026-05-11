@@ -10,6 +10,7 @@ export interface CommandOptions<Input, Output, Deps> {
   name: string;
   input?: StandardSchemaV1<Input>;
   output?: StandardSchemaV1<Output>;
+  hooks?: Hook[]; // Added hooks property
   run(input: Input, deps: Deps): Output | Promise<Output>;
 }
 
@@ -19,15 +20,15 @@ export interface Stream<Events> {
   emit<E extends keyof Events>(event: E, data: Events[E]): void;
   /**
    * Closes the stream.
-   * @param callback Optional callback to run when the stream is closed (by either side).
    */
-  close(cb?: () => void): void;
+  close(): void;
 }
 
 export interface StreamOptions<Input, Events, Deps> {
   name: string;
   input?: StandardSchemaV1<Input>;
   events?: StandardSchemaV1<Events>;
+  hooks?: Hook[]; // Added hooks property
   run(input: Input, stream: Stream<Events>, deps: Deps): void | Promise<void>;
 }
 
@@ -38,15 +39,15 @@ export interface Socket<Receive, Send> {
   emit<E extends keyof Send>(event: E, data: Send[E]): void;
   /**
    * Closes the socket.
-   * @param callback Optional callback to run when the socket is closed (by either side).
    */
-  close(cb?: () => void): void;
+  close(): void;
 }
 
 export interface SocketOptions<Receive, Send, Deps> {
   name: string;
   receive?: StandardSchemaV1<Receive>;
   send?: StandardSchemaV1<Send>;
+  hooks?: Hook[]; // Added hooks property
   run(socket: Socket<Receive, Send>, deps: Deps): void | Promise<void>;
 }
 
