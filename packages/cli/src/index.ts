@@ -4,7 +4,7 @@ const [, , command] = process.argv;
 
 switch (command) {
 	case "build":
-		import("./commands/build").then((m) => new m.Build().index());
+		import("./commands/build").then((m) => new m.Build().run());
 		break;
 	default:
 		break;

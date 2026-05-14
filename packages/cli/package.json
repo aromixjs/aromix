@@ -18,15 +18,18 @@
 		"link": "pnpm link --global"
 	},
 	"dependencies": {
-		"esbuild": "^0.28.0"
+		"esbuild": "^0.28.0",
+		"micromatch": "^4.0.8",
+		"ts-morph": "^28.0.0"
 	},
 	"peerDependencies": {
 		"@aromix/core": "workspace:*"
 	},
 	"devDependencies": {
+		"@aromix/core": "workspace:*",
+		"@types/micromatch": "^4.0.10",
 		"@types/node": "catalog:",
 		"tsup": "catalog:",
-		"typescript": "catalog:",
-		"@aromix/core": "workspace:*"
+		"typescript": "catalog:"
 	}
 }

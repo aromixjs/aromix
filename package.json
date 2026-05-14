@@ -23,6 +23,6 @@
 		"typescript": "catalog:",
 		"tsup": "catalog:",
 		"@types/node": "catalog:",
-		"prettier": "catalog:"
+		"prettier": "^3.8.3"
 	}
 }
