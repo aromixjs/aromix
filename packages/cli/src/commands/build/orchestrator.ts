@@ -5,6 +5,7 @@ import { relative, resolve } from "node:path";
 import { Config } from "./config";
 import { MacroResolver } from "./macro.resolver";
 import type { ResolvedBuildOptions, TsConfig } from "./types";
+import { loadMacro } from "./macro/load";
 
 export class Build {
 	readonly root = process.cwd();
@@ -31,8 +32,8 @@ export class Build {
 
 		console.log(
 			`Building  ${relative(this.root, opts.entry)}\n` +
-				`       →  ${relative(this.root, opts.outDir)}\n` +
-				`  format   ${opts.format}  platform  ${opts.platform}`
+			`       →  ${relative(this.root, opts.outDir)}\n` +
+			`  format   ${opts.format}  platform  ${opts.platform}`
 		);
 
 		await esbuild.build({
@@ -52,9 +53,7 @@ export class Build {
 	}
 
 	private registerMacros(resolver: MacroResolver): void {
-		// resolver.register({ name: 'load', ... })
-
-		// resolver.register({})
+		resolver.register(loadMacro)
 	}
 
 	private resolveOptions(config: AromixBuildConfig, tsConfig: TsConfig): ResolvedBuildOptions {
