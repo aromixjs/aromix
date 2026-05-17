@@ -1,6 +1,6 @@
 import { DatabaseSync } from "node:sqlite";
-import { Builder, getFields } from "../builder/table.builder";
-import { FieldMeta } from "../builder/table.types";
+import { Builder, getFields } from "./builder/sql/sql.builder";
+import { FieldMeta, FieldType } from "./builder/sql/sql.types";
 
 export type Storage = "sqlite";
 export type Filter = Record<string, unknown | unknown[]>;
@@ -9,7 +9,7 @@ type SQLValue = null | number | bigint | string | Uint8Array;
 export interface EntityOptions {
 	name: string;
 	storage: Storage;
-	db: string;
+	db: DatabaseSync;
 	schema: (builder: Builder) => void;
 }
 
@@ -18,6 +18,17 @@ export const $meta = Symbol("meta");
 export interface EntitySymbols {
 	[$meta]: { name: string; storage: Storage; fields: FieldMeta[] };
 }
+
+const SQL_TYPE: Record<FieldType, string> = {
+	string: "TEXT",
+	text: "TEXT",
+	integer: "INTEGER",
+	float: "REAL",
+	boolean: "INTEGER",
+	datetime: "TEXT",
+	json: "TEXT",
+};
+
 
 class EntityBuilder {
 	private buildWhere(filter: Filter): { clause: string; params: SQLValue[] } {
@@ -43,15 +54,35 @@ class EntityBuilder {
 	define(options: EntityOptions) {
 		const builder = new Builder();
 		options.schema(builder);
-
+		const db = options.db;
 		const fields = getFields(builder);
-		const db = new DatabaseSync(options.db);
-		const pk = () => fields.find((f) => f.primary)?.name ?? "id";
+
+		const push = () => {
+			const colDefs = fields.map(f => {
+				const parts: string[] = [`"${f.name}" ${SQL_TYPE[f.type]}`];
+				if (f.primary) parts.push("PRIMARY KEY");
+				if (f.notNullable) parts.push("NOT NULL");
+				if (f.unique) parts.push("UNIQUE");
+				if (f.default !== undefined) parts.push(`DEFAULT ${JSON.stringify(f.default)}`);
+				return parts.join(" ");
+			}).join(", ");
+
+			db.exec(`CREATE TABLE IF NOT EXISTS "${options.name}" (${colDefs})`);
+		};
+
+		push();
+
+		const pk = () => {
+			const field = fields.find(f => f.primary);
+			if (!field) throw new Error(`Entity "${options.name}" has no primary key defined`);
+			return field.name;
+		};
 
 		const buildWhere = this.buildWhere.bind(this);
 
 		const self = {
 			[$meta]: { name: options.name, storage: options.storage, fields },
+			push,
 
 			getAll(filter: Filter = {}): Row[] {
 				const { clause, params } = buildWhere(filter);
@@ -64,20 +95,14 @@ class EntityBuilder {
 			},
 
 			insert(data: Row): Row {
-				const cols = Object.keys(data)
-					.map((c) => `"${c}"`)
-					.join(", ");
-				const slots = Object.keys(data)
-					.map(() => "?")
-					.join(", ");
+				const cols = Object.keys(data).map(c => `"${c}"`).join(", ");
+				const slots = Object.keys(data).map(() => "?").join(", ");
 				db.prepare(`INSERT INTO "${options.name}" (${cols}) VALUES (${slots})`).run(...(Object.values(data) as SQLValue[]));
 				return data;
 			},
 
 			update(id: SQLValue, data: Row): Row {
-				const sets = Object.keys(data)
-					.map((c) => `"${c}" = ?`)
-					.join(", ");
+				const sets = Object.keys(data).map(c => `"${c}" = ?`).join(", ");
 				db.prepare(`UPDATE "${options.name}" SET ${sets} WHERE "${pk()}" = ?`).run(
 					...(Object.values(data) as SQLValue[]),
 					id
@@ -91,9 +116,7 @@ class EntityBuilder {
 
 			count(filter: Filter = {}): number {
 				const { clause, params } = buildWhere(filter);
-				const row = db.prepare(`SELECT COUNT(*) as count FROM "${options.name}" ${clause}`).get(...params) as {
-					count: number;
-				};
+				const row = db.prepare(`SELECT COUNT(*) as count FROM "${options.name}" ${clause}`).get(...params) as { count: number };
 				return row.count;
 			},
 		};

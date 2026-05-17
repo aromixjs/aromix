@@ -1,4 +1,4 @@
-import type { FieldMeta, FieldType } from "./table.types";
+import type { FieldMeta, FieldType } from "./sql.types";
 
 const meta = new WeakMap<object, FieldMeta>();
 const fields = new WeakMap<Builder, FieldMeta[]>();
@@ -13,25 +13,33 @@ function narrow<T extends object, K extends keyof T>(self: T, omit: K[]): Omit<T
 
 class FieldBuilder<TValue> {
 	constructor(name: string, type: FieldType) {
-		meta.set(this, { name, type, nullable: true, primary: false, unique: false });
+		meta.set(this, { name, type, nullable: true, notNullable: false, primary: false, unique: false });
 	}
 
 	primary() {
 		meta.get(this)!.primary = true;
 		return narrow(this, ["primary"]);
 	}
+
 	notNullable() {
-		meta.get(this)!.nullable = false;
+		const m = meta.get(this)!;
+		m.nullable = false;
+		m.notNullable = true;
 		return narrow(this, ["notNullable", "nullable"]);
 	}
+
 	nullable() {
-		meta.get(this)!.nullable = true;
+		const m = meta.get(this)!;
+		m.nullable = true;
+		m.notNullable = false;
 		return narrow(this, ["nullable", "notNullable"]);
 	}
+
 	unique() {
 		meta.get(this)!.unique = true;
 		return narrow(this, ["unique"]);
 	}
+
 	defaultTo(v: TValue) {
 		meta.get(this)!.default = v;
 		return narrow(this, ["defaultTo"]);
