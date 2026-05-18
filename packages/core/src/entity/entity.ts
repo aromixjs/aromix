@@ -1,25 +1,12 @@
-import type { BaseShape } from "./kv/kv.types";
-import { KvDefinition } from "./kv/kv.define";
-import { KvEntity } from "./kv/kv.entity";
-import { KvStorage } from "../storage/kv";
+import { kvSchema } from "./kv/builder";
+import { KvStorage } from "./kv/storage";
 
-export interface EntityOptions<Shape extends BaseShape> {
-	name:    string;
-	storage: KvStorage;
-	schema:  KvDefinition<Shape>;
+interface EntityOptions {
+   name: string,
+   storage: KvStorage
+   schema: ReturnType<typeof kvSchema>
 }
 
-export function entity<Shape extends BaseShape>(options: EntityOptions<Shape>) {
-	const definition     = options.schema;
-	const inputSchema    = definition.buildSchema();
-	const internalFields = definition.getInternalFields();
-	const extendFn       = definition.getExtendFn();
+export function entity(options: EntityOptions) {
 
-	return new KvEntity<Shape>(
-		options.name,
-		options.storage,
-		inputSchema,
-		internalFields,
-		extendFn,
-	);
 }

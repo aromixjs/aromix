@@ -11,7 +11,7 @@ export interface KvStorage {
 }
 
 
-export function createKvStorage(adapter: KvAdapter): KvStorage {
+export function kvStorage(adapter: KvAdapter): KvStorage {
    return {
       __type: "kv",
       adapter,
