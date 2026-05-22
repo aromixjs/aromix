@@ -1,8 +1,6 @@
-import { object } from "../utils";
+import { Obj } from "../utils";
 
 export namespace KvField {
-
-
    /**
     * Type of data that a kvField is allowed to store
     * This mimics typescript type to give good type inference
@@ -17,7 +15,6 @@ export namespace KvField {
       | "object"
       | "array"
       | "any";
-
 
    /**
     * A 1:1 Type mapping between the type of value a kvField allowed to store and there type representation in typescript
@@ -34,13 +31,6 @@ export namespace KvField {
       any: any;
    }
 
-
-
-
-
-
-
-
    /**
     * This is the type for the underlying meta data object that all the kv field chains generates.
     * This is the main source of the truth it will hold all the necessary information that will derive the sdk generation,
@@ -49,37 +39,32 @@ export namespace KvField {
    export interface Meta<FieldType extends Type = Type> {
       type: FieldType;
       default: KvField.TypeMap[FieldType] | undefined;
-      shape: Meta | Record<string, Meta> | undefined
    }
-
 
    /**
     * Represents Any Type of Field
-    * This Broader Type Used For getting the field meta only 
+    * This Broader Type Used For getting the field meta only
     */
-   export type Any = { [$meta]: Meta<Type> }
+   // export type Any = { [$meta]: Meta<Type> }
 
+   export const $def = Symbol('KV:Field:Meta:Definition')
+   export function modifier<FieldType extends Type>(type: FieldType) {
 
+      const meta: Meta<FieldType> = {
+         type,
+         default: undefined,
+      };
 
+      const modifiers = {
+         default(data: TypeMap[FieldType]) {
+            meta.default = data;
+            return new Obj(this).omit(["default"]);
+         },
+         get [KvField.$def]() {
+            return meta
+         }
+      };
 
-   export const $meta = Symbol("KV:Field:Meta");
-
-
-
-   export class Builder<FieldType extends Type> {
-      [$meta]: Meta<FieldType>;
-
-      constructor(type: FieldType, shape?: Meta['shape']) {
-         this[$meta] = {
-            type,
-            default: undefined,
-            shape
-         };
-      }
-
-      default(data: TypeMap[FieldType]) {
-         this[$meta].default = data;
-         return object<Builder<FieldType>>(this).omit(["default"]);
-      }
+      return modifiers
    }
 }

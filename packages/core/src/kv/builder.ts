@@ -3,43 +3,41 @@ import { KvField } from "./field";
 export namespace kv {
 
    export function string() {
-      return new KvField.Builder("string");
+      return KvField.modifier("string");
    }
 
    export function number() {
-      return new KvField.Builder("number");
+      return KvField.modifier("number");
    }
 
    export function bigint() {
-      return new KvField.Builder("bigint");
+      return KvField.modifier("bigint");
    }
 
    export function boolean() {
-      return new KvField.Builder("boolean");
+      return KvField.modifier("boolean");
    }
 
    export function date() {
-      return new KvField.Builder("date");
+      return KvField.modifier("date");
    }
 
    export function buffer() {
-      return new KvField.Builder("buffer");
+      return KvField.modifier("buffer");
    }
 
-   export function object<Shape extends Record<string, KvField.Any>>(
-      shapeSchema: Shape,
-   ) {
-      const entries = Object.entries(shapeSchema).map(([k, v]) => [k, v[KvField.$meta]])
-      const metaShape = Object.fromEntries(entries)
-      return new KvField.Builder('object', metaShape)
+   export function object() {
+      return KvField.modifier('object')
 
    }
 
-   export function array<Shape extends KvField.Any>(shapeSchema: Shape) {
-      return new KvField.Builder("array", shapeSchema[KvField.$meta]);
+   export function array() {
+      return KvField.modifier("array");
    }
 
    export function any() {
-      return new KvField.Builder("any");
+      return KvField.modifier("any");
    }
 }
+
+

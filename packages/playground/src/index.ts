@@ -1,27 +1,45 @@
-import { kv, KvField, Model, Storage } from "@aromix/core";
+import { kv, Storage, KvField } from "@aromix/core";
 
-const redis = Storage.kv({
-   async get(key) {
-      return "datya";
-   },
-   async set(key, value) { },
+const schema = {
+   id: kv.bigint(),
 
-   async has(k) {
-      return true;
-   },
-   async delete(key) { },
-});
+   name: kv.string().default("test"),
+
+   age: kv.number().default(18),
+
+   active: kv.boolean().default(true),
+
+   createdAt: kv.date().default(new Date()),
+
+   avatar: kv.buffer(),
+
+   metadata: kv.object().default({
+      theme: "dark",
+      language: "en",
+   }),
+
+   tags: kv.array().default([]),
+
+   anything: kv.any(),
+};
 
 
 
-
-const md = Model.kv({
-
-   base: kv.object({
-      name: kv.string()
-   })
+function resolve() {
 
 
-})
+   const resolvedMeta: any = {}
+
+   for (const key in schema) {
+      //@ts-ignore
+      resolvedMeta[key] = schema[key][KvField.$def]
+   }
+
+   console.log(resolvedMeta);
 
 
+
+}
+
+
+resolve()
