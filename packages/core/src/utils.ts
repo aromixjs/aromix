@@ -39,7 +39,7 @@ class Obj<T> {
 
       }
       return clone
-      
+
    }
 
 

@@ -1,13 +1,14 @@
-import { FieldModifier } from "../kv/builder";
-import { KvStorage } from "../kv/storage";
 
-interface EntityOptions {
-	name: string;
-	storage: KvStorage;
-	schema: Record<string, FieldModifier>;
-}
+// import { KvStorage } from "../kv/storage";
 
-export function entity(options: EntityOptions) {
+// // interface EntityOptions {
+// // 	name: string;
+// // 	storage: KvStorage;
+// // 	schema: Record<string, FieldModifier>;
+// // }
 
-	return options
-}
+// export function entity(options: EntityOptions) {
+
+// 	return options
+// }
+export {}

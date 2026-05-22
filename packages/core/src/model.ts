@@ -1,11 +1,12 @@
-import { KvField } from "./kv/builder";
+import { KvField } from "./kv/field"
 
-export namespace model {
+
+export namespace Model {
+
+
 
    interface KvInput {
-      base: KvField.Builder<'any'>
-
-
+      base: Record<string, KvField.Any>
    }
 
    export function kv(input: KvInput) { }

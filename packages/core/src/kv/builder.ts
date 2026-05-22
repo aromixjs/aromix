@@ -1,73 +1,48 @@
-import { object } from "../utils";
-
-export namespace KvField {
-
-   export type Type = 'string' | 'number' | 'boolean' | 'any'
-
-   export interface TypeMap {
-      'string': string,
-      'number': number,
-      'boolean': boolean,
-      'any': any
-   }
-
-
-   export interface Meta<FieldType extends KvField.Type> {
-      type: FieldType,
-      default: KvField.TypeMap[FieldType] | undefined
-   }
-
-
-
-
-
-   export class Builder<FieldType extends KvField.Type> {
-      private meta: KvField.Meta<FieldType>;
-
-      constructor(type: FieldType) {
-         this.meta = {
-            type,
-            default: undefined
-         }
-      }
-
-      default(data: KvField.TypeMap[FieldType]) {
-         this.meta.default = data
-         return object<Builder<FieldType>>(this).omit(['default'])
-      }
-
-   }
-
-}
-
-
-
-
-
-
+import { KvField } from "./field";
 
 class KV {
    string() {
-      return new KvField.Builder('string')
+      return new KvField.Builder("string");
    }
-
    number() {
-      return new KvField.Builder('number')
+      return new KvField.Builder("number");
    }
-
+   bigint() {
+      return new KvField.Builder("bigint");
+   }
    boolean() {
-      return new KvField.Builder('boolean')
+      return new KvField.Builder("boolean");
+   }
+   date() {
+      return new KvField.Builder("date");
+   }
+   buffer() {
+      return new KvField.Builder("buffer");
    }
 
+   object(shape?: Record<string, KvField.Any>) {
+      if (shape) {
 
+         const entries = Object.entries(shape).map(([key, value]) => [
+            key,
+            value[KvField.$meta],
+         ]);
 
+         const metaShape = Object.fromEntries(entries);
+         return new KvField.Builder("object", metaShape);
+      }
+
+      return new KvField.Builder("object");
+   }
+
+   array(shape?: KvField.Any) {
+      const builder = new KvField.Builder("array", shape?.[KvField.$meta]);
+      return builder;
+   }
+
+   any() {
+      return new KvField.Builder("any");
+   }
 }
 
-
-
 export const kv = new KV();
-
-
-
-
-
