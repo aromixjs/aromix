@@ -30,13 +30,7 @@ jobs:
 
       - name: Check for change files
         id: check
-        run: |
-          count=$(ls change/*.json 2>/dev/null | wc -l)
-          if [ "$count" -gt 0 ]; then
-            echo "has=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has=false" >> "$GITHUB_OUTPUT"
-          fi
+        uses: ./.github/actions/check-change-files
 
       - run: pnpm --filter @aromix/core build
         if: steps.check.outputs.has == 'true'

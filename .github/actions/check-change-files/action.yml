@@ -1,0 +1,10 @@
+name: Check change files
+description: Check whether change/*.json files exist
+
+runs:
+  using: node20
+  main: index.mjs
+
+outputs:
+  has:
+    description: true if change/*.json files exist, false otherwise
