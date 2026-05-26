@@ -1,16 +1,21 @@
 import { execSync } from "child_process";
-import { readFileSync, readdirSync, writeFileSync } from "fs";
-import { join } from "path";
+import { readFileSync, writeFileSync } from "fs";
+
+const packageList = [
+  { name: "@aromix/core", file: "packages/core/package.json" },
+  { name: "@aromix/bun", file: "packages/bun/package.json" },
+  { name: "@aromix/cloudflare", file: "packages/cloudflare/package.json" },
+  { name: "@aromix/cli", file: "packages/cli/package.json" },
+];
 
 // Read all versions before bump
 const before = {};
-for (const dir of readdirSync("packages")) {
-  try {
-    const { name, version, private: priv } = JSON.parse(
-      readFileSync(join("packages", dir, "package.json"), "utf8")
-    );
-    if (!priv) before[name] = version;
-  } catch {}
+
+for (const entry of packageList) {
+  const content = readFileSync(entry.file, "utf8");
+  const parsed = JSON.parse(content);
+
+  before[entry.name] = parsed.version;
 }
 
 // Beachball does the bumping
@@ -18,15 +23,15 @@ execSync("npx beachball bump --yes", { stdio: "inherit" });
 
 // Find what changed
 const bumped = [];
-for (const dir of readdirSync("packages")) {
-  try {
-    const { name, version, private: priv } = JSON.parse(
-      readFileSync(join("packages", dir, "package.json"), "utf8")
-    );
-    if (!priv && before[name] !== version) {
-      bumped.push({ name, version });
-    }
-  } catch {}
+
+for (const entry of packageList) {
+  const content = readFileSync(entry.file, "utf8");
+  const parsed = JSON.parse(content);
+
+  if (before[entry.name] !== parsed.version) {
+    bumped.push({ name: entry.name, version: parsed.version });
+  }
 }
 
-writeFileSync(".bumped.json", JSON.stringify({ packages: bumped }, null, 2));
+const result = JSON.stringify({ packages: bumped }, null, 2);
+writeFileSync(".bumped.json", result);
