@@ -11,13 +11,12 @@ export class lite {
 
 
    static integer() { }
-
+   static int() { }
+   static real() { }
    static text() { }
-
-
-   static string() { }
-
-
+   static blob() { }
+   static numeric() { }
+   static any() { }
 
 
 }
