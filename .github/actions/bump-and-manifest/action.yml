@@ -1,0 +1,10 @@
+name: Bump and manifest
+description: Run beachball bump and write a .bumped manifest file
+
+runs:
+  using: node20
+  main: index.mjs
+
+outputs:
+  has-bumped:
+    description: Whether any packages were bumped (true/false)
