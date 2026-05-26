@@ -1,0 +1,43 @@
+name: Publish
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/**/package.json'
+      - 'packages/**/CHANGELOG.json'
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Verify version merge
+        id: check
+        run: ./.github/scripts/check-version-merge.sh
+
+      - run: pnpm build
+        if: steps.check.outputs.ready == 'true'
+
+      - name: Publish packages
+        if: steps.check.outputs.ready == 'true'
+        run: npx beachball publish --yes --token ${{ secrets.NPM_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
