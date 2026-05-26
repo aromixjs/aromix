@@ -31,7 +31,15 @@ jobs:
 
       - name: Verify version merge
         id: check
-        run: ./.github/scripts/check-version-merge.sh
+        run: |
+          message=$(git log -1 --pretty=%B)
+          count=$(ls change/*.json 2>/dev/null | wc -l)
+
+          if [[ "$message" == "chore: version packages"* ]] && [ "$count" -eq 0 ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - run: pnpm build
         if: steps.check.outputs.ready == 'true'
