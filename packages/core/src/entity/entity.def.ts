@@ -1,7 +1,6 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { EntityKV, EntityKvConfig, EntitySQLite, EntitySQLiteConfig, SchemaInput, SchemaOutput } from './entity.type'
 import { validate } from './entity.util'
-import { config } from 'process'
 
 export namespace Entity {
       export const $meta = Symbol.for('entity:meta')

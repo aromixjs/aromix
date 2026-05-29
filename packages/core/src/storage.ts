@@ -6,7 +6,7 @@ export namespace Storage {
             has(key: string): Promise<boolean>
       }
 
-      export function KvAdapter(adapter: KvAdapter) {
+      export function kv(adapter: KvAdapter) {
             return adapter
       }
 
