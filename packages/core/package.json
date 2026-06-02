@@ -42,16 +42,15 @@
             "dev": "tsup --watch",
             "typecheck": "tsc --noEmit"
       },
-      "dependencies": {
-            "@msgpack/msgpack": "catalog:",
-            "@standard-schema/spec": "^1.1.0",
-            "valibot": "^1.4.0"
-      },
       "peerDependencies": {
-            "@aromix/sqlite": "workspace:^"
+            "@aromix/sqlite": "workspace:^",
+            "@aromix/validator": "workspace:^",
+            "@msgpack/msgpack": "catalog:"
       },
       "devDependencies": {
+            "@aromix/validator": "workspace:^",
             "@aromix/sqlite": "workspace:^",
+            "@msgpack/msgpack": "catalog:",
             "@types/node": "catalog:",
             "tsup": "catalog:",
             "typescript": "catalog:"

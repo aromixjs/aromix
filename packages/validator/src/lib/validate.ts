@@ -1,4 +1,4 @@
-import { Schema, State } from "./types";
+import { State } from "./types";
 
 
 
@@ -9,7 +9,7 @@ export interface Issue {
 
 
 
-export class Validator {
+export class Validate {
 
    constructor(private state: State) { }
 
@@ -29,7 +29,7 @@ export class Validator {
 
          for (const key of Object.keys(this.state.object.shape)) {
             const schema = this.state.object.shape[key]
-            const issues = new Validator(schema.state).run(obj[key])
+            const issues = new Validate(schema.state).run(obj[key])
             for (const issue of issues) {
                allIssues.push({ message: `${key}: ${issue.message}`, received: issue.received })
             }
@@ -39,7 +39,7 @@ export class Validator {
       if (this.state.type === 'array' && this.state.array) {
          const arr = value as unknown[]
          for (let i = 0; i < arr.length; i++) {
-            const issues = new Validator(this.state.array.element.state).run(arr[i])
+            const issues = new Validate(this.state.array.element.state).run(arr[i])
             for (const issue of issues) {
                allIssues.push({ message: `[${i}]: ${issue.message}`, received: issue.received })
             }
