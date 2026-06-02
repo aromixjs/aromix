@@ -56,6 +56,12 @@ export class Validate {
          }
       }
 
+      if (this.state.type === 'literal' && this.state.literal) {
+         if (value !== this.state.literal.value) {
+            allIssues.push({ message: `Expected literal ${String(this.state.literal.value)}, got ${value === null ? 'null' : typeof value}`, received: value })
+         }
+      }
+
       return allIssues
    }
 
@@ -73,6 +79,7 @@ export class Validate {
           case 'object': return typeof value === 'object' && value !== null && !Array.isArray(value)
           case 'array': return Array.isArray(value)
           case 'tuple': return Array.isArray(value)
+          case 'literal': return true // checked in run() with strict equality
       }
    }
 

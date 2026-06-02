@@ -84,7 +84,24 @@ const parsedData = sar.parse([
 ])
 
 
-const tpl= av.tuple([av.string()])
+const tpl = av.tuple([av.string(), av.number()])
+
+const dataTpl = tpl.parse(['hello', 42])
 
 
-const dataTpl =tpl.parse({data:'test'})
+// --- literal ---
+
+const hello = av.literal('hello')
+type Hello = typeof hello.$infer   // 'hello'
+
+const fortyTwo = av.literal(42)
+type FortyTwo = typeof fortyTwo.$infer  // 42
+
+const isTrue = av.literal(true)
+type IsTrue = typeof isTrue.$infer    // true
+
+const nothing = av.literal(null)
+type Nothing = typeof nothing.$infer  // null
+
+hello.parse('hello')  // OK
+hello.parse('world')  // throws
