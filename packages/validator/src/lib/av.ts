@@ -14,6 +14,8 @@ export class av<Output> implements Schema<Output> {
       array: options.array,
       tuple: options.tuple,
       literal: options.literal,
+      record: options.record,
+      union: options.union,
     }
   }
 
@@ -70,6 +72,14 @@ export class av<Output> implements Schema<Output> {
 
   static literal<T extends string | number | boolean | bigint | null>(value: T): Chain<T> {
     return new av<T>({ type: 'literal', literal: { value } })
+  }
+
+  static record<V extends Schema>(value: V): Chain<Record<string, V['$infer']>> {
+    return new av<Record<string, V['$infer']>>({ type: 'record', record: { value } })
+  }
+
+  static union<T extends Schema[]>(schemas: [...T]): Chain<T[number]['$infer']> {
+    return new av<T[number]['$infer']>({ type: 'union', union: { schemas } })
   }
 
 

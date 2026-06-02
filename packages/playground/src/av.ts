@@ -105,3 +105,26 @@ type Nothing = typeof nothing.$infer  // null
 
 hello.parse('hello')  // OK
 hello.parse('world')  // throws
+
+
+
+const rcs= av.record(av.string())
+
+
+const rcsv= rcs.parse({})
+
+
+
+const union = av.union([
+
+
+av.literal('1'),
+av.literal(4),
+av.literal('test')
+
+
+
+])
+
+
+const parsedUnion = union.parse({})

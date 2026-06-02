@@ -62,6 +62,27 @@ export class Validate {
          }
       }
 
+      if (this.state.type === 'record' && this.state.record) {
+         const obj = value as Record<string, unknown>
+         for (const key of Object.keys(obj)) {
+            const issues = new Validate(this.state.record.value.state).run(obj[key])
+            for (const issue of issues) {
+               allIssues.push({ message: `${key}: ${issue.message}`, received: issue.received })
+            }
+         }
+      }
+
+      if (this.state.type === 'union' && this.state.union) {
+         let matched = false
+         for (const schema of this.state.union.schemas) {
+            const issues = new Validate(schema.state).run(value)
+            if (issues.length === 0) { matched = true; break }
+         }
+         if (!matched) {
+            allIssues.push({ message: `Invalid union, no branch matched`, received: value })
+         }
+      }
+
       return allIssues
    }
 
@@ -80,6 +101,8 @@ export class Validate {
           case 'array': return Array.isArray(value)
           case 'tuple': return Array.isArray(value)
           case 'literal': return true // checked in run() with strict equality
+          case 'record': return typeof value === 'object' && value !== null && !Array.isArray(value)
+          case 'union': return true // checked in run()
       }
    }
 

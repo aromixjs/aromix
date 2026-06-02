@@ -12,6 +12,8 @@ export interface AvTypeMap {
   array: unknown[]
   tuple: unknown[]
   literal: string | number | boolean | bigint | null
+  record: Record<string, unknown>
+  union: unknown
 }
 
 export type AvType = keyof AvTypeMap
@@ -26,6 +28,8 @@ export interface State {
   array?: { element: Schema }
   tuple?: { elements: Schema[] }
   literal?: { value: string | number | boolean | bigint | null }
+  record?: { value: Schema }
+  union?: { schemas: Schema[] }
 }
 
 export interface Schema<Output = unknown> {
@@ -44,6 +48,8 @@ export type AvInput = {
   array?: { element: Schema }
   tuple?: { elements: Schema[] }
   literal?: { value: string | number | boolean | bigint | null }
+  record?: { value: Schema }
+  union?: { schemas: Schema[] }
 }
 
 export type Chain<Output, Used extends string = never> = Omit<{
