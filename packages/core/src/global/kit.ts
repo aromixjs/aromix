@@ -52,5 +52,4 @@ export namespace Kit {
 
             return keys as Type.CrushKeys<Input>[]
       }
-
 }

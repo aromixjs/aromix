@@ -1,126 +1,157 @@
-import { Schema, State } from "./types";
+import { AnySchema, Issue, SchemaState } from '../types'
 
+/**
+ *  Validator :: runs type checking and nested validation for a schema state.
+ *  Returns all issues found rather than stopping at the first failure.
+ */
+export class Validator {
+      constructor(private readonly state: SchemaState) {}
 
+      run(value: unknown): Issue[] {
+            const typeCheckPassed = this.checkType(value)
 
-export interface Issue {
-   message: string
-   received: unknown
-}
-
-
-
-export class Validate {
-
-   constructor(private state: State) { }
-
-   run(value: unknown): Issue[] {
-      if (!this.check(value)) {
-         const message = `Expected ${this.state.type}, got ${value === null ? 'null' : typeof value}`
-         return [{ message, received: value }]
-      }
-
-      const allIssues: Issue[] = []
-
-      if (this.state.type === 'object' && this.state.object) {
-         const obj: any = value
-
-         for (const key of Object.keys(this.state.object.shape)) {
-            const schema = this.state.object.shape[key]
-            try { schema.parse(obj[key]) } catch (e) {
-               if (e instanceof ValidationError) {
-                  for (const issue of e.issues) {
-                     allIssues.push({ message: `${key}: ${issue.message}`, received: issue.received })
-                  }
-               }
+            if (!typeCheckPassed) {
+                  return [this.buildTypeMismatchIssue(value)]
             }
-         }
+
+            return this.collectNestedIssues(value)
       }
 
-      if (this.state.type === 'array' && this.state.array) {
-         const arr = value as unknown[]
-         for (let i = 0; i < arr.length; i++) {
-            try { this.state.array.element.parse(arr[i]) } catch (e) {
-               if (e instanceof ValidationError) {
-                  for (const issue of e.issues) {
-                     allIssues.push({ message: `[${i}]: ${issue.message}`, received: issue.received })
-                  }
-               }
+      // type guards
+      private checkType(value: unknown): boolean {
+            switch (this.state.type) {
+                  case 'string':
+                        return typeof value === 'string'
+                  case 'number':
+                        return typeof value === 'number' && !Number.isNaN(value)
+                  case 'boolean':
+                        return typeof value === 'boolean'
+                  case 'bigint':
+                        return typeof value === 'bigint'
+                  case 'symbol':
+                        return typeof value === 'symbol'
+                  case 'null':
+                        return value === null
+                  case 'undefined':
+                        return value === undefined
+                  case 'unknown':
+                        return true
+                  case 'never':
+                        return false
+                  case 'date':
+                        return value instanceof Date && !isNaN(value.getTime())
+                  case 'object':
+                        return this.isPlainObject(value)
+                  case 'array':
+                        return Array.isArray(value)
+                  case 'tuple':
+                        return Array.isArray(value)
+                  case 'literal':
+                        return true // exact match checked in collectNestedIssues
+                  case 'record':
+                        return this.isPlainObject(value)
+                  case 'union':
+                        return true // branch matching checked in collectNestedIssues
             }
-         }
       }
 
-      if (this.state.type === 'tuple' && this.state.tuple) {
-         const arr = value as unknown[]
-         for (let i = 0; i < this.state.tuple.elements.length; i++) {
-            try { this.state.tuple.elements[i].parse(arr[i]) } catch (e) {
-               if (e instanceof ValidationError) {
-                  for (const issue of e.issues) {
-                     allIssues.push({ message: `[${i}]: ${issue.message}`, received: issue.received })
+      // nested issue collection
+      private collectNestedIssues(value: unknown): Issue[] {
+            const issues: Issue[] = []
+
+            switch (this.state.type) {
+                  case 'literal': {
+                        const expected = this.state.literal!.value
+                        if (value !== expected) {
+                              issues.push({
+                                    path: [],
+                                    code: 'invalid_literal',
+                                    message: `Expected literal ${String(expected)}`,
+                                    received: value,
+                              })
+                        }
+                        break
                   }
-               }
-            }
-         }
-      }
 
-      if (this.state.type === 'literal' && this.state.literal) {
-         if (value !== this.state.literal.value) {
-            allIssues.push({ message: `Expected literal ${String(this.state.literal.value)}, got ${value === null ? 'null' : typeof value}`, received: value })
-         }
-      }
-
-      if (this.state.type === 'record' && this.state.record) {
-         const obj = value as Record<string, unknown>
-         for (const key of Object.keys(obj)) {
-            try { this.state.record.value.parse(obj[key]) } catch (e) {
-               if (e instanceof ValidationError) {
-                  for (const issue of e.issues) {
-                     allIssues.push({ message: `${key}: ${issue.message}`, received: issue.received })
+                  case 'object': {
+                        const obj = value as Record<string, unknown>
+                        for (const [key, schema] of Object.entries(this.state.object!.shape)) {
+                              const childIssues = this.collectFromChild(schema, obj[key], key)
+                              issues.push(...childIssues)
+                        }
+                        break
                   }
-               }
+
+                  case 'array': {
+                        const arr = value as unknown[]
+                        for (let index = 0; index < arr.length; index++) {
+                              const childIssues = this.collectFromChild(this.state.array!.element, arr[index], index)
+                              issues.push(...childIssues)
+                        }
+                        break
+                  }
+
+                  case 'tuple': {
+                        const arr = value as unknown[]
+                        const elements = this.state.tuple!.elements
+                        for (let index = 0; index < elements.length; index++) {
+                              const childIssues = this.collectFromChild(elements[index], arr[index], index)
+                              issues.push(...childIssues)
+                        }
+                        break
+                  }
+
+                  case 'record': {
+                        const obj = value as Record<string, unknown>
+                        for (const [key, entry] of Object.entries(obj)) {
+                              const childIssues = this.collectFromChild(this.state.record!.value, entry, key)
+                              issues.push(...childIssues)
+                        }
+                        break
+                  }
+
+                  case 'union': {
+                        const schemas = this.state.union!.schemas
+                        const matched = schemas.some((schema) => schema.safeParse(value).ok)
+                        if (!matched) {
+                              issues.push({
+                                    path: [],
+                                    code: 'invalid_union',
+                                    message: 'No branch matched',
+                                    received: value,
+                              })
+                        }
+                        break
+                  }
             }
-         }
+
+            return issues
       }
 
-      if (this.state.type === 'union' && this.state.union) {
-         let matched = false
-         for (const schema of this.state.union.schemas) {
-            try { schema.parse(value); matched = true; break } catch {}
-         }
-         if (!matched) {
-            allIssues.push({ message: `Invalid union, no branch matched`, received: value })
-         }
+      private collectFromChild(schema: AnySchema, value: unknown, pathSegment: string | number): Issue[] {
+            const result = schema.safeParse(value)
+
+            if (result.ok) {
+                  return []
+            }
+
+            return result.issues.map((issue) => ({
+                  ...issue,
+                  path: [pathSegment, ...issue.path],
+            }))
       }
 
-      return allIssues
-   }
-
-   private check(value: unknown): boolean {
-      switch (this.state.type) {
-         case 'string': return typeof value === 'string'
-         case 'number': return typeof value === 'number' && !Number.isNaN(value)
-         case 'boolean': return typeof value === 'boolean'
-         case 'bigint': return typeof value === 'bigint'
-         case 'symbol': return typeof value === 'symbol'
-         case 'null': return value === null
-         case 'undefined': return value === undefined
-         case 'unknown': return true
-         case 'never': return false
-          case 'object': return typeof value === 'object' && value !== null && !Array.isArray(value)
-          case 'array': return Array.isArray(value)
-          case 'tuple': return Array.isArray(value)
-          case 'literal': return true // checked in run() with strict equality
-          case 'record': return typeof value === 'object' && value !== null && !Array.isArray(value)
-          case 'union': return true // checked in run()
-          case 'date': return value instanceof Date && !isNaN(value.getTime())
+      private buildTypeMismatchIssue(value: unknown): Issue {
+            const received = value === null ? 'null' : typeof value
+            return {
+                  path: [],
+                  code: 'invalid_type',
+                  message: `Expected ${this.state.type}, got ${received}`,
+                  received: value,
+            }
       }
-   }
 
-}
-
-
-export class ValidationError extends Error {
-   constructor(public issues: Issue[]) {
-      super(issues.map(i => i.message).join(', '))
-      this.name = 'ValidationError'
-   }
+      private isPlainObject(value: unknown): boolean {
+            return typeof value === 'object' && value !== null && !Array.isArray(value)
+      }
 }

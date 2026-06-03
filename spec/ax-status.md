@@ -1,26 +1,27 @@
 # ax — Implementation Status
 
-> Legend:  ✅ IMPLEMENTED   🗑️ KILLED   📋 TODO
+> Legend: ✅ IMPLEMENTED 🗑️ KILLED 📋 TODO
 
 ---
 
 ## Primitives ✅
 
-| Schema | Runtime check | TS type |
-|---|---|---|
-| `ax.string()` | `typeof x === 'string'` | `string` |
-| `ax.number()` | `typeof x === 'number' && !isNaN(x)` | `number` |
-| `ax.boolean()` | `typeof x === 'boolean'` | `boolean` |
-| `ax.bigint()` | `typeof x === 'bigint'` | `bigint` |
-| `ax.symbol()` | `typeof x === 'symbol'` | `symbol` |
-| `ax.null()` | `x === null` | `null` |
-| `ax.undefined()` | `x === undefined` | `undefined` |
-| `ax.unknown()` | always passes | `unknown` |
-| `ax.never()` | always fails | `never` |
+| Schema           | Runtime check                        | TS type     |
+| ---------------- | ------------------------------------ | ----------- |
+| `ax.string()`    | `typeof x === 'string'`              | `string`    |
+| `ax.number()`    | `typeof x === 'number' && !isNaN(x)` | `number`    |
+| `ax.boolean()`   | `typeof x === 'boolean'`             | `boolean`   |
+| `ax.bigint()`    | `typeof x === 'bigint'`              | `bigint`    |
+| `ax.symbol()`    | `typeof x === 'symbol'`              | `symbol`    |
+| `ax.null()`      | `x === null`                         | `null`      |
+| `ax.undefined()` | `x === undefined`                    | `undefined` |
+| `ax.unknown()`   | always passes                        | `unknown`   |
+| `ax.never()`     | always fails                         | `never`     |
 
 Every primitive **coerces** input by default — `String()`, `Number()`, `BigInt()`, `Boolean()`, or `new Date()` are called during `parse()` before validation.
 
 ### 📋 `.message()` (TODO)
+
 Override default error message on type check failure.
 
 ---
@@ -31,15 +32,15 @@ Override default error message on type check failure.
 
 ---
 
-## Nullability & defaults  🗑️  KILLED
+## Nullability & defaults 🗑️ KILLED
 
-| Removed method | Replacement |
-|---|---|
-| `.optional()` | `ax.union([schema, ax.undefined()])` |
-| `.nullable()` | `ax.union([schema, ax.null()])` |
-| `.nullish()` | `ax.union([schema, ax.null(), ax.undefined()])` |
-| `.default(value)` | not yet replaced |
-| `.defaultFn(() => value)` | not yet replaced |
+| Removed method            | Replacement                                     |
+| ------------------------- | ----------------------------------------------- |
+| `.optional()`             | `ax.union([schema, ax.undefined()])`            |
+| `.nullable()`             | `ax.union([schema, ax.null()])`                 |
+| `.nullish()`              | `ax.union([schema, ax.null(), ax.undefined()])` |
+| `.default(value)`         | not yet replaced                                |
+| `.defaultFn(() => value)` | not yet replaced                                |
 
 ---
 
@@ -87,7 +88,7 @@ Override default error message on type check failure.
 
 ---
 
-## Coercions  🗑️  KILLED
+## Coercions 🗑️ KILLED
 
 `ax.coerce.*` namespace removed. Built-in coercion on all primitives instead.
 
@@ -125,29 +126,29 @@ Override default error message on type check failure.
 
 ## Summary
 
-| Area | Status |
-|---|---|
-| Primitives (9) | ✅ |
-| Literal | ✅ |
-| Object (shape) | ✅ |
-| Array | ✅ |
-| Tuple | ✅ |
-| Record (1-param) | ✅ |
-| Union | ✅ |
-| Date | ✅ |
-| `.parse()` | ✅ |
-| `$infer` | ✅ |
-| `.meta()` | ✅ |
-| ValidationError | ✅ |
-| **KILLED:** `.optional()`/`.nullable()`/`.default()` | 🗑️ |
-| **KILLED:** `ax.coerce.*` | 🗑️ |
-| `.message()` | 📋 |
-| Object key stripping | 📋 |
-| Object modifiers | 📋 |
-| `ax.merge()` | 📋 |
-| Record (2-param) | 📋 |
-| `ax.instanceof()` | 📋 |
-| `ax.lazy()` | 📋 |
-| Operators + `.pipe()` | 📋 |
-| `.safeParse()` | 📋 |
-| Full Issue codes/path | 📋 |
+| Area                                                 | Status |
+| ---------------------------------------------------- | ------ |
+| Primitives (9)                                       | ✅     |
+| Literal                                              | ✅     |
+| Object (shape)                                       | ✅     |
+| Array                                                | ✅     |
+| Tuple                                                | ✅     |
+| Record (1-param)                                     | ✅     |
+| Union                                                | ✅     |
+| Date                                                 | ✅     |
+| `.parse()`                                           | ✅     |
+| `$infer`                                             | ✅     |
+| `.meta()`                                            | ✅     |
+| ValidationError                                      | ✅     |
+| **KILLED:** `.optional()`/`.nullable()`/`.default()` | 🗑️     |
+| **KILLED:** `ax.coerce.*`                            | 🗑️     |
+| `.message()`                                         | 📋     |
+| Object key stripping                                 | 📋     |
+| Object modifiers                                     | 📋     |
+| `ax.merge()`                                         | 📋     |
+| Record (2-param)                                     | 📋     |
+| `ax.instanceof()`                                    | 📋     |
+| `ax.lazy()`                                          | 📋     |
+| Operators + `.pipe()`                                | 📋     |
+| `.safeParse()`                                       | 📋     |
+| Full Issue codes/path                                | 📋     |

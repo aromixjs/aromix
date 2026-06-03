@@ -1,124 +1,81 @@
-import { AxType, Chain, Primitives, Schema, State } from "./types"
-import { Validate, ValidationError } from "./validate"
-export class ax<Output> implements Schema<Output> {
+import type { AnySchema, Chain, FailSignal, LiteralValue, Operator, OperatorDefinition } from './../types'
+import { Schema } from './schema'
 
-  readonly $infer!: Output
-  state: State
+// ax :: the public API namespace
+export const ax = {
+      // Primitive Entry Points
+      string(): Chain<string> {
+            return Schema.create({ type: 'string' })
+      },
+      number(): Chain<number> {
+            return Schema.create({ type: 'number' })
+      },
+      boolean(): Chain<boolean> {
+            return Schema.create({ type: 'boolean' })
+      },
+      bigint(): Chain<bigint> {
+            return Schema.create({ type: 'bigint' })
+      },
+      symbol(): Chain<symbol> {
+            return Schema.create({ type: 'symbol' })
+      },
+      null(): Chain<null> {
+            return Schema.create({ type: 'null' })
+      },
+      undefined(): Chain<undefined> {
+            return Schema.create({ type: 'undefined' })
+      },
+      unknown(): Chain<unknown> {
+            return Schema.create({ type: 'unknown' })
+      },
+      never(): Chain<never> {
+            return Schema.create({ type: 'never' })
+      },
+      date(): Chain<Date> {
+            return Schema.create({ type: 'date' })
+      },
 
-  private constructor(state: State) {
-    this.state = state
-  }
+      // Composite Entry Points
+      literal<Value extends LiteralValue>(value: Value): Chain<Value> {
+            return Schema.create({ type: 'literal', literal: { value } })
+      },
 
-  // Primitives ( Entry point )
-  static string(): Chain<string> {
-    return new ax<string>({ type: 'string' })
-  }
+      object<Shape extends Record<string, AnySchema>>(shape: Shape): Chain<{ [Key in keyof Shape]: Shape[Key]['$infer'] }> {
+            return Schema.create({ type: 'object', object: { shape } })
+      },
 
-  static number(): Chain<number> {
-    return new ax<number>({ type: 'number' })
-  }
+      array<Element extends AnySchema>(element: Element): Chain<Element['$infer'][]> {
+            return Schema.create({ type: 'array', array: { element } })
+      },
 
-  static boolean(): Chain<boolean> {
-    return new ax<boolean>({ type: 'boolean' })
-  }
+      tuple<Elements extends AnySchema[]>(elements: [...Elements]): Chain<{ [Key in keyof Elements]: Elements[Key]['$infer'] }> {
+            return Schema.create({ type: 'tuple', tuple: { elements } })
+      },
 
-  static bigint(): Chain<bigint> {
-    return new ax<bigint>({ type: 'bigint' })
-  }
+      record<Value extends AnySchema>(value: Value): Chain<Record<string, Value['$infer']>> {
+            return Schema.create({ type: 'record', record: { value } })
+      },
 
-  static symbol(): Chain<symbol> {
-    return new ax<symbol>({ type: 'symbol' })
-  }
+      union<Schemas extends AnySchema[]>(schemas: [...Schemas]): Chain<Schemas[number]['$infer']> {
+            return Schema.create({ type: 'union', union: { schemas } })
+      },
 
-  static null(): Chain<null> {
-    return new ax<null>({ type: 'null' })
-  }
+      // operator factory :: The Input type is inferred from the validate function signature, ensuring operators are only usable in pipes with a matching input type.
+      operator<Input, Output = Input>(definition: OperatorDefinition<Input, Output>): Operator<Input, Output> {
+            return {
+                  _tag: 'ax.operator',
+                  _input: undefined as any,
+                  _output: undefined as any,
+                  definition,
+            }
+      },
 
-  static undefined(): Chain<undefined> {
-    return new ax<undefined>({ type: 'undefined' })
-  }
-
-  static unknown(): Chain<unknown> {
-    return new ax<unknown>({ type: 'unknown' })
-  }
-
-  static never(): Chain<never> {
-    return new ax<never>({ type: 'never' })
-  }
-
-  static date(): Chain<Date> {
-    return new ax<Date>({ type: 'date' })
-  }
-
-
-  // Composites ( Entry Point )
-  static object<Shape extends Record<string, Schema>>(shape: Shape): Chain<{ [Key in keyof Shape]: Shape[Key]['$infer'] }> {
-    return new ax<{ [Key in keyof Shape]: Shape[Key]['$infer'] }>({ type: 'object', object: { shape } })
-  }
-
-  static array<Element extends Schema>(element: Element): Chain<Element['$infer'][]> {
-    return new ax<Element['$infer'][]>({ type: 'array', array: { element } })
-  }
-
-  static tuple<Elements extends Schema[]>(elements: [...Elements]): Chain<{ [Key in keyof Elements]: Elements[Key]['$infer'] }> {
-
-    return new ax<{ [K in keyof Elements]: Elements[K]['$infer'] }>({ type: 'tuple', tuple: { elements } })
-  }
-
-  static literal<Value extends Primitives>(value: Value): Chain<Value> {
-    return new ax<Value>({ type: 'literal', literal: { value } })
-  }
-
-  static record<Value extends Schema>(value: Value): Chain<Record<string, Value['$infer']>> {
-    return new ax<Record<string, Value['$infer']>>({ type: 'record', record: { value } })
-  }
-
-  static union<Types extends Schema[]>(schemas: [...Types]): Chain<Types[number]['$infer']> {
-    return new ax<Types[number]['$infer']>({ type: 'union', union: { schemas } })
-  }
-
-
-  // --- defaults ---
-  default(value: Output): ax<Output> {
-    return new ax<Output>({ ...this.state, default: { value }, defaultFn: undefined })
-  }
-
-  defaultFn(fn: () => Output): ax<Output> {
-    return new ax<Output>({ ...this.state, defaultFn: { fn }, default: undefined })
-  }
-
-
-  // --- introspection ---
-  meta(): Readonly<State> {
-    return structuredClone(this.state)
-  }
-
-
-  parse(value: unknown) {
-    if (value === undefined) {
-      if (this.state.default !== undefined) return this.state.default.value as Output
-      if (this.state.defaultFn !== undefined) return this.state.defaultFn.fn() as Output
-    }
-    const val = parseRaw(this.state.type, value)
-    const issues = new Validate(this.state).run(val)
-    if (issues.length > 0) throw new ValidationError(issues)
-    return val as Output
-  }
-}
-
-function parseRaw(type: AxType, value: unknown): unknown {
-  switch (type) {
-    case 'string': return String(value)
-    case 'number': return Number(value)
-    case 'boolean': {
-      if (value === 'true' || value === '1' || value === 'yes' || value === 'on') return true
-      if (value === 'false' || value === '0' || value === 'no' || value === 'off') return false
-      return Boolean(value)
-    }
-    case 'bigint': {
-      try { return BigInt(value as number | string) } catch { return NaN }
-    }
-    case 'date': return new Date(value as string | number)
-    default: return value
-  }
+      // Fail Factory :: Call inside an operator's validate() to reject the current value.
+      fail(message: string, options?: { path?: (string | number)[] }): FailSignal {
+            return {
+                  _tag: 'ax.fail',
+                  message,
+                  path: options?.path,
+            }
+      },
 }
