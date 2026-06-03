@@ -21,12 +21,14 @@ export type AxType = keyof AxTypeMap
 
 
 
+export type Primitives = string | number | boolean | bigint | null
+
 export interface State {
   type: AxType
   object?: { shape: Record<string, Schema> }
   array?: { element: Schema }
   tuple?: { elements: Schema[] }
-  literal?: { value: string | number | boolean | bigint | null }
+  literal?: { value: Primitives }
   record?: { value: Schema }
   union?: { schemas: Schema[] }
   default?: { value: unknown }
@@ -41,7 +43,5 @@ export interface Schema<Output = unknown> {
   default(value: Output): Schema<Output>
   defaultFn(fn: () => Output): Schema<Output>
 }
-
-export type Infer<SchemaType extends Schema> = SchemaType['$infer']
 
 export type Chain<Output> = Schema<Output>

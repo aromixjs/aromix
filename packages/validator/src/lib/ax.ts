@@ -1,4 +1,4 @@
-import { AxType, Chain, Schema, State } from "./types"
+import { AxType, Chain, Primitives, Schema, State } from "./types"
 import { Validate, ValidationError } from "./validate"
 export class ax<Output> implements Schema<Output> {
 
@@ -60,20 +60,21 @@ export class ax<Output> implements Schema<Output> {
     return new ax<Element['$infer'][]>({ type: 'array', array: { element } })
   }
 
-  static tuple<T extends Schema[]>(elements: [...T]): Chain<{ [K in keyof T]: T[K]['$infer'] }> {
-    return new ax<{ [K in keyof T]: T[K]['$infer'] }>({ type: 'tuple', tuple: { elements } })
+  static tuple<Elements extends Schema[]>(elements: [...Elements]): Chain<{ [Key in keyof Elements]: Elements[Key]['$infer'] }> {
+
+    return new ax<{ [K in keyof Elements]: Elements[K]['$infer'] }>({ type: 'tuple', tuple: { elements } })
   }
 
-  static literal<T extends string | number | boolean | bigint | null>(value: T): Chain<T> {
-    return new ax<T>({ type: 'literal', literal: { value } })
+  static literal<Value extends Primitives>(value: Value): Chain<Value> {
+    return new ax<Value>({ type: 'literal', literal: { value } })
   }
 
-  static record<V extends Schema>(value: V): Chain<Record<string, V['$infer']>> {
-    return new ax<Record<string, V['$infer']>>({ type: 'record', record: { value } })
+  static record<Value extends Schema>(value: Value): Chain<Record<string, Value['$infer']>> {
+    return new ax<Record<string, Value['$infer']>>({ type: 'record', record: { value } })
   }
 
-  static union<T extends Schema[]>(schemas: [...T]): Chain<T[number]['$infer']> {
-    return new ax<T[number]['$infer']>({ type: 'union', union: { schemas } })
+  static union<Types extends Schema[]>(schemas: [...Types]): Chain<Types[number]['$infer']> {
+    return new ax<Types[number]['$infer']>({ type: 'union', union: { schemas } })
   }
 
 

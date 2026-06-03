@@ -1,4 +1,4 @@
-import { ax, Infer } from "@aromix/validator";
+import { ax } from "@aromix/validator";
 
 const name = ax.string()
 const age = ax.number()
@@ -46,7 +46,7 @@ console.log(ax.union([ax.string(), ax.undefined()]).meta())
 // --- Infer utility ---
 
 const Schema = ax.union([ax.boolean(), ax.undefined()])
-type SchemaOutput = Infer<typeof Schema>   // boolean | undefined
+type SchemaOutput = typeof Schema.$infer  // boolean | undefined
 
 const schemaObj = ax.union([ax.object({
    name: ax.union([ax.string(), ax.null()]),
@@ -102,3 +102,12 @@ const parsedUnion = union.parse({})
 
 
 
+
+
+
+const defaultTest = ax.object({
+   name: ax.string().default('test'),
+   age: ax.number().defaultFn(() => 20),
+
+   test: ax.union([ ax.literal('admin') ])
+})
