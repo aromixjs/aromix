@@ -1,8 +1,6 @@
-import { ax } from '@aromix/validator'
+import { ax, ValidationError } from '@aromix/validator'
 
 // ── Defining operators ─────────────────────────────────────
-// An operator is just a function that receives a value and
-// either returns a new value or throws to signal failure.
 
 const minLen = (n: number) =>
    ax.operator((v: string) => {
@@ -17,25 +15,59 @@ const first = ax.operator((v: string[]) => {
 })
 const upper = ax.operator((v: string) => v.toUpperCase())
 
-// ── Validation (same type throughout) ──────────────────────
-// Each .pipe() validates, returns the same type.
+// ── Runtime type checking ──────────────────────────────────
+
+console.log('\n── Type check throws ValidationError ──')
+try {
+   ax.number().parse('not a number')
+} catch (e) {
+   const err = e as ValidationError
+   console.log(err.message)      // 'Expected number, received string'
+   console.log(err.issues[0])    // { code: 'invalidType', path: [], message: '...' }
+}
+
+// ── parse (throws on failure) ──────────────────────────────
 
 const Name = ax.string().pipe(minLen(2)).pipe(minLen(5))
 
-type Name = typeof Name.$infer // string
-
-console.log('\n── Validation ──')
+console.log('\n── parse throws ValidationError ──')
 console.log(Name.parse('Rifat'))       // 'Rifat'
-// Name.parse('X')                     // throws 'Min 2 chars'
+
+try {
+   Name.parse('X')
+} catch (e) {
+   const err = e as ValidationError
+   console.log(err.message)            // 'Min 2 chars'
+   console.log(err.issues[0].code)     // 'custom'
+}
+
+// ── safeParse (never throws) ───────────────────────────────
+
+const SafeName = ax.string().pipe(minLen(2)).default('anon')
+
+console.log('\n── safeParse success ──')
+const r1 = SafeName.safeParse('hi')
+if (r1.success) {
+   console.log(r1.data.toUpperCase())  // 'HI'
+}
+
+console.log('\n── safeParse failure ──')
+const r2 = SafeName.safeParse('x')
+if (!r2.success) {
+   console.log(r2.errors)              // ['Min 2 chars']
+}
+
+console.log('\n── safeParse with default ──')
+const r3 = SafeName.safeParse(undefined)
+if (r3.success) {
+   console.log(r3.data)                // 'anon'
+}
 
 // ── Type transformation ────────────────────────────────────
-// Each .pipe() can change the type. TypeScript tracks it.
 
 const CsvFirst = ax.string()
    .pipe(toArray)   // Schema<string[]>
    .pipe(first)     // Schema<string>
-
-type CsvFirst = typeof CsvFirst.$infer // string
 
 console.log('\n── Transformation ──')
 console.log(CsvFirst.parse('a, b, c')) // 'a'
@@ -48,8 +80,6 @@ const Processed = ax.string()
    .pipe(toArray)   // string → string[]
    .pipe(first)     // string[] → string
 
-type Processed = typeof Processed.$infer // string
-
 console.log('\n── Long chain ──')
 console.log(Processed.parse('john, bob')) // 'JOHN'
 
@@ -60,17 +90,18 @@ const User = ax.object({
    tags: ax.string().pipe(toArray),
 })
 
-type User = typeof User.$infer
-// { name: string; tags: string[] }
-
 console.log('\n── Object with pipes ──')
-console.log(User.parse({
-   name: 'Alex',
-   tags: 'admin, editor',
-}))
-// { name: 'Alex', tags: ['admin', 'editor'] }
+console.log(User.parse({ name: 'Alex', tags: 'admin, editor' }))
 
-// ── Combined with default ──────────────────────────────────
+// ── Object runtime validation ──────────────────────────────
+
+console.log('\n── Object validation fails ──')
+const fail = User.safeParse({ name: 123, tags: 'x' })
+if (!fail.success) {
+   console.log(fail.errors)
+}
+
+// ── Combine with default ───────────────────────────────────
 
 const WithDefault = ax.string()
    .pipe(minLen(2))
@@ -79,10 +110,3 @@ const WithDefault = ax.string()
 console.log('\n── With default ──')
 console.log(WithDefault.parse(undefined)) // 'guest'
 console.log(WithDefault.parse('alex'))    // 'alex'
-
-// ── Type-safety: wrong input type errors at compile time ──
-//
-// ax.string().pipe(ax.operator((v: number) => v * 2))
-//          ~~~~  'Operator<number, number>' is not assignable
-//                to 'Operator<string, string>'. Type 'number'
-//                is not assignable to type 'string'.

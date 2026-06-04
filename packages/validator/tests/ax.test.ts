@@ -49,17 +49,17 @@ function expectFail(schema: { safeParse: (v: unknown) => any }, value: unknown, 
 console.log('\nprimitives')
 
 test('string — valid', () => expectPass(ax.string(), 'hello', 'hello'))
-test('string — invalid', () => expectFail(ax.string(), 42, 'invalid_type'))
+test('string — invalid', () => expectFail(ax.string(), 42, 'invalidType'))
 test('number — valid', () => expectPass(ax.number(), 42, 42))
-test('number — NaN rejected', () => expectFail(ax.number(), NaN, 'invalid_type'))
+test('number — NaN rejected', () => expectFail(ax.number(), NaN, 'invalidType'))
 test('boolean — valid', () => expectPass(ax.boolean(), true, true))
 test('null — valid', () => expectPass(ax.null(), null, null))
-test('null — undefined invalid', () => expectFail(ax.null(), undefined, 'invalid_type'))
+test('null — undefined invalid', () => expectFail(ax.null(), undefined, 'invalidType'))
 test('undefined — valid', () => expectPass(ax.undefined(), undefined, undefined))
 test('unknown — passes any', () => expectPass(ax.unknown(), { anything: 1 }, { anything: 1 }))
-test('never — always fails', () => expectFail(ax.never(), 'anything', 'invalid_type'))
+test('never — always fails', () => expectFail(ax.never(), 'anything', 'invalidType'))
 test('date — valid', () => expectPass(ax.date(), new Date('2024-01-01'), new Date('2024-01-01')))
-test('date — invalid date', () => expectFail(ax.date(), new Date('invalid'), 'invalid_type'))
+test('date — invalid date', () => expectFail(ax.date(), new Date('invalid'), 'invalidType'))
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Literal
@@ -71,7 +71,7 @@ test('string literal — match', () => expectPass(ax.literal('admin'), 'admin', 
 test('number literal — match', () => expectPass(ax.literal(42), 42, 42))
 test('boolean literal — match', () => expectPass(ax.literal(true), true, true))
 test('null literal — match', () => expectPass(ax.literal(null), null, null))
-test('literal — mismatch', () => expectFail(ax.literal('admin'), 'user', 'invalid_literal'))
+test('literal — mismatch', () => expectFail(ax.literal('admin'), 'user', 'invalidLiteral'))
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Default
@@ -122,7 +122,7 @@ console.log('\nobject')
 const UserSchema = ax.object({ name: ax.string(), age: ax.number() })
 
 test('object — valid', () => expectPass(UserSchema, { name: 'Rifat', age: 25 }, { name: 'Rifat', age: 25 }))
-test('object — wrong field type', () => expectFail(UserSchema, { name: 'Rifat', age: 'old' }, 'invalid_type'))
+test('object — wrong field type', () => expectFail(UserSchema, { name: 'Rifat', age: 'old' }, 'invalidType'))
 test('object — collects all errors', () => {
       const result = UserSchema.safeParse({ name: 42, age: 'old' })
       return !result.ok && result.issues.length === 2
@@ -135,8 +135,8 @@ test('object — collects all errors', () => {
 console.log('\narray')
 
 test('array — valid', () => expectPass(ax.array(ax.string()), ['a', 'b'], ['a', 'b']))
-test('array — wrong element', () => expectFail(ax.array(ax.string()), ['a', 1], 'invalid_type'))
-test('array — not an array', () => expectFail(ax.array(ax.string()), 'not an array', 'invalid_type'))
+test('array — wrong element', () => expectFail(ax.array(ax.string()), ['a', 1], 'invalidType'))
+test('array — not an array', () => expectFail(ax.array(ax.string()), 'not an array', 'invalidType'))
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tuple
@@ -145,7 +145,7 @@ test('array — not an array', () => expectFail(ax.array(ax.string()), 'not an a
 console.log('\ntuple')
 
 test('tuple — valid', () => expectPass(ax.tuple([ax.string(), ax.number()]), ['hello', 42], ['hello', 42]))
-test('tuple — wrong position', () => expectFail(ax.tuple([ax.string(), ax.number()]), [42, 'hello'], 'invalid_type'))
+test('tuple — wrong position', () => expectFail(ax.tuple([ax.string(), ax.number()]), [42, 'hello'], 'invalidType'))
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Record
@@ -154,7 +154,7 @@ test('tuple — wrong position', () => expectFail(ax.tuple([ax.string(), ax.numb
 console.log('\nrecord')
 
 test('record — valid', () => expectPass(ax.record(ax.number()), { a: 1, b: 2 }, { a: 1, b: 2 }))
-test('record — wrong value', () => expectFail(ax.record(ax.number()), { a: 'oops' }, 'invalid_type'))
+test('record — wrong value', () => expectFail(ax.record(ax.number()), { a: 'oops' }, 'invalidType'))
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Union
@@ -166,7 +166,7 @@ const StringOrNumber = ax.union([ax.string(), ax.number()])
 
 test('union — first branch', () => expectPass(StringOrNumber, 'hello', 'hello'))
 test('union — second branch', () => expectPass(StringOrNumber, 42, 42))
-test('union — no match', () => expectFail(StringOrNumber, true, 'invalid_union'))
+test('union — no match', () => expectFail(StringOrNumber, true, 'invalidType'))
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Pipe — validation operators
