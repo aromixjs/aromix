@@ -1,4 +1,3 @@
-import { StandardSchemaV1 } from '@standard-schema/spec'
 import { Type } from './type'
 
 /**
@@ -52,16 +51,5 @@ export namespace Kit {
             walk(input, '')
 
             return keys as Type.CrushKeys<Input>[]
-      }
-
-      // Standard schema validation util
-      export async function validate<Schema extends StandardSchemaV1>(schema: Schema, value: unknown): Promise<Type.SchemaOutput<Schema>> {
-            const result = await schema['~standard'].validate(value)
-
-            if ('issues' in result) {
-                  throw new Error(`Validation failed: ${JSON.stringify(result.issues)}`)
-            }
-
-            return result.value
       }
 }
