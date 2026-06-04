@@ -1,63 +1,153 @@
-import { ax } from '../src'
+import { describe, it, expect, expectTypeOf } from 'vitest'
+import { ax, ValidationError } from '@aromix/validator'
 
-// Operators
 const minLen = (n: number) =>
-   ax.operator((v: string) => {
-      if (v.length < n) throw `Min ${n} chars`
-      return v
-   })
+      ax.operator((v: string) => {
+            if (v.length < n) throw `Min ${n} chars`
+            return v
+      })
 
-const toArray = ax.operator((v: string) => v.split(',').map(s => s.trim()))
-const first = ax.operator((v: string[]) => v[0])
+const toArray = ax.operator((v: string) => v.split(',').map((s) => s.trim()))
+const first = ax.operator((v: string[]) => {
+      if (v.length === 0) throw 'Array is empty'
+      return v[0]
+})
 const upper = ax.operator((v: string) => v.toUpperCase())
+const double = ax.operator((v: number) => v * 2)
 
-// ── Type tests ─────────────────────────────────────────────
+describe('pipe — validation', () => {
+      it('validates and passes if operators succeed', () => {
+            const s = ax.string().pipe(minLen(2))
+            expect(s.parse('hello')).toBe('hello')
+      })
 
-// Single validator — stays string
-const s1 = ax.string().pipe(minLen(3))
-type T1 = typeof s1.$infer // string
+      it('throws when an operator fails', () => {
+            const s = ax.string().pipe(minLen(5))
+            expect(() => s.parse('hi')).toThrow()
+      })
 
-// Transform: string → string[]
-const s2 = ax.string().pipe(toArray)
-type T2 = typeof s2.$infer // string[]
+      it('operator errors are wrapped in ValidationError', () => {
+            const s = ax.string().pipe(minLen(5))
+            try {
+                  s.parse('hi')
+            } catch (e) {
+                  expect(e).toBeInstanceOf(ValidationError)
+                  expect((e as ValidationError).issues[0].code).toBe('custom')
+            }
+      })
 
-// Chain: string → string[] → string
-const s3 = ax.string().pipe(toArray).pipe(first)
-type T3 = typeof s3.$infer // string
+      it('safeParse returns error messages from operators', () => {
+            const s = ax.string().pipe(minLen(5))
+            const r = s.safeParse('hi')
+            expect(r.success).toBe(false)
+            if (!r.success) expect(r.errors[0]).toContain('Min')
+      })
+})
 
-// Chain: string → string[] → string → string
-const s4 = ax.string().pipe(toArray).pipe(first).pipe(upper)
-type T4 = typeof s4.$infer // string
+describe('pipe — type transformation', () => {
+      it('transforms string to string[]', () => {
+            const s = ax.string().pipe(toArray)
+            expect(s.parse('a,b,c')).toEqual(['a', 'b', 'c'])
+            type T = typeof s.$infer
+            expectTypeOf<T>().toEqualTypeOf<string[]>()
+      })
 
-// ── Runtime tests ──────────────────────────────────────────
+      it('transforms string[] to string', () => {
+            const s = ax.string().pipe(toArray).pipe(first)
+            expect(s.parse('a,b,c')).toBe('a')
+            type T = typeof s.$infer
+            expectTypeOf<T>().toEqualTypeOf<string>()
+      })
 
-console.log('\npipe — type inference')
+      it('chains multiple transformations', () => {
+            const s = ax.string().pipe(minLen(2)).pipe(upper).pipe(toArray).pipe(first)
+            expect(s.parse('john,bob')).toBe('JOHN')
+            type T = typeof s.$infer
+            expectTypeOf<T>().toEqualTypeOf<string>()
+      })
 
-// Single validator
-const r1 = s1.parse('hello')
-console.assert(r1 === 'hello', 'minLen passes')
-console.log('  ✓ minLen passes')
+      it('operator can transform between primitive types', () => {
+            const s = ax
+                  .string()
+                  .pipe(ax.operator((v: string) => v.length))
+                  .pipe(double)
+            expect(s.parse('hello')).toBe(10)
+            type T = typeof s.$infer
+            expectTypeOf<T>().toEqualTypeOf<number>()
+      })
+})
 
-try {
-   s1.parse('hi')
-   console.assert(false, 'should have thrown')
-} catch {
-   console.log('  ✓ minLen throws on short')
-}
+describe('pipe — compile-time type safety', () => {
+      it('rejects operator with wrong input type at compile time', () => {
+            const s = ax.string()
+            // @ts-expect-error — number operator not assignable to string schema
+            s.pipe(ax.operator((v: number) => v * 2))
+      })
+})
 
-// Transform to array
-const r2 = s2.parse('a, b, c')
-console.assert(Array.isArray(r2) && r2[0] === 'a', 'toArray works')
-console.log('  ✓ toArray:', r2)
+describe('pipe — edge cases', () => {
+      it('handles zero operators (identity-like)', () => {
+            const s = ax.string()
+            expect(s.parse('x')).toBe('x')
+      })
 
-// Chained transform
-const r3 = s3.parse('a, b, c')
-console.assert(r3 === 'a', 'chain toArray+first works')
-console.log('  ✓ chain:', r3)
+      it('operator that throws custom Error', () => {
+            const s = ax.string().pipe(
+                  ax.operator((v: string) => {
+                        throw new Error('custom error')
+                  }),
+            )
+            const r = s.safeParse('x')
+            expect(r.success).toBe(false)
+            if (!r.success) expect(r.errors[0]).toBe('custom error')
+      })
 
-// Three-step chain
-const r4 = s4.parse('a, b, c')
-console.assert(r4 === 'A', 'three-step chain works')
-console.log('  ✓ three-step:', r4)
+      it('operator that throws a string', () => {
+            const s = ax.string().pipe(
+                  ax.operator((v: string) => {
+                        throw 'plain string error'
+                  }),
+            )
+            const r = s.safeParse('x')
+            expect(r.success).toBe(false)
+            if (!r.success) expect(r.errors[0]).toBe('plain string error')
+      })
 
-console.log('\npipes done')
+      it('operator that returns undefined', () => {
+            const s = ax.string().pipe(ax.operator((v: string) => undefined))
+            expect(s.parse('x')).toBeUndefined()
+            type T = typeof s.$infer
+            expectTypeOf<T>().toEqualTypeOf<undefined>()
+      })
+
+      it('first operator fails in chain, validates accordingly', () => {
+            const s = ax.string().pipe(minLen(5)).pipe(upper)
+            const r = s.safeParse('hi')
+            expect(r.success).toBe(false)
+      })
+
+      it('safeParse never throws with pipes', () => {
+            const s = ax.string().pipe(minLen(5)).pipe(upper)
+            expect(() => s.safeParse('hi')).not.toThrow()
+      })
+})
+
+describe('pipe — type inference', () => {
+      it('infers string after string pipe', () => {
+            const s = ax.string().pipe(minLen(2))
+            type T = typeof s.$infer
+            expectTypeOf<T>().toEqualTypeOf<string>()
+      })
+
+      it('infers string[] after toArray pipe', () => {
+            const s = ax.string().pipe(toArray)
+            type T = typeof s.$infer
+            expectTypeOf<T>().toEqualTypeOf<string[]>()
+      })
+
+      it('infers string after toArray+first', () => {
+            const s = ax.string().pipe(toArray).pipe(first)
+            type T = typeof s.$infer
+            expectTypeOf<T>().toEqualTypeOf<string>()
+      })
+})

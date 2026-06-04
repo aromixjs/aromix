@@ -24,8 +24,4 @@ export class Schema<Output> extends Parser<Output> implements AnySchema<Output> 
             this.state.operators.push(op)
             return this as any
       }
-
-      meta(): Readonly<SchemaState> {
-            return structuredClone(this.state)
-      }
 }

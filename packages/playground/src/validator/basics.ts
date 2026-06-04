@@ -35,12 +35,12 @@ const parsedName = ax.string().parse('rifat')
 const parsedAge = ax.union([ax.number(), ax.null()]).parse(null)
 //    ^? number | null
 
-// --- meta ---
+// --- state ---
 
-console.log(ax.string().meta())
+console.log(ax.string().state)
 // { type: 'string' }
 
-console.log(ax.union([ax.string(), ax.undefined()]).meta())
+console.log(ax.union([ax.string(), ax.undefined()]).state)
 // { type: 'union', schemas: [...] }
 
 // --- Infer utility ---
