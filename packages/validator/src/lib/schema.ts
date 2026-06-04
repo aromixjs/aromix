@@ -1,4 +1,4 @@
-import { AnySchema, Chain, Operator, SchemaState } from './types'
+import { AnySchema, Operator, SchemaState } from './types'
 
 export class Schema<Output> implements AnySchema<Output> {
       declare readonly $infer: Output
@@ -8,9 +8,8 @@ export class Schema<Output> implements AnySchema<Output> {
             this.state = { ...input }
       }
 
-      default(value: Output): Chain<Output, 'default' | 'defaultFn'> {
+      default(value: Output) {
             this.state.default = { value }
-            
             return this
       }
 
@@ -19,13 +18,27 @@ export class Schema<Output> implements AnySchema<Output> {
             return this
       }
 
-      pipe(operators: Operator<Output, Output>[]) {
-            this.state.operators = operators
-            return this
+      pipe<Next>(op: Operator<Output, Next>): Schema<Next> {
+            if (!this.state.operators) this.state.operators = []
+            this.state.operators.push(op)
+            return this as any
       }
 
       parse(value: unknown): Output {
-            return value as Output
+            let current = value
+            if (current === undefined) {
+                  if (this.state.default) {
+                        current = this.state.default.value
+                  } else if (this.state.defaultFn) {
+                        current = this.state.defaultFn.fn()
+                  }
+            }
+            if (this.state.operators) {
+                  for (const op of this.state.operators) {
+                        current = op.run(current)
+                  }
+            }
+            return current as Output
       }
 
       meta(): Readonly<SchemaState> {

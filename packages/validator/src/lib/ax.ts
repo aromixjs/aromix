@@ -62,18 +62,6 @@ export const ax = {
    },
 }
 
-const schemaOb = ax.object({
-   name: ax.string().default(''),
-   age: ax.undefined(),
-   password: ax.union([
-      ax.object({
-         test: ax.string(),
-      }),
 
-      ax.object({
-         demo: ax.string().pipe(),
-      }),
-   ]),
-})
 
-type data = typeof schemaOb.$infer
+
