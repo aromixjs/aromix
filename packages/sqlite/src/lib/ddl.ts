@@ -1,9 +1,9 @@
-import { ColType, DateFormat, DdlInput, DdlState, UniqueConflict, Collation, ReferenceAction } from './types'
+import { ColType, DdlInput, DdlState, OnConflict, Collation, ReferenceTrigger } from './types'
 
 export class Ddl<Type extends ColType = ColType> {
   readonly state: DdlState
 
-  private constructor(input: DdlInput) {
+  constructor(input: DdlInput) {
     this.state = {
       type: input.type,
       dateFormat: input.dateFormat,
@@ -12,34 +12,6 @@ export class Ddl<Type extends ColType = ColType> {
       notNull: false,
       unique: false,
     }
-  }
-
-  static int() {
-    return new Ddl<'int'>({ type: 'int' })
-  }
-
-  static real() {
-    return new Ddl<'real'>({ type: 'real' })
-  }
-
-  static text() {
-    return new Ddl<'text'>({ type: 'text' })
-  }
-
-  static blob() {
-    return new Ddl<'blob'>({ type: 'blob' })
-  }
-
-  static bool() {
-    return new Ddl<'boolean'>({ type: 'boolean' })
-  }
-
-  static bigint() {
-    return new Ddl<'bigint'>({ type: 'bigint' })
-  }
-
-  static date(format: DateFormat) {
-    return new Ddl<'date'>({ type: 'date', dateFormat: format })
   }
 
   primaryKey() {
@@ -57,9 +29,9 @@ export class Ddl<Type extends ColType = ColType> {
     return this
   }
 
-  unique(conflict: UniqueConflict = 'conflict:error') {
+  unique(onConflict?: OnConflict) {
     this.state.unique = true
-    this.state.uniqueConflict = conflict
+    this.state.onConflict = onConflict
     return this
   }
 
@@ -68,77 +40,23 @@ export class Ddl<Type extends ColType = ColType> {
     return this
   }
 
-  defaultFn(callback: () => unknown) {
-    this.state.defaultFn = callback
-    return this
-  }
-
-  onUpdate(callback: () => unknown) {
-    this.state.onUpdate = callback
-    return this
-  }
-
   collate(collation: Collation) {
     this.state.collate = collation
     return this
   }
 
-  references(col: any, actions?: ReferenceAction[]) {
-    this.state.references = {
-      col,
-      actions: actions || [],
-    }
+  references(table: string, column: string, actions?: ReferenceTrigger[]) {
+    this.state.references = { table, column, actions: actions ?? [] }
     return this
   }
 
-  min(value: number) {
-    this.state.min = value
+  primaryKeyWith(cols: string[]) {
+    this.state.primaryKeyWith = cols
     return this
   }
 
-  max(value: number) {
-    this.state.max = value
-    return this
-  }
-
-  minLength(value: number) {
-    this.state.minLength = value
-    return this
-  }
-
-  maxLength(value: number) {
-    this.state.maxLength = value
-    return this
-  }
-
-  in(values: string[]) {
-    this.state.in = values
-    return this
-  }
-
-  lt(col: string) {
-    this.state.lt = col
-    return this
-  }
-
-  gt(col: string) {
-    this.state.gt = col
-    return this
-  }
-
-  lte(col: string) {
-    this.state.lte = col
-    return this
-  }
-
-  gte(col: string) {
-    this.state.gte = col
-    return this
-  }
-
-  uniqueWith(cols: string[], conflict: UniqueConflict = 'conflict:error') {
+  uniqueWith(cols: string[]) {
     this.state.uniqueWith = cols
-    this.state.uniqueWithConflict = conflict
     return this
   }
 
@@ -149,11 +67,6 @@ export class Ddl<Type extends ColType = ColType> {
 
   uniqueIndexWith(cols: string[]) {
     this.state.uniqueIndexWith = cols
-    return this
-  }
-
-  primaryKeyWith(cols: string[]) {
-    this.state.primaryKeyWith = cols
     return this
   }
 }

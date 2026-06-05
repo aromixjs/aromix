@@ -1,5 +1,5 @@
 import { Adapter, Entity, Kit } from '@aromix/core'
-import { Ddl } from '@aromix/sqlite'
+import { lite } from '@aromix/sqlite'
 
 const demoAdapter: Adapter.SQLite = {
       async query(sql: string) {
@@ -12,15 +12,15 @@ const demoAdapter: Adapter.SQLite = {
 }
 
 const userModel = {
-      id: Ddl.int().primaryKey().autoIncrement(),
-      name: Ddl.text().notNull(),
-      email: Ddl.text().notNull().unique(),
-      age: Ddl.int().notNull().min(0).max(150),
-      score: Ddl.real().default(0),
-      isActive: Ddl.bool().default(true),
-      createdAt: Ddl.date('iso').notNull().defaultFn(() => new Date()),
-      bio: Ddl.text().maxLength(500),
-      role: Ddl.text().in(['admin', 'user', 'guest']),
+      id: lite.int().primaryKey().autoIncrement(),
+      name: lite.text().notNull(),
+      email: lite.text().notNull().unique(),
+      age: lite.int().notNull(),
+      score: lite.real().default(0),
+      isActive: lite.bool().default(true),
+      createdAt: lite.date('iso').notNull(),
+      bio: lite.text(),
+      role: lite.text(),
 }
 
 const userEntity = Entity.sqlite({

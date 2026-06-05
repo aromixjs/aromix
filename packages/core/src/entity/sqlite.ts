@@ -1,18 +1,18 @@
 import { Adapter } from '../adapter'
-import { type LiteModel } from '@aromix/sqlite'
+import type { Ddl } from '@aromix/sqlite'
 import { Kit } from '../global/kit'
 
 export interface SQLiteEntityInput {
       name: string
       storage: Adapter.SQLite
-      model: LiteModel
+      model: Record<string, Ddl>
 }
 
 export interface SQLiteEntityOutput {
       [Kit.$meta]: {
             name: string
             adapter: Adapter.SQLite
-            model: LiteModel
+            model: Record<string, Ddl>
       }
 }
 

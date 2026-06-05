@@ -1,5 +1,3 @@
-export const $meta = Symbol.for('aromix:sqlite:meta')
-
 export type ColType = 'int' | 'real' | 'text' | 'blob' | 'boolean' | 'bigint' | 'date'
 
 export type DateFormat = 'iso' | 'unix-ms'
@@ -19,21 +17,18 @@ export interface DdlInput {
   dateFormat?: DateFormat
 }
 
-export type UniqueConflict = 'conflict:error' | 'conflict:replace' | 'conflict:ignore'
+export type OnConflict = 'rollback' | 'abort' | 'fail' | 'ignore' | 'replace'
 
 export type Collation = 'binary' | 'nocase' | 'rtrim'
 
 export type ReferenceAction =
-  | 'delete:no-action'
-  | 'delete:restrict'
-  | 'delete:cascade'
-  | 'delete:set-null'
-  | 'delete:set-default'
-  | 'update:no-action'
-  | 'update:restrict'
-  | 'update:cascade'
-  | 'update:set-null'
-  | 'update:set-default'
+  | 'no-action'
+  | 'restrict'
+  | 'cascade'
+  | 'set-null'
+  | 'set-default'
+
+export type ReferenceTrigger = `on-delete:${ReferenceAction}` | `on-update:${ReferenceAction}`
 
 export interface DdlState {
   type: ColType
@@ -42,26 +37,15 @@ export interface DdlState {
   autoIncrement: boolean
   notNull: boolean
   unique: boolean
-  uniqueConflict?: UniqueConflict
+  onConflict?: OnConflict
   default?: unknown
-  defaultFn?: () => unknown
-  onUpdate?: () => unknown
   collate?: Collation
-  min?: number
-  max?: number
-  minLength?: number
-  maxLength?: number
-  in?: string[]
   references?: {
-    col: any
-    actions: ReferenceAction[]
+    table: string
+    column: string
+    actions: ReferenceTrigger[]
   }
-  lt?: string
-  gt?: string
-  lte?: string
-  gte?: string
   uniqueWith?: string[]
-  uniqueWithConflict?: UniqueConflict
   indexWith?: string[]
   uniqueIndexWith?: string[]
   primaryKeyWith?: string[]
