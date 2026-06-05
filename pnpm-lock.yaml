@@ -111,12 +111,27 @@ importers:
 
   packages/core:
     devDependencies:
-      '@aromix/sqlite':
+      '@aromix/lite':
         specifier: workspace:^
-        version: link:../sqlite
+        version: link:../lite
       '@aromix/validator':
         specifier: workspace:^
         version: link:../validator
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.19.19
+      tsup:
+        specifier: 'catalog:'
+        version: 8.5.1(postcss@8.5.15)(typescript@5.9.3)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+
+  packages/lite:
+    devDependencies:
+      '@aromix/core':
+        specifier: workspace:^
+        version: link:../core
       '@types/node':
         specifier: 'catalog:'
         version: 22.19.19
@@ -135,9 +150,9 @@ importers:
       '@aromix/core':
         specifier: workspace:^
         version: link:../core
-      '@aromix/sqlite':
+      '@aromix/lite':
         specifier: workspace:^
-        version: link:../sqlite
+        version: link:../lite
       '@aromix/validator':
         specifier: workspace:^
         version: link:../validator
@@ -148,21 +163,6 @@ importers:
       '@types/bun':
         specifier: ^1.1.13
         version: 1.3.14
-      tsup:
-        specifier: 'catalog:'
-        version: 8.5.1(postcss@8.5.15)(typescript@5.9.3)
-      typescript:
-        specifier: 'catalog:'
-        version: 5.9.3
-
-  packages/sqlite:
-    devDependencies:
-      '@aromix/core':
-        specifier: workspace:^
-        version: link:../core
-      '@types/node':
-        specifier: 'catalog:'
-        version: 22.19.19
       tsup:
         specifier: 'catalog:'
         version: 8.5.1(postcss@8.5.15)(typescript@5.9.3)

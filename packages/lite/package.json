@@ -1,5 +1,5 @@
 {
-      "name": "@aromix/sqlite",
+      "name": "@aromix/lite",
       "version": "0.1.0",
       "description": "SQLite DDL & DML fluent chain API for Aromix",
       "type": "module",
@@ -8,14 +8,14 @@
       "repository": {
             "type": "git",
             "url": "https://github.com/aromixjs/aromix.git",
-            "directory": "packages/sqlite"
+            "directory": "packages/lite"
       },
       "bugs": {
             "url": "https://github.com/aromixjs/aromix/issues"
       },
       "keywords": [
             "aromix",
-            "sqlite",
+            "lite",
             "ddl",
             "dml",
             "fluent"

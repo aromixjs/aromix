@@ -1,5 +1,5 @@
 import { Adapter } from '../adapter'
-import type { Ddl } from '@aromix/sqlite'
+import type { Ddl } from '@aromix/lite'
 import { Kit } from '../global/kit'
 
 export interface SQLiteEntityInput {

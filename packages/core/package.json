@@ -43,12 +43,12 @@
             "typecheck": "tsc --noEmit"
       },
       "peerDependencies": {
-            "@aromix/sqlite": "workspace:^",
+            "@aromix/lite": "workspace:^",
             "@aromix/validator": "workspace:^"
       },
       "devDependencies": {
             "@aromix/validator": "workspace:^",
-            "@aromix/sqlite": "workspace:^",
+            "@aromix/lite": "workspace:^",
             "@types/node": "catalog:",
             "tsup": "catalog:",
             "typescript": "catalog:"

@@ -1,4 +1,4 @@
-import { lite } from "@aromix/sqlite";
+import { lite } from "@aromix/lite";
 
 export const UserTable = lite.table({
   id: lite.int().primaryKey().autoIncrement(),

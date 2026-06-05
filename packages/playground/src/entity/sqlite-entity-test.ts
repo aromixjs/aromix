@@ -1,5 +1,5 @@
 import { Adapter, Entity, Kit } from '@aromix/core'
-import { lite } from '@aromix/sqlite'
+import { lite } from '@aromix/lite'
 
 const demoAdapter: Adapter.SQLite = {
       async query(sql: string) {

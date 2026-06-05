@@ -3,7 +3,7 @@
       "compilerOptions": {
             "rootDir": "src",
             "outDir": "dist",
-            "tsBuildInfoFile": "../../node_modules/.cache/tsbuildinfo-sqlite",
+            "tsBuildInfoFile": "../../node_modules/.cache/tsbuildinfo-lite",
             "types": ["node"]
       },
       "include": ["src/**/*.ts"]
