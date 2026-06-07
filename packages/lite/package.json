@@ -39,8 +39,12 @@
             "typecheck": "tsc --noEmit",
             "test": "vitest run"
       },
+      "peerDependencies": {
+            "@aromix/validator": "workspace:^"
+      },
       "devDependencies": {
             "@aromix/core": "workspace:^",
+            "@aromix/validator": "workspace:^",
             "@types/node": "catalog:",
             "tsup": "catalog:",
             "typescript": "catalog:"

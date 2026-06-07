@@ -1,3 +1,4 @@
+import { ax } from '@aromix/validator'
 import { TableDefinition, TableModel } from './chain.type'
 import { DDL } from './ddl'
 import { DDLState } from './state.type'
@@ -29,10 +30,3 @@ export const lite = {
             return { model, states }
       },
 }
-
-
-
-
-const table = lite.table({
-  name: lite.text().notNull().primaryKey().autoIncrement().unique().index().collate('rtrim')
-})

@@ -132,6 +132,9 @@ importers:
       '@aromix/core':
         specifier: workspace:^
         version: link:../core
+      '@aromix/validator':
+        specifier: workspace:^
+        version: link:../validator
       '@types/node':
         specifier: 'catalog:'
         version: 22.19.19
