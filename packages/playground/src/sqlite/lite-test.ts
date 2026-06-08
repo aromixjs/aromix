@@ -11,7 +11,5 @@ export const UserTable = lite
             avatar: lite.blob(),
       })
       .with((ctx) => {
-            ctx.checks([
-                  ctx.gt('age', 'id')
-            ])
+            ctx.checks([ctx.gt('age', 'id')])
       })

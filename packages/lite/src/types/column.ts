@@ -1,13 +1,13 @@
 import type { Operator } from '@aromix/validator'
 
-export interface ColTypeMap {
+export interface ColumnTypeMap {
       int: number
       real: number
       text: string
       blob: Uint8Array
 }
 
-export type ColType = keyof ColTypeMap
+export type ColumnType = keyof ColumnTypeMap
 
 export type UniqueConflict = 'conflict:error' | 'conflict:replace' | 'conflict:ignore'
 export type Collation = 'binary' | 'nocase' | 'rtrim'
@@ -29,8 +29,8 @@ export interface CheckEntry {
       val: number
 }
 
-export interface DDLState {
-      colType: ColType
+export interface ColumnState {
+      colType: ColumnType
       primaryKey: boolean
       autoIncrement: boolean
       notNull: boolean
@@ -41,7 +41,8 @@ export interface DDLState {
       in: string[]
       collate?: Collation
       references?: { col: unknown; actions: ReferenceAction[] }
-      default?: unknown | (() => unknown)
+      default?: unknown
+      defaultFn?: () => unknown
       onUpdate?: () => unknown
       pipes: Operator<any, any>[]
 }

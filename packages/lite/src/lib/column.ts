@@ -1,14 +1,12 @@
-import { Operator } from '@aromix/validator'
-import { Chain } from '../types/chain'
-import { Collation, ColType, ColTypeMap, DDLState, ReferenceAction, UniqueConflict } from '../types/column'
+import type { Operator } from '@aromix/validator'
+import type { Chain } from '../types/chain'
+import type { Collation, ColumnType, ColumnTypeMap, ColumnState, ReferenceAction, UniqueConflict } from '../types/column'
 
-export class Column<Type extends ColType> {
-      declare readonly $infer: ColTypeMap[Type]
-      private constructor(readonly state: DDLState) {}
+export class Column<Type extends ColumnType> {
+      private constructor(readonly state: ColumnState) {}
 
-      // Static Entry point
-      static create<Type extends ColType>(colType: Type): Chain<Type> {
-            const state: DDLState = {
+      static create<Type extends ColumnType>(colType: Type): Chain<Type> {
+            return new Column<Type>({
                   colType,
                   primaryKey: false,
                   autoIncrement: false,
@@ -19,9 +17,7 @@ export class Column<Type extends ColType> {
                   checks: [],
                   in: [],
                   pipes: [],
-            }
-
-            return new Column<Type>(state)
+            })
       }
 
       primaryKey() {
@@ -32,7 +28,6 @@ export class Column<Type extends ColType> {
             this.state.autoIncrement = true
             return this
       }
-
       notNull() {
             this.state.notNull = true
             return this
@@ -48,61 +43,33 @@ export class Column<Type extends ColType> {
             this.state.index = true
             return this
       }
-
       collate(value: Collation) {
             this.state.collate = value
             return this
       }
 
-      // Value Checks
       gt(value: number) {
-            this.state.checks.push({
-                  op: 'gt',
-                  val: value,
-            })
+            this.state.checks.push({ op: 'gt', val: value })
             return this
       }
-
       gte(value: number) {
-            this.state.checks.push({
-                  op: 'gte',
-                  val: value,
-            })
+            this.state.checks.push({ op: 'gte', val: value })
             return this
       }
-
       lt(value: number) {
-            this.state.checks.push({
-                  op: 'lt',
-                  val: value,
-            })
-
+            this.state.checks.push({ op: 'lt', val: value })
             return this
       }
-
       lte(value: number) {
-            this.state.checks.push({
-                  op: 'lte',
-                  val: value,
-            })
-
+            this.state.checks.push({ op: 'lte', val: value })
             return this
       }
-
       minLength(value: number) {
-            this.state.checks.push({
-                  op: 'minLength',
-                  val: value,
-            })
-
+            this.state.checks.push({ op: 'minLength', val: value })
             return this
       }
-
       maxLength(value: number) {
-            this.state.checks.push({
-                  op: 'maxLength',
-                  val: value,
-            })
+            this.state.checks.push({ op: 'maxLength', val: value })
             return this
       }
 
@@ -112,24 +79,26 @@ export class Column<Type extends ColType> {
       }
 
       references(col: unknown, actions: ReferenceAction[] = []) {
-            this.state.references = {
-                  col,
-                  actions,
-            }
+            this.state.references = { col, actions }
             return this
       }
 
-      default(value: ColTypeMap[Type] | (() => ColTypeMap[Type])) {
+      default(value: ColumnTypeMap[Type]) {
             this.state.default = value
             return this
       }
 
-      onUpdate(fn: () => ColTypeMap[Type]) {
+      defaultFn(fn: () => ColumnTypeMap[Type]) {
+            this.state.defaultFn = fn
+            return this
+      }
+
+      onUpdate(fn: () => ColumnTypeMap[Type]) {
             this.state.onUpdate = fn
             return this
       }
 
-      pipe<Next>(operator: Operator<ColTypeMap[Type], Next>) {
+      pipe<Next>(operator: Operator<ColumnTypeMap[Type], Next>) {
             this.state.pipes.push(operator)
             return this
       }

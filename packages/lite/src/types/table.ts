@@ -1,32 +1,33 @@
-import { TableModel } from './chain'
-import { DDLState, UniqueConflict } from './column'
+import type { TableModel } from './chain'
+import type { ColumnState, UniqueConflict } from './column'
 
-export interface CheckExpr {
+export interface CheckExpression {
       left: string
       op: 'gt' | 'gte' | 'lt' | 'lte'
       right: string
 }
 
 export interface TableState<Model extends TableModel> {
-      columns: { [Key in keyof Model]: DDLState }
+      columns: { [Key in keyof Model]: ColumnState }
       unique: { cols: string[]; conflict?: UniqueConflict }[]
       primaryKey: { cols: string[] }[]
       index: { cols: string[] }[]
       uniqueIndex: { cols: string[] }[]
-      checks: CheckExpr[]
+      checks: CheckExpression[]
       withoutRowId: boolean
 }
 
-export type ColKey<Model extends TableModel> = keyof Model & string
-export interface Ctx<Model extends TableModel> {
-      unique(cols: ColKey<Model>[], conflict?: UniqueConflict): void
-      primaryKey(cols: ColKey<Model>[]): void
-      index(cols: ColKey<Model>[]): void
-      uniqueIndex(cols: ColKey<Model>[]): void
-      checks(exprs: CheckExpr[]): void
-      gt(left: ColKey<Model>, right: ColKey<Model>): CheckExpr
-      gte(left: ColKey<Model>, right: ColKey<Model>): CheckExpr
-      lt(left: ColKey<Model>, right: ColKey<Model>): CheckExpr
-      lte(left: ColKey<Model>, right: ColKey<Model>): CheckExpr
+export type ColumnKey<Model extends TableModel> = keyof Model & string
+
+export interface Context<Model extends TableModel> {
+      unique(cols: ColumnKey<Model>[], conflict?: UniqueConflict): void
+      primaryKey(cols: ColumnKey<Model>[]): void
+      index(cols: ColumnKey<Model>[]): void
+      uniqueIndex(cols: ColumnKey<Model>[]): void
+      checks(exprs: CheckExpression[]): void
+      gt(left: ColumnKey<Model>, right: ColumnKey<Model>): CheckExpression
+      gte(left: ColumnKey<Model>, right: ColumnKey<Model>): CheckExpression
+      lt(left: ColumnKey<Model>, right: ColumnKey<Model>): CheckExpression
+      lte(left: ColumnKey<Model>, right: ColumnKey<Model>): CheckExpression
       withoutRowId(): void
 }
