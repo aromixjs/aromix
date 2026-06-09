@@ -1,0 +1,7 @@
+{
+  "type": "major",
+  "comment": "delete seprate lite packge",
+  "packageName": "@aromix/core",
+  "email": "istiuak.0@gmail.com",
+  "dependentChangeType": "patch"
+}
