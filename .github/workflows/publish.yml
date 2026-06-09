@@ -5,6 +5,7 @@ on:
         branches: [main]
         paths:
             - '.bumped'
+    workflow_dispatch:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
