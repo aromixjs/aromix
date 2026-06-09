@@ -1,7 +1,6 @@
-import { TableModel } from '../types/chain'
-import { TableState } from '../types/table'
+import { TableState } from "./types/context"
 
-export function toSql<Model extends TableModel>(name: string, state: TableState<Model>) {
+export function toSql(name: string, state:TableState ) {
     const sql = {
         value: `CREATE TABLE IF NOT EXIST ${name} (\n`,
         entries: [] as string[],
