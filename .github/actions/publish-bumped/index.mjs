@@ -9,7 +9,6 @@ if (!existsSync('.bumped')) {
 const content = readFileSync('.bumped', 'utf8')
 const lines = content.trim().split('\n').filter(Boolean)
 
-
 execSync('pnpm -r build', { stdio: 'inherit' })
 
 for (const line of lines) {
@@ -17,10 +16,20 @@ for (const line of lines) {
     const name = parts[0]
     const version = parts[1]
 
+    let alreadyPublished = false
+
     try {
-        execSync(`npm view "${name}@${version}" version`, { stdio: 'pipe' })
-        console.log(`✓ ${name}@${version} already published`)
+        const result = execSync(`npm view "${name}" versions --json`, { stdio: 'pipe' })
+        const versions = JSON.parse(result.toString())
+        const list = Array.isArray(versions) ? versions : [versions]
+        alreadyPublished = list.includes(version)
     } catch {
+        // package doesn't exist on npm yet, publish it
+    }
+
+    if (alreadyPublished) {
+        console.log(`✓ ${name}@${version} already published`)
+    } else {
         console.log(`→ Publishing ${name}@${version}...`)
         execSync(`pnpm --filter "${name}" publish --access public --no-git-checks`, {
             stdio: 'inherit',
