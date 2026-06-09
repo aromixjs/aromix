@@ -5,11 +5,11 @@ type, and a valibot validator — no duplication.
 
 ```ts
 export const userSchema = schema('users', (t) => {
-      t.increments('id')
-      t.string('name').notNullable()
-      t.string('status').defaultTo('draft')
-      t.integer('author_id').unsigned().references(authorSchema.id)
-      t.timestamps(true, true)
+    t.increments('id')
+    t.string('name').notNullable()
+    t.string('status').defaultTo('draft')
+    t.integer('author_id').unsigned().references(authorSchema.id)
+    t.timestamps(true, true)
 })
 ```
 
@@ -80,14 +80,14 @@ injection.
 ```ts
 @provide()
 class UserService {
-      private mail = inject(MailService)
-      private db = inject(DbService)
+    private mail = inject(MailService)
+    private db = inject(DbService)
 
-      async create(data: CreateUserData) {
-            const user = await this.db.users.insert(data)
-            await this.mail.send(user.email, 'Welcome')
-            return user
-      }
+    async create(data: CreateUserData) {
+        const user = await this.db.users.insert(data)
+        await this.mail.send(user.email, 'Welcome')
+        return user
+    }
 }
 ```
 
@@ -97,19 +97,19 @@ class UserService {
 ```ts
 @provide()
 class MailService {
-      private client: SMTPClient
+    private client: SMTPClient
 
-      async setup() {
-            this.client = await SMTP.connect(config('mail'))
-      }
+    async setup() {
+        this.client = await SMTP.connect(config('mail'))
+    }
 
-      async teardown() {
-            await this.client.disconnect()
-      }
+    async teardown() {
+        await this.client.disconnect()
+    }
 
-      async send(to: string, subject: string) {
-            await this.client.send({ to, subject })
-      }
+    async send(to: string, subject: string) {
+        await this.client.send({ to, subject })
+    }
 }
 ```
 
@@ -125,9 +125,9 @@ Plugin registration:
 
 ```ts
 export const mailPlugin = plugin((app) => {
-      app.eagerLoad(MailService) // has setup — must be eager
-      app.program(userProgram)
-      // UserService — lazy, no registration needed
+    app.eagerLoad(MailService) // has setup — must be eager
+    app.program(userProgram)
+    // UserService — lazy, no registration needed
 })
 ```
 
@@ -141,16 +141,16 @@ fully typed from the schema definition. Custom methods extend on top.
 ```ts
 @provide()
 class UserModel extends Model(userSchema) {
-      private history = inject(HistoryModel)
+    private history = inject(HistoryModel)
 
-      async findActive() {
-            return this.find({ status: 'active' })
-      }
+    async findActive() {
+        return this.find({ status: 'active' })
+    }
 
-      async deleteCascade(id: string) {
-            await this.history.deleteMany({ userId: id })
-            await this.deleteById(id)
-      }
+    async deleteCascade(id: string) {
+        await this.history.deleteMany({ userId: id })
+        await this.deleteById(id)
+    }
 }
 ```
 
@@ -169,7 +169,7 @@ Plugin registration:
 
 ```ts
 export const userPlugin = plugin((app) => {
-      app.model(UserModel)
+    app.model(UserModel)
 })
 ```
 
@@ -181,20 +181,20 @@ A named handler for a queued payload. Input validated via valibot schema.
 
 ```ts
 const SendEmailJob = Job.define({
-      name: 'send-email',
-      queue: 'mail',
-      retry: { attempts: 3, backoff: 'exponential' },
+    name: 'send-email',
+    queue: 'mail',
+    retry: { attempts: 3, backoff: 'exponential' },
 
-      input: v.object({
-            to: v.string(),
-            subject: v.string(),
-            body: v.string(),
-      }),
+    input: v.object({
+        to: v.string(),
+        subject: v.string(),
+        body: v.string(),
+    }),
 
-      async run(payload) {
-            const mail = inject(MailService)
-            await mail.send(payload.to, payload.subject, payload.body)
-      },
+    async run(payload) {
+        const mail = inject(MailService)
+        await mail.send(payload.to, payload.subject, payload.body)
+    },
 })
 ```
 
@@ -210,7 +210,7 @@ Plugin registration:
 
 ```ts
 export const mailPlugin = plugin((app) => {
-      app.job(SendEmailJob)
+    app.job(SendEmailJob)
 })
 ```
 
@@ -222,14 +222,14 @@ A scheduled job. Same pattern as Job.
 
 ```ts
 const CleanupCron = Cron.define({
-      name: 'cleanup',
-      schedule: '0 * * * *',
-      retry: { attempts: 2 },
+    name: 'cleanup',
+    schedule: '0 * * * *',
+    retry: { attempts: 2 },
 
-      async run() {
-            const users = inject(UserService)
-            await users.deleteInactive()
-      },
+    async run() {
+        const users = inject(UserService)
+        await users.deleteInactive()
+    },
 })
 ```
 
@@ -237,7 +237,7 @@ Plugin registration:
 
 ```ts
 export const appPlugin = plugin((app) => {
-      app.cron(CleanupCron)
+    app.cron(CleanupCron)
 })
 ```
 
@@ -254,51 +254,51 @@ Any step can be re-run independently without replaying the full workflow.
 
 ```ts
 const FetchUser = Workflow.step({
-      name: 'fetch-user',
-      input: v.object({ userId: v.string() }),
-      output: userSchema.validator,
+    name: 'fetch-user',
+    input: v.object({ userId: v.string() }),
+    output: userSchema.validator,
 
-      async run(input) {
-            return inject(UserModel).findById(input.userId)
-      },
+    async run(input) {
+        return inject(UserModel).findById(input.userId)
+    },
 })
 
 const GenerateImage = Workflow.step({
-      name: 'generate-image',
-      timeout: '2m',
-      retry: { attempts: 'per-key', keys: ['OPENAI_KEY_1', 'OPENAI_KEY_2'] },
+    name: 'generate-image',
+    timeout: '2m',
+    retry: { attempts: 'per-key', keys: ['OPENAI_KEY_1', 'OPENAI_KEY_2'] },
 
-      input: v.object({ prompt: v.string() }),
-      output: v.object({ url: v.string() }),
+    input: v.object({ prompt: v.string() }),
+    output: v.object({ url: v.string() }),
 
-      async run(input, { key }) {
-            return inject(ImageService).generate(input.prompt, key)
-      },
+    async run(input, { key }) {
+        return inject(ImageService).generate(input.prompt, key)
+    },
 })
 
 const SendWelcome = Workflow.step({
-      name: 'send-welcome',
-      retry: { attempts: 3, backoff: 'exponential' },
+    name: 'send-welcome',
+    retry: { attempts: 3, backoff: 'exponential' },
 
-      input: v.object({ to: v.string(), name: v.string() }),
-      output: v.null(),
+    input: v.object({ to: v.string(), name: v.string() }),
+    output: v.null(),
 
-      async run(input) {
-            await inject(MailService).send(input.to, `Welcome ${input.name}`)
-      },
+    async run(input) {
+        await inject(MailService).send(input.to, `Welcome ${input.name}`)
+    },
 })
 
 const ProcessVideo = Workflow.step({
-      name: 'process-video',
-      timeout: '5m',
-      retry: { attempts: 2 },
+    name: 'process-video',
+    timeout: '5m',
+    retry: { attempts: 2 },
 
-      input: v.object({ path: v.string() }),
-      output: v.object({ path: v.string(), size: v.number() }),
+    input: v.object({ path: v.string() }),
+    output: v.object({ path: v.string(), size: v.number() }),
 
-      async run(input) {
-            return ffmpeg(input.path).compress()
-      },
+    async run(input) {
+        return ffmpeg(input.path).compress()
+    },
 })
 ```
 
@@ -330,29 +330,29 @@ from each step's input and output schema.
 
 ```ts
 const OnboardingWorkflow = Workflow.define({
-      name: 'onboarding',
-      input: v.object({ userId: v.string() }),
+    name: 'onboarding',
+    input: v.object({ userId: v.string() }),
 
-      steps: (wire) => [
-            wire(FetchUser, { input: (ctx) => ({ userId: ctx.input.userId }) }),
+    steps: (wire) => [
+        wire(FetchUser, { input: (ctx) => ({ userId: ctx.input.userId }) }),
 
-            wire(GenerateImage, {
-                  input: (ctx) => ({ prompt: ctx.steps.FetchUser.name }),
+        wire(GenerateImage, {
+            input: (ctx) => ({ prompt: ctx.steps.FetchUser.name }),
+        }),
+
+        wire(SendWelcome, {
+            when: (ctx) => ctx.steps.FetchUser.verified,
+            input: (ctx) => ({
+                to: ctx.steps.FetchUser.email,
+                name: ctx.steps.FetchUser.name,
             }),
+        }),
 
-            wire(SendWelcome, {
-                  when: (ctx) => ctx.steps.FetchUser.verified,
-                  input: (ctx) => ({
-                        to: ctx.steps.FetchUser.email,
-                        name: ctx.steps.FetchUser.name,
-                  }),
-            }),
-
-            wire(ProcessVideo, {
-                  parallel: true,
-                  input: (ctx) => ({ path: ctx.input.videoPath }),
-            }),
-      ],
+        wire(ProcessVideo, {
+            parallel: true,
+            input: (ctx) => ({ path: ctx.input.videoPath }),
+        }),
+    ],
 })
 ```
 
@@ -398,7 +398,7 @@ Plugin registration:
 
 ```ts
 export const userPlugin = plugin((app) => {
-      app.workflow(OnboardingWorkflow) // steps auto-registered from workflow
+    app.workflow(OnboardingWorkflow) // steps auto-registered from workflow
 })
 ```
 
@@ -411,20 +411,20 @@ resolved at program level are shared across all commands.
 
 ```ts
 const userProgram = program({
-      name: 'users',
-      deps: { users: inject(UserService), mail: inject(MailService) },
+    name: 'users',
+    deps: { users: inject(UserService), mail: inject(MailService) },
 })
 
 userProgram.command('Register', async (ctx) => {
-      return ctx.deps.users.create(ctx.args(userSchema.validator))
+    return ctx.deps.users.create(ctx.args(userSchema.validator))
 })
 
 userProgram.command('Deactivate', async (ctx) => {
-      await ctx.deps.users.deactivate(ctx.args(v.object({ id: v.string() })).id)
+    await ctx.deps.users.deactivate(ctx.args(v.object({ id: v.string() })).id)
 })
 
 userProgram.stream('GetAll', async (ctx) => {
-      return ctx.deps.users.findAll()
+    return ctx.deps.users.findAll()
 })
 ```
 
@@ -436,12 +436,12 @@ Owns and registers all primitives.
 
 ```ts
 export const userPlugin = plugin((app) => {
-      app.eagerLoad(MailService)
-      app.model(UserModel)
-      app.job(SendEmailJob)
-      app.cron(CleanupCron)
-      app.workflow(OnboardingWorkflow)
-      app.program(userProgram)
+    app.eagerLoad(MailService)
+    app.model(UserModel)
+    app.job(SendEmailJob)
+    app.cron(CleanupCron)
+    app.workflow(OnboardingWorkflow)
+    app.program(userProgram)
 })
 ```
 

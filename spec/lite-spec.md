@@ -175,29 +175,29 @@ import { ax } from '@aromix/validator'
 
 // Validation
 age: lite.integer()
-      .notNull()
-      .pipe(
-            ax.operator((v: number) => {
-                  if (v < 0 || v > 150) throw 'Age out of range'
-                  return v
-            }),
-      )
+    .notNull()
+    .pipe(
+        ax.operator((v: number) => {
+            if (v < 0 || v > 150) throw 'Age out of range'
+            return v
+        }),
+    )
 
 // Transformation — stored value is the transformed result
 email: lite.text()
-      .notNull()
-      .pipe(ax.operator((v: string) => v.toLowerCase().trim()))
+    .notNull()
+    .pipe(ax.operator((v: string) => v.toLowerCase().trim()))
 
 // Chained
 slug: lite.text()
-      .notNull()
-      .pipe(ax.operator((v: string) => v.toLowerCase().replace(/\s+/g, '-')))
-      .pipe(
-            ax.operator((v: string) => {
-                  if (v.length < 3) throw 'Slug too short'
-                  return v
-            }),
-      )
+    .notNull()
+    .pipe(ax.operator((v: string) => v.toLowerCase().replace(/\s+/g, '-')))
+    .pipe(
+        ax.operator((v: string) => {
+            if (v.length < 3) throw 'Slug too short'
+            return v
+        }),
+    )
 ```
 
 The operator's input type must match the column's current TS type (or the output of the previous pipe). TypeScript enforces this.
@@ -212,22 +212,22 @@ Table-level constraints and flags that cannot be expressed cleanly on a single c
 
 ```ts
 lite.table({
-      id: lite.integer().primaryKey().autoIncrement(),
-      userId: lite.integer().notNull().references(userEntity.col('id'), ['delete:cascade']),
-      slug: lite.text().notNull().collate('nocase'),
-      email: lite.text().notNull().unique(),
-      price: lite.real().notNull(),
-      minPrice: lite.real().notNull(),
-      startDate: lite.integer().notNull(),
-      endDate: lite.integer().notNull(),
+    id: lite.integer().primaryKey().autoIncrement(),
+    userId: lite.integer().notNull().references(userEntity.col('id'), ['delete:cascade']),
+    slug: lite.text().notNull().collate('nocase'),
+    email: lite.text().notNull().unique(),
+    price: lite.real().notNull(),
+    minPrice: lite.real().notNull(),
+    startDate: lite.integer().notNull(),
+    endDate: lite.integer().notNull(),
 }).options((col, ctx) => [
-      ctx.unique([col.userId, col.slug]),
-      ctx.unique([col.userId, col.slug], 'conflict:ignore'),
-      ctx.primaryKey([col.tenantId, col.userId]),
-      ctx.index([col.userId, col.slug]),
-      ctx.uniqueIndex([col.tenantId, col.email]),
-      ctx.checks([col.price.gt(col.minPrice), col.startDate.lt(col.endDate)]),
-      ctx.withoutRowId(),
+    ctx.unique([col.userId, col.slug]),
+    ctx.unique([col.userId, col.slug], 'conflict:ignore'),
+    ctx.primaryKey([col.tenantId, col.userId]),
+    ctx.index([col.userId, col.slug]),
+    ctx.uniqueIndex([col.tenantId, col.email]),
+    ctx.checks([col.price.gt(col.minPrice), col.startDate.lt(col.endDate)]),
+    ctx.withoutRowId(),
 ])
 ```
 
@@ -321,7 +321,7 @@ Each column maps to its corresponding `ax` primitive. `.in(values)` maps to `ax.
 
 ```ts
 const db = Adapter.sqlite({
-      query: (sql) => d1.prepare(sql).run(),
+    query: (sql) => d1.prepare(sql).run(),
 })
 ```
 
@@ -333,21 +333,21 @@ Receives fully resolved SQL — all bindings already interpolated. Executes and 
 
 ```ts
 const userTable = lite.table({
-      id: lite.integer().primaryKey().autoIncrement(),
-      name: lite.text().notNull(),
-      email: lite.text().notNull().unique().collate('nocase'),
-      role: lite.text().in(['admin', 'user']).default('user'),
-      createdAt: lite.integer().default(() => Date.now()),
-      updatedAt: lite
-            .integer()
-            .default(() => Date.now())
-            .onUpdate(() => Date.now()),
+    id: lite.integer().primaryKey().autoIncrement(),
+    name: lite.text().notNull(),
+    email: lite.text().notNull().unique().collate('nocase'),
+    role: lite.text().in(['admin', 'user']).default('user'),
+    createdAt: lite.integer().default(() => Date.now()),
+    updatedAt: lite
+        .integer()
+        .default(() => Date.now())
+        .onUpdate(() => Date.now()),
 })
 
 const userEntity = Entity.sqlite({
-      name: 'users',
-      adapter: db,
-      model: userTable,
+    name: 'users',
+    adapter: db,
+    model: userTable,
 })
 ```
 
@@ -357,14 +357,14 @@ const userEntity = Entity.sqlite({
 
 ```ts
 const postTable = lite.table({
-      id: lite.integer().primaryKey().autoIncrement(),
-      userId: lite.integer().notNull().references(userEntity.col('id'), ['delete:cascade']),
+    id: lite.integer().primaryKey().autoIncrement(),
+    userId: lite.integer().notNull().references(userEntity.col('id'), ['delete:cascade']),
 })
 
 const postEntity = Entity.sqlite({
-      name: 'posts',
-      adapter: db,
-      model: postTable,
+    name: 'posts',
+    adapter: db,
+    model: postTable,
 })
 ```
 
@@ -402,20 +402,20 @@ liteKit.Meta // full column metadata shape
 
 ```ts
 interface Meta {
-      type: ColType
-      primaryKey: boolean
-      autoIncrement: boolean
-      notNull: boolean
-      unique: boolean
-      uniqueConflict?: UniqueConflict
-      index: boolean
-      default?: unknown | (() => unknown)
-      onUpdate?: () => unknown
-      collate?: Collation
-      checks?: { op: 'gt' | 'gte' | 'lt' | 'lte' | 'min' | 'max' | 'minLength' | 'maxLength'; val: number }[]
-      in?: string[]
-      references?: { col: any; actions: ReferenceAction[] }
-      pipes: Operator[]
+    type: ColType
+    primaryKey: boolean
+    autoIncrement: boolean
+    notNull: boolean
+    unique: boolean
+    uniqueConflict?: UniqueConflict
+    index: boolean
+    default?: unknown | (() => unknown)
+    onUpdate?: () => unknown
+    collate?: Collation
+    checks?: { op: 'gt' | 'gte' | 'lt' | 'lte' | 'min' | 'max' | 'minLength' | 'maxLength'; val: number }[]
+    in?: string[]
+    references?: { col: any; actions: ReferenceAction[] }
+    pipes: Operator[]
 }
 ```
 
@@ -440,39 +440,39 @@ src/
 
 ```ts
 const db = Adapter.sqlite({
-      query: (sql) => d1.prepare(sql).run(),
+    query: (sql) => d1.prepare(sql).run(),
 })
 
 const userTable = lite.table({
-      id: lite.integer().primaryKey().autoIncrement(),
-      email: lite.text().notNull().unique().collate('nocase'),
-      role: lite.text().in(['admin', 'user', 'moderator']).default('user'),
-      createdAt: lite.integer().default(() => Date.now()),
-      updatedAt: lite
-            .integer()
-            .default(() => Date.now())
-            .onUpdate(() => Date.now()),
+    id: lite.integer().primaryKey().autoIncrement(),
+    email: lite.text().notNull().unique().collate('nocase'),
+    role: lite.text().in(['admin', 'user', 'moderator']).default('user'),
+    createdAt: lite.integer().default(() => Date.now()),
+    updatedAt: lite
+        .integer()
+        .default(() => Date.now())
+        .onUpdate(() => Date.now()),
 })
 
 const userEntity = Entity.sqlite({ name: 'users', adapter: db, model: userTable })
 
 const postTable = lite
-      .table({
-            id: lite.integer().primaryKey().autoIncrement(),
-            userId: lite.integer().notNull().references(userEntity.col('id'), ['delete:cascade']),
-            slug: lite.text().notNull().collate('nocase'),
-            title: lite.text().notNull(),
-            body: lite.text(),
-            status: lite.text().in(['draft', 'published', 'archived']).notNull().default('draft'),
-            score: lite.real().gte(0),
-            minScore: lite.real().notNull(),
-            createdAt: lite.integer().default(() => Date.now()),
-            updatedAt: lite
-                  .integer()
-                  .default(() => Date.now())
-                  .onUpdate(() => Date.now()),
-      })
-      .options((col, ctx) => [ctx.unique([col.userId, col.slug]), ctx.index([col.userId, col.slug]), ctx.checks([col.score.gte(col.minScore)])])
+    .table({
+        id: lite.integer().primaryKey().autoIncrement(),
+        userId: lite.integer().notNull().references(userEntity.col('id'), ['delete:cascade']),
+        slug: lite.text().notNull().collate('nocase'),
+        title: lite.text().notNull(),
+        body: lite.text(),
+        status: lite.text().in(['draft', 'published', 'archived']).notNull().default('draft'),
+        score: lite.real().gte(0),
+        minScore: lite.real().notNull(),
+        createdAt: lite.integer().default(() => Date.now()),
+        updatedAt: lite
+            .integer()
+            .default(() => Date.now())
+            .onUpdate(() => Date.now()),
+    })
+    .options((col, ctx) => [ctx.unique([col.userId, col.slug]), ctx.index([col.userId, col.slug]), ctx.checks([col.score.gte(col.minScore)])])
 
 const postEntity = Entity.sqlite({ name: 'posts', adapter: db, model: postTable })
 ```

@@ -11,7 +11,7 @@ let data = test ? 'ok' : 'not ok'
 // GOOD
 let data = 'not ok'
 if (test) {
-      data = 'ok'
+    data = 'ok'
 }
 ```
 
@@ -22,12 +22,12 @@ Do not manually annotate return types or generic parameters when TypeScript can 
 ```ts
 // BAD — TS already knows this returns number
 function add(a: number, b: number): number {
-      return a + b
+    return a + b
 }
 
 // GOOD
 function add(a: number, b: number) {
-      return a + b
+    return a + b
 }
 ```
 
@@ -39,8 +39,8 @@ const value = obj[key] as string
 
 // GOOD — check the key exists first
 if (key in obj) {
-      const value = obj[key]
-      // value is now properly typed
+    const value = obj[key]
+    // value is now properly typed
 }
 ```
 
@@ -62,7 +62,7 @@ return new ObjectBuilder(merged)
 ```ts
 // OK — condition inside if is fine
 if (change && typeof change === 'object' && !Array.isArray(change)) {
-      // ...
+    // ...
 }
 ```
 
@@ -76,7 +76,7 @@ If a value needs a type cast, ask whether a runtime check can solve it instead. 
 
 // GOOD
 if (key in result) {
-      result[key] = change
+    result[key] = change
 }
 ```
 
@@ -118,12 +118,12 @@ Never write single-line if statements without braces. Always open a scope.
 ```ts
 // BAD
 if (this[$def].kind === 'computed') {
-      throw new Error('computed fields cannot be notNull')
+    throw new Error('computed fields cannot be notNull')
 }
 
 // GOOD
 if (this[$def].kind === 'computed') {
-      throw new Error('computed fields cannot be notNull')
+    throw new Error('computed fields cannot be notNull')
 }
 ```
 
@@ -186,12 +186,12 @@ Do not pull boolean expressions out of an `if` statement into a separate variabl
 const bothPlainObjects = change && typeof change === 'object' && !Array.isArray(change) && existing && typeof existing === 'object' && !Array.isArray(existing)
 
 if (bothPlainObjects) {
-      // ...
+    // ...
 }
 
 // GOOD — condition lives inside the if
 if (change && typeof change === 'object' && !Array.isArray(change) && existing && typeof existing === 'object' && !Array.isArray(existing)) {
-      // ...
+    // ...
 }
 ```
 
@@ -232,31 +232,31 @@ Always add an empty line after the opening brace and before the closing brace of
 ```ts
 // BAD — no breathing room
 function doSomething() {
-      const x = 1
-      return x
+    const x = 1
+    return x
 }
 
 if (condition) {
-      doWork()
+    doWork()
 }
 
 for (const key of keys) {
-      process(key)
+    process(key)
 }
 
 // GOOD — empty line after opening, empty line before closing
 function doSomething() {
-      const x = 1
+    const x = 1
 
-      return x
+    return x
 }
 
 if (condition) {
-      doWork()
+    doWork()
 }
 
 for (const key of keys) {
-      process(key)
+    process(key)
 }
 ```
 
@@ -269,12 +269,12 @@ A single expression or operation always stays on one line, no matter how long it
 ```ts
 // BAD — broken across lines
 if (change && typeof change === 'object' && !Array.isArray(change) && existing && typeof existing === 'object' && !Array.isArray(existing)) {
-      result[key] = ObjectBuilder.deepMerge(existing, change)
+    result[key] = ObjectBuilder.deepMerge(existing, change)
 }
 
 // GOOD — single line, no matter the length
 if (change && typeof change === 'object' && !Array.isArray(change) && existing && typeof existing === 'object' && !Array.isArray(existing)) {
-      result[key] = ObjectBuilder.deepMerge(existing, change)
+    result[key] = ObjectBuilder.deepMerge(existing, change)
 }
 ```
 
@@ -286,7 +286,7 @@ Set `printWidth` to `9999` in `.prettierrc.json`. This prevents Prettier from ev
 
 ```json
 {
-      "printWidth": 9999
+    "printWidth": 9999
 }
 ```
 
@@ -329,23 +329,23 @@ Never use abbreviated or shorthand variable names. Every identifier must clearly
 // BAD — shorthands everywhere
 type Op<T> = { (f: CrushKeys<T>[]): void }
 function makeOp<T>() {
-      const s: OpState<T> = { t: 'include', p: [] }
-      const fn = (f: CrushKeys<T>[]) => {
-            s.t = 'include'
-            s.p = f
-      }
-      return Object.assign(fn as any, { omit: fn.omit, s })
+    const s: OpState<T> = { t: 'include', p: [] }
+    const fn = (f: CrushKeys<T>[]) => {
+        s.t = 'include'
+        s.p = f
+    }
+    return Object.assign(fn as any, { omit: fn.omit, s })
 }
 
 // GOOD — every name is descriptive
 type Operation<Model> = { (fields: CrushKeys<Model>[]): void }
 function createOperation<Model>() {
-      const captured: OperationCapture<Model> = { type: 'include', paths: [] }
-      const handler = (fields: CrushKeys<Model>[]) => {
-            captured.type = 'include'
-            captured.paths = fields
-      }
-      return Object.assign(handler as any, { omit: handler.omit, captured })
+    const captured: OperationCapture<Model> = { type: 'include', paths: [] }
+    const handler = (fields: CrushKeys<Model>[]) => {
+        captured.type = 'include'
+        captured.paths = fields
+    }
+    return Object.assign(handler as any, { omit: handler.omit, captured })
 }
 ```
 

@@ -12,17 +12,17 @@ Computed constraints — always fixed, never changed by chain:
 
 ```ts
 export interface FieldDef {
-      kind: 'stored' | 'computed'
-      valueType: 'string' | 'number' | 'boolean' | 'computed'
-      valibotSchema: AnySchema | undefined
-      notNull: boolean
-      default: unknown
-      client: {
-            read: boolean
-            insert: boolean
-            update: boolean
-      }
-      computeFn: ((row: Record<string, unknown>) => unknown) | undefined
+    kind: 'stored' | 'computed'
+    valueType: 'string' | 'number' | 'boolean' | 'computed'
+    valibotSchema: AnySchema | undefined
+    notNull: boolean
+    default: unknown
+    client: {
+        read: boolean
+        insert: boolean
+        update: boolean
+    }
+    computeFn: ((row: Record<string, unknown>) => unknown) | undefined
 }
 ```
 
@@ -32,10 +32,10 @@ One builder for everything — stored and computed.
 
 ```ts
 export interface KvFieldBuilder {
-      [$def]: FieldDef
-      notNull(): KvFieldBuilder
-      default(value: unknown): KvFieldBuilder
-      client(...ops: ('read' | 'insert' | 'update')[]): KvFieldBuilder
+    [$def]: FieldDef
+    notNull(): KvFieldBuilder
+    default(value: unknown): KvFieldBuilder
+    client(...ops: ('read' | 'insert' | 'update')[]): KvFieldBuilder
 }
 ```
 
@@ -45,13 +45,13 @@ Serializable, no functions. Used by docs and codegen only.
 
 ```ts
 export interface FieldMeta {
-      name: string
-      valueType: 'string' | 'number' | 'boolean' | 'computed'
-      notNull: boolean
-      default: 'none' | 'static' | 'dynamic'
-      defaultValue: unknown
-      client: { read: boolean; insert: boolean; update: boolean }
-      isComputed: boolean
+    name: string
+    valueType: 'string' | 'number' | 'boolean' | 'computed'
+    notNull: boolean
+    default: 'none' | 'static' | 'dynamic'
+    defaultValue: unknown
+    client: { read: boolean; insert: boolean; update: boolean }
+    isComputed: boolean
 }
 ```
 
@@ -61,18 +61,18 @@ export interface FieldMeta {
 
 ```ts
 export interface KvSchemaDescriptor {
-      fields: FieldMeta[]
-      schemas: {
-            clientInsert: AnyObjectSchema
-            clientUpdate: AnyObjectSchema
-            clientOutput: AnyObjectSchema
-            serverRecord: AnyObjectSchema
-      }
-      runtime: {
-            applyDefaults(input: Record<string, unknown>): Record<string, unknown>
-            applyComputed(stored: Record<string, unknown>): Record<string, unknown>
-            stripForClient(full: Record<string, unknown>): Record<string, unknown>
-      }
+    fields: FieldMeta[]
+    schemas: {
+        clientInsert: AnyObjectSchema
+        clientUpdate: AnyObjectSchema
+        clientOutput: AnyObjectSchema
+        serverRecord: AnyObjectSchema
+    }
+    runtime: {
+        applyDefaults(input: Record<string, unknown>): Record<string, unknown>
+        applyComputed(stored: Record<string, unknown>): Record<string, unknown>
+        stripForClient(full: Record<string, unknown>): Record<string, unknown>
+    }
 }
 ```
 
@@ -80,11 +80,11 @@ export interface KvSchemaDescriptor {
 
 ```ts
 export interface KvAdapter {
-      get(key: string): Promise<unknown>
-      set(key: string, value: unknown): Promise<void>
-      delete(key: string): Promise<void>
-      has(key: string): Promise<boolean>
-      list(prefix?: string): Promise<string[]>
+    get(key: string): Promise<unknown>
+    set(key: string, value: unknown): Promise<void>
+    delete(key: string): Promise<void>
+    has(key: string): Promise<boolean>
+    list(prefix?: string): Promise<string[]>
 }
 ```
 
@@ -92,8 +92,8 @@ export interface KvAdapter {
 
 ```ts
 export interface KvStorage {
-      readonly __type: 'kv'
-      readonly adapter: KvAdapter
+    readonly __type: 'kv'
+    readonly adapter: KvAdapter
 }
 ```
 
@@ -101,9 +101,9 @@ export interface KvStorage {
 
 ```ts
 export interface EntityDef {
-      name: string
-      storage: KvStorage
-      schema: KvSchemaDescriptor
+    name: string
+    storage: KvStorage
+    schema: KvSchemaDescriptor
 }
 ```
 
@@ -115,37 +115,37 @@ Single internal factory used by all four `kv.*` calls.
 
 ```ts
 function makeBuilder(def: FieldDef): KvFieldBuilder {
-      return {
-            [$def]: def,
+    return {
+        [$def]: def,
 
-            notNull() {
-                  if (def.kind === 'computed') throw new Error('computed fields cannot be notNull')
-                  return makeBuilder({ ...def, notNull: true })
-            },
+        notNull() {
+            if (def.kind === 'computed') throw new Error('computed fields cannot be notNull')
+            return makeBuilder({ ...def, notNull: true })
+        },
 
-            default(value) {
-                  if (def.kind === 'computed') throw new Error('computed fields cannot have a default')
-                  return makeBuilder({ ...def, default: value })
-            },
+        default(value) {
+            if (def.kind === 'computed') throw new Error('computed fields cannot have a default')
+            return makeBuilder({ ...def, default: value })
+        },
 
-            client(...ops) {
-                  if (def.kind === 'computed') {
-                        if (ops.length > 0) throw new Error('computed fields only support .client() with no args')
-                        return makeBuilder({ ...def, client: { read: true, insert: false, update: false } })
-                  }
-                  if (ops.length === 0) {
-                        return makeBuilder({ ...def, client: { read: true, insert: true, update: true } })
-                  }
-                  return makeBuilder({
-                        ...def,
-                        client: {
-                              read: ops.includes('read'),
-                              insert: ops.includes('insert'),
-                              update: ops.includes('update'),
-                        },
-                  })
-            },
-      }
+        client(...ops) {
+            if (def.kind === 'computed') {
+                if (ops.length > 0) throw new Error('computed fields only support .client() with no args')
+                return makeBuilder({ ...def, client: { read: true, insert: false, update: false } })
+            }
+            if (ops.length === 0) {
+                return makeBuilder({ ...def, client: { read: true, insert: true, update: true } })
+            }
+            return makeBuilder({
+                ...def,
+                client: {
+                    read: ops.includes('read'),
+                    insert: ops.includes('insert'),
+                    update: ops.includes('update'),
+                },
+            })
+        },
+    }
 }
 ```
 
@@ -153,53 +153,53 @@ function makeBuilder(def: FieldDef): KvFieldBuilder {
 
 ```ts
 export const kv = {
-      string(): KvFieldBuilder {
-            return makeBuilder({
-                  kind: 'stored',
-                  valueType: 'string',
-                  valibotSchema: v.string(),
-                  notNull: false,
-                  default: undefined,
-                  client: { read: false, insert: false, update: false },
-                  computeFn: undefined,
-            })
-      },
+    string(): KvFieldBuilder {
+        return makeBuilder({
+            kind: 'stored',
+            valueType: 'string',
+            valibotSchema: v.string(),
+            notNull: false,
+            default: undefined,
+            client: { read: false, insert: false, update: false },
+            computeFn: undefined,
+        })
+    },
 
-      number(): KvFieldBuilder {
-            return makeBuilder({
-                  kind: 'stored',
-                  valueType: 'number',
-                  valibotSchema: v.number(),
-                  notNull: false,
-                  default: undefined,
-                  client: { read: false, insert: false, update: false },
-                  computeFn: undefined,
-            })
-      },
+    number(): KvFieldBuilder {
+        return makeBuilder({
+            kind: 'stored',
+            valueType: 'number',
+            valibotSchema: v.number(),
+            notNull: false,
+            default: undefined,
+            client: { read: false, insert: false, update: false },
+            computeFn: undefined,
+        })
+    },
 
-      boolean(): KvFieldBuilder {
-            return makeBuilder({
-                  kind: 'stored',
-                  valueType: 'boolean',
-                  valibotSchema: v.boolean(),
-                  notNull: false,
-                  default: undefined,
-                  client: { read: false, insert: false, update: false },
-                  computeFn: undefined,
-            })
-      },
+    boolean(): KvFieldBuilder {
+        return makeBuilder({
+            kind: 'stored',
+            valueType: 'boolean',
+            valibotSchema: v.boolean(),
+            notNull: false,
+            default: undefined,
+            client: { read: false, insert: false, update: false },
+            computeFn: undefined,
+        })
+    },
 
-      computed(fn: (row: Record<string, unknown>) => unknown): KvFieldBuilder {
-            return makeBuilder({
-                  kind: 'computed',
-                  valueType: 'computed',
-                  valibotSchema: undefined,
-                  notNull: false,
-                  default: undefined,
-                  client: { read: false, insert: false, update: false },
-                  computeFn: fn,
-            })
-      },
+    computed(fn: (row: Record<string, unknown>) => unknown): KvFieldBuilder {
+        return makeBuilder({
+            kind: 'computed',
+            valueType: 'computed',
+            valibotSchema: undefined,
+            notNull: false,
+            default: undefined,
+            client: { read: false, insert: false, update: false },
+            computeFn: fn,
+        })
+    },
 }
 ```
 
@@ -301,7 +301,7 @@ Return a new object with only keys where `client.read === true`.
 
 ```ts
 export function kvStorage(adapter: KvAdapter): KvStorage {
-      return { __type: 'kv', adapter }
+    return { __type: 'kv', adapter }
 }
 ```
 
@@ -422,23 +422,23 @@ Client methods call the same entity methods internally. No separate pipeline.
 
 ```ts
 export class ConflictError extends Error {
-      readonly code = 'CONFLICT'
-      constructor(key: string) {
-            super(`record already exists: ${key}`)
-      }
+    readonly code = 'CONFLICT'
+    constructor(key: string) {
+        super(`record already exists: ${key}`)
+    }
 }
 
 export class NotFoundError extends Error {
-      readonly code = 'NOT_FOUND'
-      constructor(key: string) {
-            super(`record not found: ${key}`)
-      }
+    readonly code = 'NOT_FOUND'
+    constructor(key: string) {
+        super(`record not found: ${key}`)
+    }
 }
 
 export class ValidationError extends Error {
-      readonly code = 'VALIDATION'
-      constructor(public issues: unknown[]) {
-            super('validation failed')
-      }
+    readonly code = 'VALIDATION'
+    constructor(public issues: unknown[]) {
+        super('validation failed')
+    }
 }
 ```

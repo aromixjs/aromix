@@ -35,9 +35,9 @@ Every schema has two ways to validate data.
 
 ```ts
 try {
-      const val = ax.number().parse('not a number')
+    const val = ax.number().parse('not a number')
 } catch (e) {
-      // e is ValidationError
+    // e is ValidationError
 }
 ```
 
@@ -49,11 +49,11 @@ Returns a discriminated union. Check `.success` to know which branch you're in.
 const result = ax.number().safeParse('hello')
 
 if (result.success) {
-      result.data // typed as number
-      result.errors // null
+    result.data // typed as number
+    result.errors // null
 } else {
-      result.data // null
-      result.errors // string[] — human-readable messages
+    result.data // null
+    result.errors // string[] — human-readable messages
 }
 ```
 
@@ -99,8 +99,8 @@ Define the shape of an object. Each field uses its own schema.
 
 ```ts
 const User = ax.object({
-      name: ax.string(),
-      age: ax.number(),
+    name: ax.string(),
+    age: ax.number(),
 })
 
 User.parse({ name: 'Alice', age: 30 })
@@ -114,7 +114,7 @@ User.parse({ name: 'Alice', age: 30 })
 
 ```ts
 const Nested = ax.object({
-      inner: ax.object({ value: ax.number() }),
+    inner: ax.object({ value: ax.number() }),
 })
 Nested.parse({ inner: { value: 99 } }) // ✓
 ```
@@ -134,8 +134,8 @@ Nested arrays:
 ```ts
 const Matrix = ax.array(ax.array(ax.number()))
 Matrix.parse([
-      [1, 2],
-      [3, 4],
+    [1, 2],
+    [3, 4],
 ]) // ✓
 ```
 
@@ -210,7 +210,7 @@ ax.instance(Date).parse('2024-01-01') // ✗
 
 // Custom classes work too
 class MyClass {
-      constructor(public x: number) {}
+    constructor(public x: number) {}
 }
 ax.instance(MyClass).parse(new MyClass(5)) // ✓
 ```
@@ -237,9 +237,9 @@ Default is applied before pipe operators run, so the operator sees the default:
 
 ```ts
 const s = ax
-      .string()
-      .pipe(ax.operator((v) => v.toUpperCase()))
-      .default('anon')
+    .string()
+    .pipe(ax.operator((v) => v.toUpperCase()))
+    .default('anon')
 
 s.parse(undefined) // 'ANON'
 ```
@@ -270,10 +270,10 @@ Use `ax.operator()`:
 
 ```ts
 const minLen = (n: number) =>
-      ax.operator((v: string) => {
-            if (v.length < n) throw `Min ${n} chars`
-            return v
-      })
+    ax.operator((v: string) => {
+        if (v.length < n) throw `Min ${n} chars`
+        return v
+    })
 ```
 
 It's just a function `(value) => newValue`. Throw an error to reject the value.
@@ -297,9 +297,9 @@ const first = ax.operator((v: string[]) => v[0])
 const upper = ax.operator((v: string) => v.toUpperCase())
 
 const CsvFirst = ax
-      .string()
-      .pipe(toArray) // Schema<string[]>
-      .pipe(first) // Schema<string>
+    .string()
+    .pipe(toArray) // Schema<string[]>
+    .pipe(first) // Schema<string>
 
 CsvFirst.parse('a, b, c') // 'a'
 ```
@@ -336,13 +336,13 @@ Whatever your operator throws — string or Error — gets wrapped in a `Validat
 import { ValidationError } from '@aromix/validator'
 
 try {
-      ax.object({ name: ax.string() }).parse({ name: 42 })
+    ax.object({ name: ax.string() }).parse({ name: 42 })
 } catch (e) {
-      const err = e as ValidationError
+    const err = e as ValidationError
 
-      err.name // 'ValidationError'
-      err.message // "Expected string, received number at 'name'"
-      err.issues // [{ code, path, message }]
+    err.name // 'ValidationError'
+    err.message // "Expected string, received number at 'name'"
+    err.issues // [{ code, path, message }]
 }
 ```
 
@@ -372,8 +372,8 @@ Access the TypeScript type of any schema via `$infer`:
 
 ```ts
 const User = ax.object({
-      name: ax.string(),
-      age: ax.number(),
+    name: ax.string(),
+    age: ax.number(),
 })
 
 type T = typeof User.$infer

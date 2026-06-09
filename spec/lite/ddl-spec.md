@@ -136,8 +136,8 @@ lite.integer().$type<UserId>()
 
 ```ts
 lite.text().transformer({
-      from: (db: string) => new URL(db),
-      to: (js: URL) => js.toString(),
+    from: (db: string) => new URL(db),
+    to: (js: URL) => js.toString(),
 })
 ```
 
@@ -158,26 +158,26 @@ lite.fn.raw(expr) // raw SQL expression
 
 ```ts
 lite.table({
-      // columns
+    // columns
 }).options({
-      strict: true,
-      withoutRowId: false,
+    strict: true,
+    withoutRowId: false,
 
-      primaryKey: ['tenantId', 'userId'],
+    primaryKey: ['tenantId', 'userId'],
 
-      unique: [['userId', 'slug'], { columns: ['a', 'b'], onConflict: 'ignore' }],
+    unique: [['userId', 'slug'], { columns: ['a', 'b'], onConflict: 'ignore' }],
 
-      checks: ['startDate < endDate'],
+    checks: ['startDate < endDate'],
 
-      foreignKeys: [
-            {
-                  columns: ['tenantId', 'userId'],
-                  references: [userTable.tenantId, userTable.id],
-                  actions: ['delete:cascade', 'update:no-action'],
-            },
-      ],
+    foreignKeys: [
+        {
+            columns: ['tenantId', 'userId'],
+            references: [userTable.tenantId, userTable.id],
+            actions: ['delete:cascade', 'update:no-action'],
+        },
+    ],
 
-      indexes: [{ columns: ['email'], unique: true }, { columns: ['role', 'active'] }, { expr: 'lower(email)', unique: true, name: 'idx_email_ci' }],
+    indexes: [{ columns: ['email'], unique: true }, { columns: ['role', 'active'] }, { expr: 'lower(email)', unique: true, name: 'idx_email_ci' }],
 })
 ```
 

@@ -18,10 +18,10 @@ Defined in `storage.ts`. Wraps the native DB driver.
 
 ```ts
 const db = Storage.sqlite({
-      query: (sql) => d1.prepare(sql).run(), // required
-      foreignKeys: true, // PRAGMA foreign_keys  default: true
-      wal: true, // PRAGMA journal_mode=WAL  default: true, ignored on D1
-      busyTimeout: 5000, // PRAGMA busy_timeout  default: 5000ms, ignored on D1
+    query: (sql) => d1.prepare(sql).run(), // required
+    foreignKeys: true, // PRAGMA foreign_keys  default: true
+    wal: true, // PRAGMA journal_mode=WAL  default: true, ignored on D1
+    busyTimeout: 5000, // PRAGMA busy_timeout  default: 5000ms, ignored on D1
 })
 ```
 
@@ -129,19 +129,19 @@ Defined in `entity/entity.def.ts`.
 
 ```ts
 const userEntity = Entity.sqlite({
-      name: 'users',
-      storage: db,
-      model: {
-            id: lite.int().primaryKey().autoIncrement(),
-            name: lite.text().notNull(),
-            email: lite.text().notNull().unique(),
-            role: lite.text().in(['admin', 'user']).default('user'),
-            createdAt: lite.date('iso').defaultFn(() => new Date()),
-            updatedAt: lite
-                  .date('iso')
-                  .defaultFn(() => new Date())
-                  .onUpdate(() => new Date()),
-      },
+    name: 'users',
+    storage: db,
+    model: {
+        id: lite.int().primaryKey().autoIncrement(),
+        name: lite.text().notNull(),
+        email: lite.text().notNull().unique(),
+        role: lite.text().in(['admin', 'user']).default('user'),
+        createdAt: lite.date('iso').defaultFn(() => new Date()),
+        updatedAt: lite
+            .date('iso')
+            .defaultFn(() => new Date())
+            .onUpdate(() => new Date()),
+    },
 })
 ```
 
@@ -153,12 +153,12 @@ const userEntity = Entity.sqlite({
 
 ```ts
 const postEntity = Entity.sqlite({
-      name: 'posts',
-      storage: db,
-      model: {
-            id: lite.int().primaryKey().autoIncrement(),
-            userId: lite.int().notNull().references(userEntity.col('id'), ['delete:cascade']),
-      },
+    name: 'posts',
+    storage: db,
+    model: {
+        id: lite.int().primaryKey().autoIncrement(),
+        userId: lite.int().notNull().references(userEntity.col('id'), ['delete:cascade']),
+    },
 })
 ```
 

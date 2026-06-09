@@ -49,25 +49,25 @@ const Schema = ax.union([ax.boolean(), ax.undefined()])
 type SchemaOutput = typeof Schema.$infer // boolean | undefined
 
 const schemaObj = ax.union([
-      ax.object({
-            name: ax.union([ax.string(), ax.null()]),
-            age: ax.union([ax.number(), ax.undefined()]),
-      }),
-      ax.undefined(),
+    ax.object({
+        name: ax.union([ax.string(), ax.null()]),
+        age: ax.union([ax.number(), ax.undefined()]),
+    }),
+    ax.undefined(),
 ])
 
 const data = schemaObj.parse({
-      name: null,
-      age: undefined,
+    name: null,
+    age: undefined,
 })
 
 const sar = ax.array(schemaObj)
 
 const parsedData = sar.parse([
-      {
-            name: 20,
-            age: '20',
-      },
+    {
+        name: 20,
+        age: '20',
+    },
 ])
 
 const tpl = ax.tuple([ax.string(), ax.number()])
@@ -100,8 +100,8 @@ const union = ax.union([ax.literal('1'), ax.literal(4), ax.literal('test')])
 const parsedUnion = union.parse({})
 
 const defaultTest = ax.object({
-      name: ax.string().default('test'),
-      age: ax.number().defaultFn(() => 20),
+    name: ax.string().default('test'),
+    age: ax.number().defaultFn(() => 20),
 
-      test: ax.union([ax.literal('admin')]),
+    test: ax.union([ax.literal('admin')]),
 })

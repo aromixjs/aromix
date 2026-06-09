@@ -5,6 +5,6 @@ export { KvEntityInput, KvEntityOutput } from './kv'
 export { SQLiteEntityOutput, SQLiteEntityInput } from './sqlite'
 
 export const Entity = {
-      kv,
-      sqlite,
+    kv,
+    sqlite,
 }

@@ -103,10 +103,10 @@ flag INTEGER DEFAULT 1
 - Literal values: numbers, strings, `NULL`, `TRUE`, `FALSE`
 - Expressions: must be wrapped in `(parens)` — e.g. `DEFAULT (datetime('now'))`
 - Common expression defaults:
-     - `DEFAULT (datetime('now'))` → current UTC datetime
-     - `DEFAULT (date('now'))` → current UTC date
-     - `DEFAULT (unixepoch())` → current Unix timestamp
-     - `DEFAULT (lower(hex(randomblob(16))))` → random UUID-ish
+    - `DEFAULT (datetime('now'))` → current UTC datetime
+    - `DEFAULT (date('now'))` → current UTC date
+    - `DEFAULT (unixepoch())` → current Unix timestamp
+    - `DEFAULT (lower(hex(randomblob(16))))` → random UUID-ish
 
 ### CHECK
 
