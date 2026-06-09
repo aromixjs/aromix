@@ -1,55 +1,59 @@
 {
-      "name": "@aromix/root",
-      "private": true,
-      "type": "module",
-      "license": "MIT",
-      "homepage": "https://aromixjs.github.io/aromix",
-      "repository": {
-            "type": "git",
-            "url": "https://github.com/aromixjs/aromix.git"
-      },
-      "bugs": {
-            "url": "https://github.com/aromixjs/aromix/issues"
-      },
-      "packageManager": "pnpm@11.1.2",
-      "scripts": {
-            "i:all": "pnpm -r install",
-            "build:all": "pnpm -r build",
-            "dev:all": "pnpm -r dev",
-            "typecheck:all": "tsc --build",
-            "format:all": "prettier --write .",
-            "clean": "rimraf node_modules packages/*/node_modules packages/*/dist",
-            "test:all": "vitest run",
-            "core:build": "pnpm --filter @aromix/core build",
-            "core:dev": "pnpm --filter @aromix/core dev",
-            "core:test": "vitest run --dir packages/core",
-            "bun:build": "pnpm --filter @aromix/bun build",
-            "bun:dev": "pnpm --filter @aromix/bun dev",
-            "cloudflare:build": "pnpm --filter @aromix/cloudflare build",
-            "cloudflare:dev": "pnpm --filter @aromix/cloudflare dev",
-            "cli:build": "pnpm --filter @aromix/cli build",
-            "cli:dev": "pnpm --filter @aromix/cli dev",
-            "cli:link": "cd packages/cli && pnpm link --global",
-            "validator:build": "pnpm --filter @aromix/validator build",
-            "validator:dev": "pnpm --filter @aromix/validator dev",
-            "validator:typecheck": "pnpm --filter @aromix/validator typecheck",
-            "validator:test": "vitest run packages/validator/tests/",
-            "change": "beachball change",
-            "bump": "beachball bump",
-            "release": "beachball publish --yes --access public"
-      },
-      "devDependencies": {
-            "@types/node": "catalog:",
-            "beachball": "^2.65.5",
-            "prettier": "^3.8.3",
-            "rimraf": "^6.1.3",
-            "tsup": "catalog:",
-            "typescript": "catalog:",
-            "vitest": "^4.1.6"
-      },
-      "pnpm": {
-            "onlyBuiltDependencies": [
-                  "esbuild"
-            ]
-      }
+    "name": "@aromix/root",
+    "private": true,
+    "type": "module",
+    "license": "MIT",
+    "homepage": "https://aromixjs.github.io/aromix",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/aromixjs/aromix.git"
+    },
+    "bugs": {
+        "url": "https://github.com/aromixjs/aromix/issues"
+    },
+    "packageManager": "pnpm@11.1.2",
+    "scripts": {
+        "i:all": "pnpm -r install",
+        "build:all": "pnpm -r build",
+        "dev:all": "pnpm -r dev",
+        "typecheck:all": "tsc --build",
+        "format:all": "prettier --write .",
+        "clean": "rimraf node_modules packages/*/node_modules packages/*/dist",
+        "test:all": "vitest run",
+        "core:build": "pnpm --filter @aromix/core build",
+        "core:dev": "pnpm --filter @aromix/core dev",
+        "core:test": "vitest run --dir packages/core",
+        "bun:build": "pnpm --filter @aromix/bun build",
+        "bun:dev": "pnpm --filter @aromix/bun dev",
+        "cloudflare:build": "pnpm --filter @aromix/cloudflare build",
+        "cloudflare:dev": "pnpm --filter @aromix/cloudflare dev",
+        "cli:build": "pnpm --filter @aromix/cli build",
+        "cli:dev": "pnpm --filter @aromix/cli dev",
+        "cli:link": "cd packages/cli && pnpm link --global",
+        "validator:build": "pnpm --filter @aromix/validator build",
+        "validator:dev": "pnpm --filter @aromix/validator dev",
+        "validator:typecheck": "pnpm --filter @aromix/validator typecheck",
+        "validator:test": "vitest run packages/validator/tests/",
+        "lite:build": "pnpm --filter @aromix/lite build",
+        "lite:dev": "pnpm --filter @aromix/lite dev",
+        "lite:typecheck": "pnpm --filter @aromix/lite typecheck",
+        "lite:test": "vitest run packages/lite/tests/",
+        "change": "beachball change",
+        "bump": "beachball bump",
+        "release": "beachball publish --yes --access public"
+    },
+    "devDependencies": {
+        "@types/node": "catalog:",
+        "beachball": "^2.65.5",
+        "prettier": "^3.8.3",
+        "rimraf": "^6.1.3",
+        "tsup": "catalog:",
+        "typescript": "catalog:",
+        "vitest": "^4.1.6"
+    },
+    "pnpm": {
+        "onlyBuiltDependencies": [
+            "esbuild"
+        ]
+    }
 }
