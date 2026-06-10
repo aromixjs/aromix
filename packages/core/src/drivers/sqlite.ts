@@ -1,6 +1,7 @@
 import { CheckExpression, ColumnKey, ColumnReference, ColumnState, TableOptionsCtx, TableState, UniqueConflict } from '../lite'
 
 export namespace Sqlite {
+    // Data Adapters
     export interface Adapter {
         query(sql: string): Promise<unknown>
     }
@@ -9,6 +10,7 @@ export namespace Sqlite {
         return adapter
     }
 
+    // Data Definition Entity
     export interface EntityInput<State extends TableState> {
         name: string
         adapter: Sqlite.Adapter
@@ -16,17 +18,18 @@ export namespace Sqlite {
         options(ctx: TableOptionsCtx<State>): void
     }
 
+    export interface EntityState<State extends TableState> {
+        name: string
+        columns: { [Key in keyof State]: ColumnState }
+        unique: { cols: string[]; conflict?: UniqueConflict }[]
+        primaryKey: { cols: string[] }[]
+        index: { cols: string[] }[]
+        uniqueIndex: { cols: string[] }[]
+        checks: CheckExpression[]
+        withoutRowId: boolean
+    }
     export interface EntityOutput<State extends TableState> {
-        state: {
-            name: string
-            columns: { [Key in keyof State]: ColumnState }
-            unique: { cols: string[]; conflict?: UniqueConflict }[]
-            primaryKey: { cols: string[] }[]
-            index: { cols: string[] }[]
-            uniqueIndex: { cols: string[] }[]
-            checks: CheckExpression[]
-            withoutRowId: boolean
-        }
+        state: Sqlite.EntityState<State>
         col(columnName: ColumnKey<State>): ColumnReference
     }
 
@@ -37,7 +40,7 @@ export namespace Sqlite {
             columns[key] = input.columns[key].state
         }
 
-        const state: Sqlite.EntityOutput<State>['state'] = {
+        const state: Sqlite.EntityState<State> = {
             name: input.name,
             columns,
             unique: [],
@@ -80,6 +83,11 @@ export namespace Sqlite {
                 state.withoutRowId = true
             },
         })
+
+
+
+
+
 
         return {
             state,

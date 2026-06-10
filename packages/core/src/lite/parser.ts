@@ -1,6 +1,6 @@
-import { TableState } from "./types/context"
+import { TableState } from './types/context'
 
-export function toSql(name: string, state:TableState ) {
+export function toSql(name: string, state: TableState) {
     const sql = {
         value: `CREATE TABLE IF NOT EXIST ${name} (\n`,
         entries: [] as string[],

@@ -73,7 +73,7 @@ const Tag = Sqlite.entity({
         label: lite.text().notNull(),
         color: lite.text().default('#000000'),
         sortOrder: lite.int().default(0),
-        userId: lite.int().references(User.col('id'))
+        userId: lite.int().references(User.col('id')),
     },
     options(ctx) {
         ctx.primaryKey(['id'])
@@ -114,11 +114,8 @@ console.dir(Tag.state)
 console.log('\n── PostTag ──')
 console.dir(PostTag.state)
 
-
 const server = createServer((req, res) => {
     res.end('ok')
-
 })
-
 
 server.listen(3000)
