@@ -2,35 +2,35 @@ import type { Operator } from '@aromix/validator'
 import type { Chain } from './types/chain'
 import type { Collation, ColumnReference, ColumnState, ColumnType, ColumnTypeMap, ReferenceAction, UniqueConflict } from './types/column'
 
-export class Column<Type extends ColumnType> {
-    private constructor(readonly state: ColumnState) {}
+export class Column<Type extends ColumnType, NotNull extends boolean = false, AutoInc extends boolean = false, Out = ColumnTypeMap[Type]> {
+    private constructor(readonly state: ColumnState<Type, NotNull, AutoInc, Out>) {}
 
     static create<Type extends ColumnType>(colType: Type): Chain<Type> {
         return new Column<Type>({
             colType,
             primaryKey: false,
-            autoIncrement: false,
-            notNull: false,
+            autoIncrement: false as any,
+            notNull: false as any,
             unique: false,
             uniqueConflict: 'conflict:error',
             index: false,
             checks: [],
             in: [],
             pipes: [],
-        })
+        }) as any
     }
 
     primaryKey() {
         this.state.primaryKey = true
-        return this
+        return this as any
     }
     autoIncrement() {
-        this.state.autoIncrement = true
-        return this
+        ;(this.state as any).autoIncrement = true
+        return this as any
     }
     notNull() {
-        this.state.notNull = true
-        return this
+        ;(this.state as any).notNull = true
+        return this as any
     }
 
     unique(conflict: UniqueConflict) {
@@ -83,23 +83,23 @@ export class Column<Type extends ColumnType> {
         return this
     }
 
-    default(value: ColumnTypeMap[Type]) {
+    default(value: Out) {
         this.state.default = value
         return this
     }
 
-    defaultFn(fn: () => ColumnTypeMap[Type]) {
+    defaultFn(fn: () => Out) {
         this.state.defaultFn = fn
         return this
     }
 
-    onUpdate(fn: () => ColumnTypeMap[Type]) {
+    onUpdate(fn: () => Out) {
         this.state.onUpdate = fn
         return this
     }
 
-    pipe<Next>(operator: Operator<ColumnTypeMap[Type], Next>) {
-        this.state.pipes.push(operator)
-        return this
+    pipe<Next>(operator: Operator<Out, Next>) {
+        ;(this.state.pipes as any).push(operator)
+        return this as any
     }
 }

@@ -34,11 +34,11 @@ export interface ColumnReference {
     columnName: string
     tableState: Record<string, ColumnState>
 }
-export interface ColumnState {
-    colType: ColumnType
+export interface ColumnState<ColType extends ColumnType = ColumnType, NotNull extends boolean = boolean, AutoInc extends boolean = boolean, Out = ColumnTypeMap[ColType]> {
+    colType: ColType
     primaryKey: boolean
     autoIncrement: boolean
-    notNull: boolean
+    notNull: NotNull
     unique: boolean
     uniqueConflict: UniqueConflict
     index: boolean
