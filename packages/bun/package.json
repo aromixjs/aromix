@@ -48,5 +48,8 @@
         "@types/bun": "^1.1.13",
         "tsup": "catalog:",
         "typescript": "catalog:"
+    },
+    "dependencies": {
+        "@msgpack/msgpack": "catalog:"
     }
 }

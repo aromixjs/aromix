@@ -1,3 +1,5 @@
+import { KvEntityOutput } from "../kv/entity"
+import { SqliteEntityOutput } from "../sqlite/entity.types"
 import { ComposeOutput } from "./compose"
 
 export interface RouteEntry {
@@ -18,6 +20,7 @@ export interface NetState {
     routes: RouteMap
     namedRoutes: NamedRoutes
     entityNames: string[]
+    entities: Record<string, SqliteEntityOutput<any> | KvEntityOutput<any>>
 }
 
 export interface NetDescriptor {
@@ -44,8 +47,10 @@ const kvMethods = [
 export function make(input: ComposeOutput): NetDescriptor {
     const routes: RouteMap = {}
     const namedRoutes: NamedRoutes = {}
+    const entities: Record<string, SqliteEntityOutput<any> | KvEntityOutput<any>> = {}
 
     for (const entity of input.sqlite) {
+        entities[entity.state.name] = entity
         for (const method of sqliteMethods) {
             const id = generateRouteId()
             routes[id] = { entityName: entity.state.name, entityType: 'sqlite', method }
@@ -54,6 +59,7 @@ export function make(input: ComposeOutput): NetDescriptor {
     }
 
     for (const entity of input.kv) {
+        entities[entity.state.name] = entity
         for (const method of kvMethods) {
             const id = generateRouteId()
             routes[id] = { entityName: entity.state.name, entityType: 'kv', method }
@@ -61,14 +67,9 @@ export function make(input: ComposeOutput): NetDescriptor {
         }
     }
 
-    const entityNames = [
-        ...new Set([
-            ...input.sqlite.map(e => e.state.name),
-            ...input.kv.map(e => e.state.name),
-        ]),
-    ]
+    const entityNames = Object.keys(entities)
 
-    const state: NetState = { routes, namedRoutes, entityNames }
+    const state: NetState = { routes, namedRoutes, entityNames, entities }
 
     return {
         state,
