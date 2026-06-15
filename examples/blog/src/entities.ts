@@ -20,7 +20,7 @@ export const UserEntity = SqliteEntity({
         email: lite.text().notNull().unique('conflict:error'),
         createdAt: lite.int().defaultFn(() => Date.now()),
     },
-    options() { },
+    options() {},
 })
 
 export const PostEntity = SqliteEntity({
@@ -33,7 +33,10 @@ export const PostEntity = SqliteEntity({
         authorId: lite.int().notNull().references(UserEntity.col('id'), ['delete:cascade']),
         status: lite.text().notNull().default('draft').in(['draft', 'published', 'archived']),
         createdAt: lite.int().defaultFn(() => Date.now()),
-        updatedAt: lite.int().defaultFn(() => Date.now()).onUpdate(() => Date.now()),
+        updatedAt: lite
+            .int()
+            .defaultFn(() => Date.now())
+            .onUpdate(() => Date.now()),
     },
     options(ctx) {
         ctx.index({ name: 'idx_posts_author', cols: ['authorId'] })

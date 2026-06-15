@@ -48,19 +48,19 @@ async function test(desc: string, fn: () => Promise<void>) {
 let aliceId: number, bobId: number, postId: number
 
 await test('Create Alice', async () => {
-    const user = await call('users.insert', { name: 'Alice', email: 'alice@blog.com' }) as any
+    const user = (await call('users.insert', { name: 'Alice', email: 'alice@blog.com' })) as any
     aliceId = user.id
     console.log(`    id=${user.id}, email=${user.email}`)
 })
 
 await test('Create Bob', async () => {
-    const user = await call('users.insert', { name: 'Bob', email: 'bob@blog.com' }) as any
+    const user = (await call('users.insert', { name: 'Bob', email: 'bob@blog.com' })) as any
     bobId = user.id
 })
 
 // ── Posts ──
 await test('Create a post by Alice', async () => {
-    const post = await call('posts.insert', { title: 'Hello World', body: 'My first post!', authorId: aliceId, status: 'published' }) as any
+    const post = (await call('posts.insert', { title: 'Hello World', body: 'My first post!', authorId: aliceId, status: 'published' })) as any
     postId = post.id
     console.log(`    id=${post.id}, title="${post.title}"`)
 })
@@ -70,46 +70,46 @@ await test('Create a draft post by Alice', async () => {
 })
 
 await test('Find published posts', async () => {
-    const posts = await call('posts.findMany', { status: 'published' }) as any[]
+    const posts = (await call('posts.findMany', { status: 'published' })) as any[]
     console.log(`    ${posts.length} post(s)`)
 })
 
 // ── Comments ──
 await test('Bob comments on the post', async () => {
-    const comment = await call('comments.insert', { postId, authorId: bobId, content: 'Great post!' }) as any
+    const comment = (await call('comments.insert', { postId, authorId: bobId, content: 'Great post!' })) as any
     console.log(`    comment id=${comment.id}`)
 })
 
 await test('Count comments on post', async () => {
-    const count = await call('comments.count', { postId }) as number
+    const count = (await call('comments.count', { postId })) as number
     console.log(`    ${count} comment(s)`)
 })
 
 // ── Update ──
 await test('Publish the draft post', async () => {
-    const updated = await call('posts.update', [{ authorId: aliceId, status: 'draft' }, { status: 'published' }]) as any[]
+    const updated = (await call('posts.update', [{ authorId: aliceId, status: 'draft' }, { status: 'published' }])) as any[]
     console.log(`    updated ${updated.length} post(s)`)
 })
 
 // ── Query ──
 await test('Paginate posts', async () => {
-    const result = await call('posts.paginate', [undefined, { page: 1, pageSize: 10 }]) as any
+    const result = (await call('posts.paginate', [undefined, { page: 1, pageSize: 10 }])) as any
     console.log(`    ${result.total} total, page ${result.page}/${result.totalPages}`)
 })
 
 await test('Find user by email', async () => {
-    const user = await call('users.findOne', { email: 'alice@blog.com' }) as any
+    const user = (await call('users.findOne', { email: 'alice@blog.com' })) as any
     console.log(`    found: ${user.name}`)
 })
 
 await test('Count users', async () => {
-    const count = await call('users.count') as number
+    const count = (await call('users.count')) as number
     console.log(`    ${count} user(s)`)
 })
 
 // ── Delete ──
 await test('Soft-check: comment exists', async () => {
-    const exists = await call('comments.exist', { id: 1 }) as boolean
+    const exists = (await call('comments.exist', { id: 1 })) as boolean
     console.log(`    comment exists: ${exists}`)
 })
 

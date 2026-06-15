@@ -21,7 +21,7 @@ const UserEntity = SqliteEntity({
         email: lite.text().notNull().unique('conflict:error'),
         age: lite.int().notNull().gte(0),
     },
-    options() { },
+    options() {},
 })
 
 // Create table + seed data

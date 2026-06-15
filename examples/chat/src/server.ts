@@ -29,7 +29,9 @@ function broadcast(msg: BroadcastMsg) {
     const data = encode(msg)
     const buf = toBuffer(data)
     for (const [client] of clients) {
-        try { client.sendBinary(buf) } catch { }
+        try {
+            client.sendBinary(buf)
+        } catch {}
     }
 }
 
@@ -62,7 +64,7 @@ Bun.serve({
                     timestamp: Date.now(),
                     users: clients.size,
                 })
-            } catch { }
+            } catch {}
         },
         close(ws) {
             const username = clients.get(ws) || 'Anonymous'

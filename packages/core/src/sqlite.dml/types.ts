@@ -1,2 +1,1 @@
-export { PaginateOptions, PaginateResult, Where, WhereOperators } from '../sqlite/entity.types';
-
+export { PaginateOptions, PaginateResult, Where, WhereOperators } from '../sqlite/entity.types'

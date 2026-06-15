@@ -1,5 +1,5 @@
-import { KvEntityOutput } from "../kv/entity";
-import { SqliteEntityOutput } from "../sqlite/entity.types";
+import { KvEntityOutput } from '../kv/entity'
+import { SqliteEntityOutput } from '../sqlite/entity.types'
 
 export interface ComposeInput {
     entities: Array<KvEntityOutput<any> | SqliteEntityOutput<any>>
@@ -29,8 +29,7 @@ export function compose(input: ComposeInput): ComposeOutput {
         sqlite.push(...child.sqlite)
     }
 
-    const dedup = <T extends { state: { name: string } }>(arr: T[]) =>
-        arr.filter((e, i, a) => a.findIndex(x => x.state.name === e.state.name) === i)
+    const dedup = <T extends { state: { name: string } }>(arr: T[]) => arr.filter((e, i, a) => a.findIndex((x) => x.state.name === e.state.name) === i)
 
     return { kv: dedup(kv), sqlite: dedup(sqlite) }
 }

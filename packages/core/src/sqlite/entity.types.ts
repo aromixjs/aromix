@@ -1,6 +1,7 @@
 import { Schema } from '@aromix/validator'
-import { Chain, ColumnReference, ColumnState, ColumnType, ColumnTypeMap, UniqueConflict } from '../sqlite.ddl/column'
+import { ColumnReference, ColumnState, ColumnType, ColumnTypeMap, UniqueConflict } from '../sqlite.ddl/column.types'
 import { SqliteAdapter } from './adapter'
+import { Chain } from '../sqlite.ddl/chain.types'
 
 export interface CheckExpression {
     left: string
@@ -52,9 +53,7 @@ export interface SqliteEntityState {
 
 type Prettify<T> = { [K in keyof T]: T[K] } & {}
 
-type ColKind<C> = C extends { gt(value: number): Chain<infer T, any> }
-    ? T extends ColumnType ? T : never
-    : never
+type ColKind<C> = C extends { gt(value: number): Chain<infer T, any> } ? (T extends ColumnType ? T : never) : never
 
 type ColTypeOf<C> = ColKind<C> extends ColumnType ? ColumnTypeMap[ColKind<C>] : never
 
@@ -65,27 +64,20 @@ type ColIsNotNull<C> = MethodCalled<C, 'notNull'>
 type ColHasDefault<C> = MethodCalled<C, 'default'>
 type ColHasDefaultFn<C> = MethodCalled<C, 'defaultFn'>
 
-type ColSelectType<C> =
-    ColIsNotNull<C> extends true ? ColTypeOf<C>
-        : ColHasDefault<C> extends true ? ColTypeOf<C>
-            : ColHasDefaultFn<C> extends true ? ColTypeOf<C>
-                : ColTypeOf<C> | null
+type ColSelectType<C> = ColIsNotNull<C> extends true ? ColTypeOf<C> : ColHasDefault<C> extends true ? ColTypeOf<C> : ColHasDefaultFn<C> extends true ? ColTypeOf<C> : ColTypeOf<C> | null
 
 type ColInsertType<C> =
-    ColIsAutoIncrement<C> extends true ? never
+    ColIsAutoIncrement<C> extends true
+        ? never
         : ColIsNotNull<C> extends true
-            ? ColHasDefault<C> extends true ? ColTypeOf<C>
-                : ColHasDefaultFn<C> extends true ? ColTypeOf<C>
-                    : ColTypeOf<C>
-            : ColTypeOf<C>
+          ? ColHasDefault<C> extends true
+              ? ColTypeOf<C>
+              : ColHasDefaultFn<C> extends true
+                ? ColTypeOf<C>
+                : ColTypeOf<C>
+          : ColTypeOf<C>
 
-type ColInsertIsOptional<C> =
-    ColIsAutoIncrement<C> extends true ? false
-        : ColIsNotNull<C> extends true
-            ? ColHasDefault<C> extends true ? true
-                : ColHasDefaultFn<C> extends true ? true
-                    : false
-            : true
+type ColInsertIsOptional<C> = ColIsAutoIncrement<C> extends true ? false : ColIsNotNull<C> extends true ? (ColHasDefault<C> extends true ? true : ColHasDefaultFn<C> extends true ? true : false) : true
 
 type ColUpdateType<C> = ColTypeOf<C>
 
@@ -93,17 +85,13 @@ export type EntitySelect<State> = {
     [Key in keyof State]: ColSelectType<State[Key]>
 }
 
-export type EntityInsert<State> = Prettify<{
-    [Key in keyof State as
-        ColInsertType<State[Key]> extends never ? never :
-        ColInsertIsOptional<State[Key]> extends true ? never : Key
-    ]: ColInsertType<State[Key]>
-} & {
-    [Key in keyof State as
-        ColInsertType<State[Key]> extends never ? never :
-        ColInsertIsOptional<State[Key]> extends true ? Key : never
-    ]?: ColInsertType<State[Key]>
-}>
+export type EntityInsert<State> = Prettify<
+    {
+        [Key in keyof State as ColInsertType<State[Key]> extends never ? never : ColInsertIsOptional<State[Key]> extends true ? never : Key]: ColInsertType<State[Key]>
+    } & {
+        [Key in keyof State as ColInsertType<State[Key]> extends never ? never : ColInsertIsOptional<State[Key]> extends true ? Key : never]?: ColInsertType<State[Key]>
+    }
+>
 
 export type EntityUpdate<State> = {
     [Key in keyof State]?: ColUpdateType<State[Key]>

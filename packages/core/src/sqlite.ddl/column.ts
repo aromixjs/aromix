@@ -1,4 +1,4 @@
-import { Chain } from './chain.types'
+import { Chain, RefinedChain } from './chain.types'
 import { Collation, ColumnReference, ColumnState, ColumnType, ColumnTypeMap, ReferenceAction, UniqueConflict } from './column.types'
 export class Column<Type extends ColumnType> {
     readonly state: ColumnState
@@ -18,7 +18,7 @@ export class Column<Type extends ColumnType> {
             index: false,
             checks: [],
             in: [],
-        })
+        }) as any
     }
 
     primaryKey() {
@@ -37,7 +37,7 @@ export class Column<Type extends ColumnType> {
         return this
     }
 
-    unique(conflict: UniqueConflict) {
+    unique(conflict: UniqueConflict = 'conflict:error') {
         this.state.unique = true
         this.state.uniqueConflict = conflict
         return this
@@ -83,7 +83,7 @@ export class Column<Type extends ColumnType> {
         return this
     }
 
-    in(values: ColumnTypeMap[Type][]) {
+    in(values: string[]) {
         this.state.in = values
         return this
     }
@@ -103,8 +103,13 @@ export class Column<Type extends ColumnType> {
         return this
     }
 
-    onUpdate(fn: () => unknown) {
+    onUpdate(fn: () => ColumnTypeMap[Type]) {
         this.state.onUpdate = fn
         return this
+    }
+
+    refine<Output extends ColumnTypeMap[Type]>(fn: (value: unknown) => Output): RefinedChain<Output> {
+        this.state.refine = fn
+        return this as any
     }
 }

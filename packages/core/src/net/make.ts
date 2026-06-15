@@ -1,6 +1,6 @@
-import { KvEntityOutput } from "../kv/entity"
-import { SqliteEntityOutput } from "../sqlite/entity.types"
-import { ComposeOutput } from "./compose"
+import { KvEntityOutput } from '../kv/entity'
+import { SqliteEntityOutput } from '../sqlite/entity.types'
+import { ComposeOutput } from './compose'
 
 export interface RouteEntry {
     entityName: string
@@ -34,15 +34,9 @@ function generateRouteId(): string {
     return crypto.randomUUID()
 }
 
-const sqliteMethods = [
-    'findById', 'findOne', 'findMany',
-    'count', 'exist', 'insert', 'update', 'upsert',
-    'delete', 'deleteById', 'paginate',
-] as const
+const sqliteMethods = ['findById', 'findOne', 'findMany', 'count', 'exist', 'insert', 'update', 'upsert', 'delete', 'deleteById', 'paginate'] as const
 
-const kvMethods = [
-    'get', 'set', 'delete', 'has',
-] as const
+const kvMethods = ['get', 'set', 'delete', 'has'] as const
 
 export function make(input: ComposeOutput): NetDescriptor {
     const routes: RouteMap = {}

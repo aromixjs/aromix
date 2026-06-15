@@ -23,5 +23,11 @@ const server = await serve({
 
 console.log(`Blog server running on http://localhost:3020`)
 
-process.on('SIGINT', () => { server.stop(); process.exit(0) })
-process.on('SIGTERM', () => { server.stop(); process.exit(0) })
+process.on('SIGINT', () => {
+    server.stop()
+    process.exit(0)
+})
+process.on('SIGTERM', () => {
+    server.stop()
+    process.exit(0)
+})

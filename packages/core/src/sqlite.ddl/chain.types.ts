@@ -1,35 +1,43 @@
-import { Collation, ColumnState, ColumnType, ColumnTypeMap, ReferenceAction, UniqueConflict } from "./column.types"
+import { Collation, ColumnReference, ColumnState, ColumnType, ColumnTypeMap, ReferenceAction, UniqueConflict } from './column.types'
+
+export interface AnyColumn<Output = unknown> {
+    readonly state: ColumnState
+    readonly $infer: Output
+}
+
+// RefinedChain :: returned by .refine(). Carries the narrowed output type.
+// No further chain methods refine is terminal for type narrowing.
+export interface RefinedChain<Output> extends AnyColumn<Output> {}
 
 export type Chain<Type extends ColumnType, Used extends string = never> = Omit<
-   {
-      readonly state: ColumnState
-      primaryKey(): Chain<Type, Used | 'primaryKey' | 'notNull'>
+    {
+        readonly state: ColumnState
+        readonly $infer: ColumnTypeMap[Type]
 
-      autoIncrement(): Chain<Type, Used | 'autoIncrement'>
+        primaryKey(): Chain<Type, Used | 'primaryKey' | 'notNull'>
+        autoIncrement(): Chain<Type, Used | 'autoIncrement'>
+        notNull(): Chain<Type, Used | 'notNull'>
 
-      notNull(): Chain<Type, Used | 'notNull'>
+        unique(conflict?: UniqueConflict): Chain<Type, Used | 'unique'>
+        index(): Chain<Type, Used | 'index'>
+        collate(value: Collation): Chain<Type, Used | 'collate'>
 
-      unique(conflict: UniqueConflict): Chain<Type, Used | 'unique'>
+        gt(value: number): Chain<Type, Used>
+        gte(value: number): Chain<Type, Used>
+        lt(value: number): Chain<Type, Used>
+        lte(value: number): Chain<Type, Used>
+        minLength(value: number): Chain<Type, Used>
+        maxLength(value: number): Chain<Type, Used>
 
-      index(): Chain<Type, Used | 'index'>
+        in(values: string[]): Chain<Type, Used | 'in'>
 
-      collate(value: Collation): Chain<Type, Used | 'collate'>
+        references(col: ColumnReference, actions?: ReferenceAction[]): Chain<Type, Used | 'references'>
 
+        default(value: ColumnTypeMap[Type]): Chain<Type, Used | 'default' | 'defaultFn'>
+        defaultFn(fn: () => ColumnTypeMap[Type]): Chain<Type, Used | 'default' | 'defaultFn'>
+        onUpdate(fn: () => ColumnTypeMap[Type]): Chain<Type, Used | 'onUpdate'>
 
-      gt(value: number): Chain<Type, Used>
-      gte(value: number): Chain<Type, Used>
-      lt(value: number): Chain<Type, Used>
-      lte(value: number): Chain<Type, Used>
-      minLength(value: number): Chain<Type, Used>
-      maxLength(value: number): Chain<Type, Used>
-
-      in(values: ColumnTypeMap[Type][]): Chain<Type, Used | 'in'>
-
-      references(col: unknown, actions?: ReferenceAction[]): Chain<Type, Used | 'references'>
-
-      default(value: ColumnTypeMap[Type]): Chain<Type, Used | 'default' | 'defaultFn'>
-      defaultFn(fn: () => ColumnTypeMap[Type]): Chain<Type, Used | 'defaultFn' | 'default'>
-      onUpdate(fn: () => ColumnTypeMap[Type]): Chain<Type, Used | 'onUpdate'>
-   },
-   Used
+        refine<Output extends ColumnTypeMap[Type]>(fn: (value: ColumnTypeMap[Type]) => Output): RefinedChain<Output>
+    },
+    Used
 >

@@ -42,11 +42,11 @@ export interface ColumnState {
     uniqueConflict: UniqueConflict
     index: boolean
     checks: CheckEntry[]
-    in: any[]
+    in: string[]
     collate?: Collation
     references?: { col: ColumnReference; actions: ReferenceAction[] }
     default?: unknown
     defaultFn?: () => unknown
     onUpdate?: () => unknown
+    refine?: (value: unknown) => unknown
 }
-

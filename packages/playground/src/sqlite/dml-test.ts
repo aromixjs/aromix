@@ -25,7 +25,7 @@ const UserEntity = SqliteEntity({
         score: lite.real().default(0),
         bio: lite.text(),
     },
-    options() { },
+    options() {},
 })
 
 // Create table
@@ -89,16 +89,10 @@ const updated = await UserEntity.update({ id: user1.id }, { score: 50, bio: 'Hel
 console.log('Updated:', JSON.stringify(updated))
 
 console.log('\n=== Upsert ===')
-const upserted = await UserEntity.upsert(
-    { name: 'Charlie', email: 'charlie@test.com', age: 35 },
-    ['email'],
-)
+const upserted = await UserEntity.upsert({ name: 'Charlie', email: 'charlie@test.com', age: 35 }, ['email'])
 console.log('Upserted new:', JSON.stringify(upserted))
 
-const upsertedExisting = await UserEntity.upsert(
-    { name: 'Charlie Updated', email: 'charlie@test.com', age: 36 },
-    ['email'],
-)
+const upsertedExisting = await UserEntity.upsert({ name: 'Charlie Updated', email: 'charlie@test.com', age: 36 }, ['email'])
 console.log('Upserted existing:', JSON.stringify(upsertedExisting))
 
 console.log('\n=== Paginate ===')

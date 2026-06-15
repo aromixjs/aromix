@@ -1,7 +1,7 @@
-import { Schema } from "@aromix/validator";
-import { AxConverter } from "../sqlite.convert/ax";
-import { SqliteAdapter } from "../sqlite/adapter";
-import { EntityInsert, EntitySelect, EntityUpdate, PaginateOptions, PaginateResult, SqliteEntityState, Where } from "../sqlite/entity.types";
+import { Schema } from '@aromix/validator'
+import { AxConverter } from '../sqlite.convert/ax'
+import { SqliteAdapter } from '../sqlite/adapter'
+import { EntityInsert, EntitySelect, EntityUpdate, PaginateOptions, PaginateResult, SqliteEntityState, Where } from '../sqlite/entity.types'
 
 export class SqliteEntityDml<State> {
     private selectSchema: Schema<EntitySelect<State>>
@@ -10,7 +10,7 @@ export class SqliteEntityDml<State> {
 
     constructor(
         private state: SqliteEntityState,
-        private adapter: SqliteAdapter
+        private adapter: SqliteAdapter,
     ) {
         this.selectSchema = AxConverter.select(this.state.columns)
         this.insertSchema = AxConverter.insert(this.state.columns)
@@ -47,18 +47,32 @@ export class SqliteEntityDml<State> {
                 const obj = value as Record<string, unknown>
                 for (const [op, val] of Object.entries(obj)) {
                     switch (op) {
-                        case 'eq': conditions.push(`"${key}" = ${this.escapeValue(val)}`); break
-                        case 'ne': conditions.push(`"${key}" != ${this.escapeValue(val)}`); break
-                        case 'gt': conditions.push(`"${key}" > ${this.escapeValue(val)}`); break
-                        case 'gte': conditions.push(`"${key}" >= ${this.escapeValue(val)}`); break
-                        case 'lt': conditions.push(`"${key}" < ${this.escapeValue(val)}`); break
-                        case 'lte': conditions.push(`"${key}" <= ${this.escapeValue(val)}`); break
+                        case 'eq':
+                            conditions.push(`"${key}" = ${this.escapeValue(val)}`)
+                            break
+                        case 'ne':
+                            conditions.push(`"${key}" != ${this.escapeValue(val)}`)
+                            break
+                        case 'gt':
+                            conditions.push(`"${key}" > ${this.escapeValue(val)}`)
+                            break
+                        case 'gte':
+                            conditions.push(`"${key}" >= ${this.escapeValue(val)}`)
+                            break
+                        case 'lt':
+                            conditions.push(`"${key}" < ${this.escapeValue(val)}`)
+                            break
+                        case 'lte':
+                            conditions.push(`"${key}" <= ${this.escapeValue(val)}`)
+                            break
                         case 'in':
                             if (Array.isArray(val)) {
-                                conditions.push(`"${key}" IN (${val.map(v => this.escapeValue(v)).join(', ')})`)
+                                conditions.push(`"${key}" IN (${val.map((v) => this.escapeValue(v)).join(', ')})`)
                             }
                             break
-                        case 'like': conditions.push(`"${key}" LIKE ${this.escapeValue(val)}`); break
+                        case 'like':
+                            conditions.push(`"${key}" LIKE ${this.escapeValue(val)}`)
+                            break
                     }
                 }
             } else {
@@ -118,7 +132,7 @@ export class SqliteEntityDml<State> {
         const sql = `SELECT * FROM "${this.state.name}" WHERE ${where}`
         const result = await this.adapter.query(sql)
         const rows = this.normalizeRows(result)
-        return rows.map(row => this.selectSchema.parse(row))
+        return rows.map((row) => this.selectSchema.parse(row))
     }
 
     async count(filter?: Where<State>): Promise<number> {
@@ -156,21 +170,20 @@ export class SqliteEntityDml<State> {
         const sql = `UPDATE "${this.state.name}" SET ${setClause} WHERE ${where} RETURNING *`
         const result = await this.adapter.query(sql)
         const rows = this.normalizeRows(result)
-        return rows.map(row => this.selectSchema.parse(row))
+        return rows.map((row) => this.selectSchema.parse(row))
     }
 
     async upsert(data: EntityInsert<State>, conflictColumns?: (keyof State)[]): Promise<EntitySelect<State>> {
         const validated = this.insertSchema.parse(data)
         const { columns, values } = this.buildInsertParts(validated as Record<string, unknown>)
         const updateParts = Object.keys(validated as Record<string, unknown>)
-            .filter(key => !conflictColumns?.includes(key as any))
-            .map(key => `"${key}" = EXCLUDED."${key}"`)
-        const conflictTarget = conflictColumns && conflictColumns.length > 0
-            ? `(${conflictColumns.map(c => `"${String(c)}"`).join(', ')})`
-            : ''
-        const upsertClause = updateParts.length > 0
-            ? ` ON CONFLICT${conflictTarget ? ' ' + conflictTarget : ''} DO UPDATE SET ${updateParts.join(', ')}`
-            : ` ON CONFLICT${conflictTarget ? ' ' + conflictTarget : ''} DO NOTHING`
+            .filter((key) => !conflictColumns?.includes(key as any))
+            .map((key) => `"${key}" = EXCLUDED."${key}"`)
+        const conflictTarget = conflictColumns && conflictColumns.length > 0 ? `(${conflictColumns.map((c) => `"${String(c)}"`).join(', ')})` : ''
+        const upsertClause =
+            updateParts.length > 0
+                ? ` ON CONFLICT${conflictTarget ? ' ' + conflictTarget : ''} DO UPDATE SET ${updateParts.join(', ')}`
+                : ` ON CONFLICT${conflictTarget ? ' ' + conflictTarget : ''} DO NOTHING`
         const sql = `INSERT INTO "${this.state.name}" (${columns}) VALUES (${values})${upsertClause} RETURNING *`
         const result = await this.adapter.query(sql)
         const rows = this.normalizeRows(result)
@@ -183,7 +196,7 @@ export class SqliteEntityDml<State> {
         const sql = `DELETE FROM "${this.state.name}" WHERE ${where} RETURNING *`
         const result = await this.adapter.query(sql)
         const rows = this.normalizeRows(result)
-        return rows.map(row => this.selectSchema.parse(row))
+        return rows.map((row) => this.selectSchema.parse(row))
     }
 
     async deleteById(id: string | number): Promise<EntitySelect<State> | null> {
@@ -207,7 +220,7 @@ export class SqliteEntityDml<State> {
         const dataSql = `SELECT * FROM "${this.state.name}" WHERE ${where} LIMIT ${pageSize} OFFSET ${offset}`
         const dataResult = await this.adapter.query(dataSql)
         const dataRows = this.normalizeRows(dataResult)
-        const data = dataRows.map(row => this.selectSchema.parse(row))
+        const data = dataRows.map((row) => this.selectSchema.parse(row))
         return {
             data,
             total,
