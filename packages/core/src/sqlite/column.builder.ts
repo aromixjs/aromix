@@ -1,32 +1,19 @@
-import { OperatorRecord } from "./operators";
-import { ColumnType } from "./states";
+import { BlobOperatorRecord, IntOperatorRecord, RealOperatorRecord, TextOperatorRecord } from "./operators";
 
-export class BaseColumnBuilder<Name extends string, Type extends ColumnType, Operators extends OperatorRecord> {
-
-    constructor(
-        public name: Name,
-        public type: Type,
-        public state: Record<string, unknown> = {}
-    ) {}
-
+export interface BuilderInput {
+   Text: TextOperatorRecord
+   Int: IntOperatorRecord
+   Real: RealOperatorRecord
+   Blob: BlobOperatorRecord
 }
 
 
-export class TextBuilder<Name extends string, Operators extends OperatorRecord> extends BaseColumnBuilder<Name, "Text", Operators> {
-
-
-
-   constructor(
-      name: Name,
-      private ops: Operators
-   ) {
-      super(name, "Text")
+export class Builder {
+   constructor(operators: BuilderInput) { }
+   text() {
+      // need to wire those operators as a chain here
    }
- }
-
-
-
-
-
-
-
+   int() { }
+   real() { }
+   blob() { }
+}

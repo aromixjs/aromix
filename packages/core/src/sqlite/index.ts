@@ -1,8 +1,7 @@
 export {
-   ColumnTypeMap,
-   ColumnType,
-   ColumnState
+   ColumnState, ColumnType, ColumnTypeMap
 } from './states'
 
 export { EntityBuilder } from './entity.builder'
-export { TextBuilder } from './column.builder'
+export { AnyOperator, Operator, OperatorCtx, OperatorFn, AnyOperatorRecord as OperatorRecord } from './operators'
+

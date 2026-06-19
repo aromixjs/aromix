@@ -1,4 +1,3 @@
-
 export interface ColumnTypeMap {
    Text: string
    Int: number
