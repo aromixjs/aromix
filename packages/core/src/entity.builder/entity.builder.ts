@@ -1,79 +1,20 @@
-import { ax } from "@aromix/validator"
-import { ColumnOperator, GroupInput } from "./ddl.chain"
+import { Builder } from './col.builder'
+import { OperatorDef } from './ddl.chain'
 
-export interface SqliteEntityBuilderInput<Type extends Record<string, GroupInput>> {
+export type OperatorRecord = Record<string, OperatorDef>
+
+
+export function SqliteEntityBuilder<TextOperator extends OperatorRecord, IntOperator extends OperatorRecord, RealOperator extends OperatorRecord, BlobOperator extends OperatorRecord>(input: {
    adapter: (sql: string) => Promise<unknown>
-   operators?: Type
-}
-
-
-class Builder {
-   text<const Col extends string>(col: Col) {
-   }
-
-   int<const Col extends string>(col: Col) {
-   }
-
-   real<const Col extends string>(col: Col) {
-   }
-
-   blob<const Col extends string>(col: Col) {
-
-   }
-}
-
-
-interface EntityInput {
-   name: string
-   model: (builder: Builder) => any[]
-}
-
-
-export function SqliteEntityBuilder<const Type extends Record<string, GroupInput>>(input: SqliteEntityBuilderInput<Type>) {
+   Text?: TextOperator
+   Blob?: BlobOperator
+   Int?: IntOperator
+   Real?: RealOperator
+}) {
 
 
 
    return {
       input,
-      entity(input: EntityInput) { }
    }
 }
-
-
-
-
-
-const sqlite = SqliteEntityBuilder({
-   async adapter(sql) {
-      return sql
-   },
-
-   operators: {
-      roles: ColumnOperator({
-         Text() {
-            return {
-               all: ax.literal('admin')
-            }
-         }
-      })
-
-   }
-
-
-})
-
-
-
-
-
-
-
-sqlite.entity({
-
-   name: 'users',
-   model: (builder) => [
-      builder.int('id')
-   ],
-
-
-})
