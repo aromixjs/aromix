@@ -6,7 +6,7 @@
 // defined the same way any custom operator would be.
 // ---------------------------------------------------------------------------
 
-import { op, SqliteEntityBuilder } from "./sqlite"
+import { op, SqliteEntityBuilder } from "./ddl.chain"
 
 const text = op('text', <N extends string>(name: N) => {
 
