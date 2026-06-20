@@ -1,19 +1,29 @@
-import { Collate, TextModifierState } from "../state"
+import { Collate, Reference, ReferenceRule, TextState, UniqueConflict } from "../state"
 
 export class TextModifier<const Col extends string> {
 
-   readonly state: TextModifierState
+   readonly state: TextState
+
    constructor(col: Col) {
+
       this.state = {
          colName: col,
          colType: 'TEXT',
          unique: false,
-         index: false
+         index: false,
+         primaryKey: false,
       }
    }
 
-   unique() {
+
+   primaryKey() {
+      this.state.primaryKey = true
+      return this
+   }
+
+   unique(conflict: UniqueConflict = 'conflict:error') {
       this.state.unique = true
+      this.state.uniqueConflict = conflict
       return this
    }
 
@@ -30,5 +40,12 @@ export class TextModifier<const Col extends string> {
 
 
 
-
+   references(ref: Reference, rules: ReferenceRule[] = []) {
+      this.state.references = {
+         entityName: ref.entityName,
+         columnName: ref.columnName,
+         tableState: ref.tableState,
+         rules: rules
+      }
+   }
 }

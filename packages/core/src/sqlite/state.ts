@@ -1,48 +1,30 @@
-export interface ColumnTypeMap {
-   text: string
-   int: number
-   real: number
-   blob: Uint8Array
-}
-
-export type ColumnType = keyof ColumnTypeMap
-
+export type Collate = 'binary' | 'nocase' | 'rtrim'
+export type ReferenceRule =
+   | 'delete:noAction' | 'update:noAction'
+   | 'delete:restrict' | 'update:restrict'
+   | 'delete:cascade' | 'update:cascade'
+   | 'delete:setNull' | 'update:setNull'
+   | 'delete:setDefault' | 'update:setDefault'
 
 
+export type UniqueConflict = 'conflict:error' | 'conflict:replace' | 'conflict:ignore'
 
 
-export type Collate = "nocase" | "rtrim" | "binary"
-export interface TextModifierState {
-   colName: string,
-   colType: 'TEXT'
-   unique: boolean
-   collate?: Collate
-   index: boolean
-}
-
-
-export type ReferenceRule = `${'update' | 'delete'}:${'cascade' | 'restrict' | 'noAction' | 'setNull' | 'setDefault'}`
-
-
-
-export interface ReferencedCol {
-   colName: string
-   tableName: string
-   tableState: BaseState[]
-}
-
-export interface References {
-   colName: string
-   tableName: string
-   tableState: BaseState[]
+export interface Reference {
+   entityName: string
+   columnName: string
+   tableState: TextState
    rules: ReferenceRule[]
 }
-export interface BaseState {
+export interface TextState {
    colName: string
-   colType: 'TEXT' | 'INTEGER' | 'REAL' | 'BLOB'
+   colType: 'TEXT'
+   primaryKey: boolean
    unique: boolean
+   uniqueConflict?: UniqueConflict
    index: boolean
-   references?: References
+   collate?: Collate
+   references?: Reference
 }
 
 

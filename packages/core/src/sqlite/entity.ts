@@ -1,5 +1,5 @@
 import { Builder } from './fields'
-import { ReferencedCol } from './state'
+
 
 export interface LiteAdapter {
    query: (sql: string) => Promise<unknown>
