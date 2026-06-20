@@ -1,42 +1,30 @@
-import { BlobModifier } from '../lite.column/blob'
-import { IntModifier } from '../lite.column/int'
-import { RealModifier } from '../lite.column/real'
-import { TextModifier } from '../lite.column/text'
-import { Builder } from '../lite.types/builder'
+import { AnyColumn } from './column.state'
 import { LiteAdapter } from './adapter'
+import { ColumnBuilder } from './column'
 
-export interface LiteEntityInput {
+export interface LiteEntityInput<Fields extends AnyColumn[]> {
 	name: string
 	adapter: LiteAdapter
-	fields: (builder: Builder) => Array<any>
+	fields: (builder: ColumnBuilder) => Fields
 }
 
-export function LiteEntity(input: LiteEntityInput) {
-	const builder: Builder = {
-		text(col) {
-			return new TextModifier(col)
-		},
-		int(col) {
-			return new IntModifier(col)
-		},
-
-		real(col) {
-			return new RealModifier(col)
-		},
-		blob(col) {
-			return new BlobModifier(col)
-		},
-	}
-
+export function LiteEntity<const Fields extends AnyColumn[]>(input: LiteEntityInput<Fields>) {
+	const builder = new ColumnBuilder()
 	input.fields(builder)
 
-	return {
-		col(colName: string) {
-			return {
-				colName,
-				tableName: input.name,
-				tableState: input.fields(builder).map((m) => m.state),
-			}
-		},
-	}
+	return input
 }
+
+declare const db: LiteAdapter
+const userEntity = LiteEntity({
+	name: '',
+	adapter: db,
+	fields: (builder) => [
+		builder.text('user').collate('rtrim').index(),
+		 builder.real('id').primaryKey(),
+
+	builder.blob('image').index()
+
+
+	],
+})
