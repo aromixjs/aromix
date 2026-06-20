@@ -1,8 +1,8 @@
-import { Collate, GeneratedColumn, Reference, ReferenceRule, SortDirection, UniqueConflict } from '../types'
+import type { Collate, GeneratedColumn, Reference, ReferenceRule, SortDirection, UniqueConflict } from '../lite.types/types'
 
-export interface TextState {
+export interface BlobState {
 	colName: string
-	colType: 'TEXT'
+	colType: 'BLOB'
 	primaryKey: boolean
 	primaryKeyDirection: SortDirection
 	unique: boolean
@@ -13,13 +13,13 @@ export interface TextState {
 	generated?: GeneratedColumn
 }
 
-export class TextModifier<const Col extends string> {
-	readonly state: TextState
+export class BlobModifier<const Col extends string> {
+	readonly state: BlobState
 
 	constructor(col: Col) {
 		this.state = {
 			colName: col,
-			colType: 'TEXT',
+			colType: 'BLOB',
 			unique: false,
 			index: false,
 			primaryKey: false,
@@ -39,12 +39,13 @@ export class TextModifier<const Col extends string> {
 		return this
 	}
 
-	collate(option: Collate) {
-		this.state.collate = option
-		return this
-	}
 	index() {
 		this.state.index = true
+		return this
+	}
+
+	collate(option: Collate) {
+		this.state.collate = option
 		return this
 	}
 

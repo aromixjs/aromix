@@ -1,10 +1,11 @@
-import { Collate, GeneratedColumn, Reference, ReferenceRule, SortDirection, UniqueConflict } from '../types'
+import type { Collate, GeneratedColumn, Reference, ReferenceRule, SortDirection, UniqueConflict } from '../lite.types/types'
 
-export interface BlobState {
+export interface IntState {
 	colName: string
-	colType: 'BLOB'
+	colType: 'INTEGER'
 	primaryKey: boolean
 	primaryKeyDirection: SortDirection
+	autoIncrement: boolean
 	unique: boolean
 	uniqueConflict?: UniqueConflict
 	index: boolean
@@ -12,18 +13,18 @@ export interface BlobState {
 	references?: Reference
 	generated?: GeneratedColumn
 }
-
-export class BlobModifier<const Col extends string> {
-	readonly state: BlobState
+export class IntModifier<const Col extends string> {
+	readonly state: IntState
 
 	constructor(col: Col) {
 		this.state = {
 			colName: col,
-			colType: 'BLOB',
+			colType: 'INTEGER',
 			unique: false,
 			index: false,
 			primaryKey: false,
 			primaryKeyDirection: 'asc',
+			autoIncrement: false,
 		}
 	}
 
@@ -61,6 +62,11 @@ export class BlobModifier<const Col extends string> {
 
 	generated(expression: string, storage: GeneratedColumn['storage'] = 'virtual') {
 		this.state.generated = { expression, storage }
+		return this
+	}
+
+	autoIncrement() {
+		this.state.autoIncrement = true
 		return this
 	}
 }

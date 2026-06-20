@@ -1,11 +1,10 @@
-import { Collate, GeneratedColumn, Reference, ReferenceRule, SortDirection, UniqueConflict } from '../types'
+import type { Collate, GeneratedColumn, Reference, ReferenceRule, SortDirection, UniqueConflict } from '../lite.types/types'
 
-export interface IntState {
+export interface TextState {
 	colName: string
-	colType: 'INTEGER'
+	colType: 'TEXT'
 	primaryKey: boolean
 	primaryKeyDirection: SortDirection
-	autoIncrement: boolean
 	unique: boolean
 	uniqueConflict?: UniqueConflict
 	index: boolean
@@ -13,18 +12,18 @@ export interface IntState {
 	references?: Reference
 	generated?: GeneratedColumn
 }
-export class IntModifier<const Col extends string> {
-	readonly state: IntState
+
+export class TextModifier<const Col extends string> {
+	readonly state: TextState
 
 	constructor(col: Col) {
 		this.state = {
 			colName: col,
-			colType: 'INTEGER',
+			colType: 'TEXT',
 			unique: false,
 			index: false,
 			primaryKey: false,
 			primaryKeyDirection: 'asc',
-			autoIncrement: false,
 		}
 	}
 
@@ -40,13 +39,12 @@ export class IntModifier<const Col extends string> {
 		return this
 	}
 
-	index() {
-		this.state.index = true
-		return this
-	}
-
 	collate(option: Collate) {
 		this.state.collate = option
+		return this
+	}
+	index() {
+		this.state.index = true
 		return this
 	}
 
@@ -62,11 +60,6 @@ export class IntModifier<const Col extends string> {
 
 	generated(expression: string, storage: GeneratedColumn['storage'] = 'virtual') {
 		this.state.generated = { expression, storage }
-		return this
-	}
-
-	autoIncrement() {
-		this.state.autoIncrement = true
 		return this
 	}
 }

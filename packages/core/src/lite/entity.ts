@@ -1,18 +1,10 @@
-import { BlobModifier } from './columns/blob'
-import { IntModifier } from './columns/int'
-import { RealModifier } from './columns/real'
-import { TextModifier } from './columns/text'
+import { BlobModifier } from '../lite.column/blob'
+import { IntModifier } from '../lite.column/int'
+import { RealModifier } from '../lite.column/real'
+import { TextModifier } from '../lite.column/text'
+import { Builder } from '../lite.types/builder'
+import { LiteAdapter } from './adapter'
 
-export interface LiteAdapter {
-	query: (sql: string) => Promise<unknown>
-}
-
-export interface Builder {
-	text<const Col extends string>(col: Col): TextModifier<Col>
-	int<const Col extends string>(col: Col): IntModifier<Col>
-	real<const Col extends string>(col: Col): RealModifier<Col>
-	blob<const Col extends string>(col: Col): BlobModifier<Col>
-}
 
 export interface LiteEntityInput {
 	name: string
