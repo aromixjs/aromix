@@ -1,7 +1,4 @@
-import { BlobState, Collate, GeneratedColumn, Reference, ReferenceRule, SortDirection, UniqueConflict } from "../lite.types/states"
-
-
-
+import { BlobState, Collate, GeneratedColumn, Reference, ReferenceRule, SortDirection, UniqueConflict } from '../lite.types/states'
 
 export class BlobModifier<const Col extends string> {
 	readonly state: BlobState

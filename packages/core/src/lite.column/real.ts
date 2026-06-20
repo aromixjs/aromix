@@ -1,4 +1,4 @@
-import { Collate, GeneratedColumn, RealState, Reference, ReferenceRule, SortDirection, UniqueConflict } from "../lite.types/states"
+import { Collate, GeneratedColumn, RealState, Reference, ReferenceRule, SortDirection, UniqueConflict } from '../lite.types/states'
 
 export class RealModifier<const Col extends string> {
 	readonly state: RealState

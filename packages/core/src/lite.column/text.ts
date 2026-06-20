@@ -1,4 +1,4 @@
-import { Collate, GeneratedColumn, Reference, ReferenceRule, SortDirection, TextState, UniqueConflict } from "../lite.types/states"
+import { Collate, GeneratedColumn, Reference, ReferenceRule, SortDirection, TextState, UniqueConflict } from '../lite.types/states'
 
 export class TextModifier<const Col extends string> {
 	readonly state: TextState

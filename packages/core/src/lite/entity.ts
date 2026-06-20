@@ -5,7 +5,6 @@ import { TextModifier } from '../lite.column/text'
 import { Builder } from '../lite.types/builder'
 import { LiteAdapter } from './adapter'
 
-
 export interface LiteEntityInput {
 	name: string
 	adapter: LiteAdapter
