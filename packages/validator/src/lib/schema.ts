@@ -23,4 +23,18 @@ export class Schema<Output> {
 		return this as any
 	}
 
+
+	optional(): Schema<Output | undefined> {
+
+		return this
+	}
+
+
+	nullish(): Schema<Output | undefined | null> {
+		return this
+	}
+	nullable(): Schema<Output | null> {
+		return this
+	}
+
 }

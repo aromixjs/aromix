@@ -61,3 +61,8 @@ export const ax = {
 		return { run }
 	},
 }
+
+
+
+const sch= ax.string().nullable()
+type Data =typeof sch.$infer
