@@ -1,8 +1,17 @@
 # Change Log - @aromix/core
 
-<!-- This log was last generated on Mon, 22 Jun 2026 11:03:27 GMT and should not be manually modified. -->
+<!-- This log was last generated on Thu, 25 Jun 2026 08:50:12 GMT and should not be manually modified. -->
 
 <!-- Start content -->
+
+## 0.4.0
+
+Thu, 25 Jun 2026 08:50:12 GMT
+
+### Minor changes
+
+- refactor(entity, validator): streamline entity platforms and validator API (istiuak.0@gmail.com)
+- Bump @aromix/validator to v0.3.0
 
 ## 0.3.2
 
