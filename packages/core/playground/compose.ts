@@ -17,13 +17,10 @@ const users = primaryDb.entity({
 	}),
 })
 
-const des = compose({
-	entities: [users],
-})
-console.log(des.descriptor)
-console.log(des.descriptor.entities[0].methods)
 
-console.log('compose')
+const user = await users.findOne({
+	_id: 'id'
+})
 
 
 
@@ -32,7 +29,7 @@ const caching = Builder.redis({
 
 
 	adapter() {
-		
+
 		const client = createCluster({
 			rootNodes: []
 		})
@@ -41,3 +38,17 @@ const caching = Builder.redis({
 	}
 
 })
+
+
+const test= caching.entity({
+	name: 'test',
+	model: ax.object({
+
+		name: ax.string()
+
+	})
+
+})
+
+
+test.get('id')
