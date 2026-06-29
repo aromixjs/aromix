@@ -1,16 +1,17 @@
 import { Db } from "mongodb"
+import { MongoEntityInput } from "./types"
+import { AnySchema } from "@aromix/validator"
 
 export class MongoDatabase {
-  public db!: Db
+	public db!: Db
 
-  constructor() {}
+	constructor() { }
 
-  /** internal attach */
-  attach(db: Db) {
-    this.db = db
-  }
+	/** internal attach */
+	attach(db: Db) {
+		this.db = db
+	}
 
-  entity() {
-    // placeholder
-  }
+	entity<Schema extends AnySchema>(input: MongoEntityInput<Schema>) {
+	}
 }

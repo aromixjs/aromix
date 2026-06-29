@@ -1,26 +1,9 @@
 import { MongoClient } from "mongodb"
 import { Builder } from "../server/builder"
-import { MaybePromise } from "../global"
 import { MongoDatabase } from "./database"
+import { ClusterResult, MongoClusterInput } from "./types"
 
 
-export type ClusterResult<T extends readonly string[]> = {
-	builder: Builder
-	client: MongoClient
-} & {
-	[K in T[number]]: MongoDatabase
-}
-
-
-export interface MongoClusterInput<Databases extends readonly string[]> {
-
-	name: string
-	uri: string
-	databases: Databases
-	onConnect?(client: MongoClient): MaybePromise<void>
-	onDisconnect?(client: MongoClient): MaybePromise<void>
-	onError?(err: unknown): MaybePromise<void>
-}
 
 export function MongoCluster<const Databases extends readonly string[]>(options: MongoClusterInput<Databases>) {
 
@@ -36,7 +19,7 @@ export function MongoCluster<const Databases extends readonly string[]>(options:
 	const builder = Builder({
 		name: options.name,
 
-		start: async () => {
+		launch: async () => {
 			try {
 				await client.connect()
 
@@ -52,7 +35,7 @@ export function MongoCluster<const Databases extends readonly string[]>(options:
 			}
 		},
 
-		stop: async () => {
+		shutdown: async () => {
 			await options.onDisconnect?.(client)
 			await client.close()
 		},
