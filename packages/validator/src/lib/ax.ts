@@ -10,7 +10,7 @@ export const ax = {
 			update: string
 		}>({
 			type: 'string',
-			typeMeta: {},
+			meta: {},
 			modifiers: {},
 			accessors: {},
 		})
@@ -24,7 +24,7 @@ export const ax = {
 			update: number
 		}>({
 			type: 'number',
-			typeMeta: {},
+			meta: {},
 			modifiers: {},
 			accessors: {},
 		})
@@ -38,7 +38,7 @@ export const ax = {
 			update: boolean
 		}>({
 			type: 'boolean',
-			typeMeta: {},
+			meta: {},
 			modifiers: {},
 			accessors: {},
 		})
@@ -52,7 +52,7 @@ export const ax = {
 			update: bigint
 		}>({
 			type: 'bigInt',
-			typeMeta: {},
+			meta: {},
 			modifiers: {},
 			accessors: {},
 		})
@@ -66,7 +66,7 @@ export const ax = {
 			update: symbol
 		}>({
 			type: 'symbol',
-			typeMeta: {},
+			meta: {},
 			modifiers: {},
 			accessors: {},
 		})
@@ -80,7 +80,7 @@ export const ax = {
 			update: null
 		}>({
 			type: 'null',
-			typeMeta: {},
+			meta: {},
 			modifiers: {},
 			accessors: {},
 		})
@@ -94,7 +94,7 @@ export const ax = {
 			update: undefined
 		}>({
 			type: 'undefined',
-			typeMeta: {},
+			meta: {},
 			modifiers: {},
 			accessors: {},
 		})
@@ -108,7 +108,7 @@ export const ax = {
 			update: unknown
 		}>({
 			type: 'unknown',
-			typeMeta: {},
+			meta: {},
 			modifiers: {},
 			accessors: {},
 		})
@@ -121,7 +121,7 @@ export const ax = {
 			update: never
 		}>({
 			type: 'never',
-			typeMeta: {},
+			meta: {},
 			modifiers: {},
 			accessors: {},
 		})
@@ -135,7 +135,7 @@ export const ax = {
 			update: OmitNeverKeys<Shape, '$update'>
 		}>({
 			type: 'object',
-			typeMeta: {
+			meta: {
 				objectShape: shape,
 			},
 			modifiers: {},
@@ -151,7 +151,7 @@ export const ax = {
 			update: Element['$update'][]
 		}>({
 			type: 'array',
-			typeMeta: {
+			meta: {
 				arrayElement: element,
 			},
 			modifiers: {},
@@ -168,7 +168,7 @@ export const ax = {
 		}>({
 			type: 'tuple',
 
-			typeMeta: {
+			meta: {
 				tupleItems: items,
 			},
 			modifiers: {},
@@ -184,7 +184,7 @@ export const ax = {
 			update: Options[number]['$update']
 		}>({
 			type: 'union',
-			typeMeta: {
+			meta: {
 				unionItems: options,
 			},
 			modifiers: {},
@@ -200,7 +200,7 @@ export const ax = {
 			update: Record<string, Value['$update']>
 		}>({
 			type: 'record',
-			typeMeta: {
+			meta: {
 				recordElement: value,
 			},
 			modifiers: {},
@@ -216,7 +216,7 @@ export const ax = {
 			update: Values[number]
 		}>({
 			type: 'literals',
-			typeMeta: {
+			meta: {
 				literalValues: values,
 			},
 			modifiers: {},
@@ -227,7 +227,7 @@ export const ax = {
 	instance<Class extends Ctor>(classRef: Class) {
 		return new Schema({
 			type: 'instance',
-			typeMeta: {
+			meta: {
 				instanceClass: classRef,
 			},
 			modifiers: {},

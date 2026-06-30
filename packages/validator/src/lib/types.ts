@@ -15,7 +15,7 @@ export interface AnySchema {
 
 export interface SchemaState {
 	type: Types
-	typeMeta: Partial<{
+	meta: Partial<{
 		objectShape: Record<string, AnySchema>
 		arrayElement: AnySchema
 		tupleItems: readonly AnySchema[]
@@ -51,3 +51,18 @@ export type Ctor = new (...args: any) => any
 export type OmitNeverKeys<Shape extends Record<string, AnySchema>, Slot extends keyof AnySchema> = {
 	[Key in keyof Shape as Shape[Key][Slot] extends never ? never : Key]: Shape[Key][Slot]
 }
+
+
+export type NarrowerInsert<Insert> = AnySchema & { $insert: Insert }
+export type NarrowerUpdate<Update> = AnySchema & { $update: Update }
+export type NarrowerSelect<Select> = AnySchema & { $select: Select }
+
+
+
+
+
+export type Prettify<Obj extends object> = {
+
+	[Key in keyof Obj]: Obj[Key]
+
+} & {}
